@@ -1173,11 +1173,16 @@ const DEFAULT_EVENTS = [
 
 /* ---------- Storage Helpers ---------- */
 function load(key, fallback) {
+  // Clone the fallback so callers can mutate it without affecting our DEFAULT_* arrays
+  const cloneFallback = () => {
+    try { return JSON.parse(JSON.stringify(fallback)); }
+    catch (e) { return fallback; }
+  };
   try {
     const v = localStorage.getItem(key);
-    if (v === null) return fallback;
+    if (v === null) return cloneFallback();
     return JSON.parse(v);
-  } catch (e) { return fallback; }
+  } catch (e) { return cloneFallback(); }
 }
 function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
@@ -1217,11 +1222,14 @@ function initState() {
   state.isAdmin       = readAdminLoggedIn();
 
   // Merge defaults with stored, removing deleted defaults
+  // IMPORTANT: clone each default so editing them in state.events doesn't
+  // mutate the master DEFAULT_EVENTS array (which would break persistEvents'
+  // change-detection comparison and silently drop edits on refresh).
   const stored = load(K.events, []);
   const storedIds = new Set(stored.map(e => e.id));
-  const filteredDefaults = DEFAULT_EVENTS.filter(
-    e => !state.deletedIds.includes(e.id) && !storedIds.has(e.id)
-  );
+  const filteredDefaults = DEFAULT_EVENTS
+    .filter(e => !state.deletedIds.includes(e.id) && !storedIds.has(e.id))
+    .map(e => ({ ...e }));
   state.events = [...filteredDefaults, ...stored];
 
   // Defensive: ensure quotes is always a non-empty array
@@ -2250,7 +2258,7 @@ function wirePanel(tab) {
         if (what === 'events' || what === 'all') {
           localStorage.removeItem(K.events);
           localStorage.removeItem(K.deletedIds);
-          state.events = [...DEFAULT_EVENTS];
+          state.events = DEFAULT_EVENTS.map(e => ({ ...e }));
           state.deletedIds = [];
         }
         if (what === 'news' || what === 'all') {
