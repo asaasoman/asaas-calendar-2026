@@ -809,6 +809,25 @@ input, textarea, select { font-family: inherit; }
 }
 .form-control:focus { outline: none; border-color: var(--green); background: var(--card); box-shadow: 0 0 0 3px var(--green-tint); }
 textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
+.pwd-wrap { position: relative; }
+.pwd-wrap .form-control { padding-left: 44px; }
+.pwd-toggle {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--text-mute);
+  transition: background .15s;
+  line-height: 1;
+}
+.pwd-toggle:hover { background: var(--bg-2); }
+.pwd-toggle:focus { outline: none; background: var(--green-tint); }
 .color-row { display: flex; align-items: center; gap: 10px; }
 .color-row input[type="color"] { width: 46px; height: 38px; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--card); cursor: pointer; }
 
@@ -1149,7 +1168,10 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
     <div class="modal-body">
       <div class="form-group">
         <label>كلمة المرور</label>
-        <input type="password" class="form-control" id="loginPwd" placeholder="••••••••" autocomplete="current-password" />
+        <div class="pwd-wrap">
+          <input type="password" class="form-control" id="loginPwd" placeholder="••••••••" autocomplete="current-password" />
+          <button type="button" class="pwd-toggle" id="loginPwdToggle" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور">👁</button>
+        </div>
         <div id="loginErr" style="color:var(--danger);font-size:12.5px;margin-top:6px;display:none">كلمة المرور غير صحيحة</div>
       </div>
     </div>
@@ -2176,6 +2198,16 @@ function doLogin() {
 }
 document.getElementById('loginSubmit').onclick = doLogin;
 document.getElementById('loginPwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginPwdToggle').addEventListener('click', () => {
+  const inp = document.getElementById('loginPwd');
+  const btn = document.getElementById('loginPwdToggle');
+  const showing = inp.type === 'text';
+  inp.type = showing ? 'password' : 'text';
+  btn.textContent = showing ? '👁' : '🙈';
+  const label = showing ? 'إظهار كلمة المرور' : 'إخفاء كلمة المرور';
+  btn.setAttribute('aria-label', label);
+  btn.setAttribute('title', label);
+});
 
 function doLogout() {
   if (!confirm('هل تريد تسجيل الخروج من وضع المسؤول؟')) return;
