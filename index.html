@@ -1077,21 +1077,68 @@ const DEFAULT_SPOTLIGHT = [
 ];
 
 const DEFAULT_EVENTS = [
-  // National & religious for Oman 2026 (best-effort defaults — admin can edit)
+  // ────────── مناسبات دينية ووطنية ──────────
   { id: 'def_newyear',  title: 'رأس السنة الميلادية', date: '2026-01-01', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'بداية العام الميلادي الجديد.' },
   { id: 'def_ren',      title: 'يوم النهضة', date: '2026-02-11', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'الذكرى السنوية ليوم النهضة في سلطنة عُمان.' },
   { id: 'def_ramadan',  title: 'بداية شهر رمضان المبارك', date: '2026-02-18', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'تقديري — يُحدّد رسمياً عبر هيئة رؤية الهلال.' },
   { id: 'def_eid_fitr', title: 'عيد الفطر المبارك', date: '2026-03-20', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'كل عام وأنتم بخير.' },
   { id: 'def_eid_adha', title: 'عيد الأضحى المبارك', date: '2026-05-27', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'تقبّل الله منا ومنكم صالح الأعمال.' },
   { id: 'def_hijri_ny', title: 'رأس السنة الهجرية', date: '2026-06-17', categoryId: 'cat_religion', subcategoryId: null, time: '', description: '' },
-  { id: 'def_natday',   title: 'العيد الوطني المجيد', date: '2026-11-18', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'العيد الوطني لسلطنة عُمان.' },
-  // International days
+  { id: 'def_mawlid',   title: 'ذكرى المولد النبوي الشريف', date: '2026-08-26', categoryId: 'cat_religion', subcategoryId: null, time: '', description: '' },
+  { id: 'def_natday',   title: 'اليوم الوطني العُماني', date: '2026-11-20', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'اليوم الوطني لسلطنة عُمان.' },
+
+  // ────────── التواريخ المهمة / الأيام العالمية ──────────
   { id: 'def_intl_women', title: 'اليوم العالمي للمرأة', date: '2026-03-08', categoryId: 'cat_intl', subcategoryId: null, time: '', description: '' },
   { id: 'def_intl_earth', title: 'يوم الأرض العالمي', date: '2026-04-22', categoryId: 'cat_intl', subcategoryId: null, time: '', description: '' },
-  // Sample ASAAS activities
-  { id: 'def_mindshare_jan', title: 'جلسة Mindshare — يناير', date: '2026-01-22', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '10:00', description: 'الجلسة الشهرية الأولى لعام 2026.' },
-  { id: 'def_fenjan_feb', title: 'فنجان قهوة مع الفريق', date: '2026-02-05', categoryId: 'cat_activities', subcategoryId: 'sub_fenjan', time: '09:30', description: 'لقاء غير رسمي.' },
-  { id: 'def_knowhow_mar', title: 'KNOWHOW — جلسة معرفية', date: '2026-03-12', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '14:00', description: '' },
+  { id: 'def_world_env',  title: 'World Environment Day', date: '2026-06-05', categoryId: 'cat_intl', subcategoryId: null, time: '', description: 'اليوم العالمي للبيئة.' },
+  { id: 'def_comex',      title: 'معرض كومكس العالمي للتكنولوجيا', date: '2026-09-06', categoryId: 'cat_intl', subcategoryId: null, time: '', description: '' },
+
+  // ────────── Mindshare ──────────
+  { id: 'def_mindshare_jun4',  title: 'Mindshare', date: '2026-06-04', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_jun11', title: 'Mindshare', date: '2026-06-11', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_jun25', title: 'Mindshare', date: '2026-06-25', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_jul9',  title: 'Mindshare', date: '2026-07-09', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_aug20', title: 'Mindshare', date: '2026-08-20', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_sep24', title: 'Mindshare', date: '2026-09-24', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_oct15', title: 'Mindshare', date: '2026-10-15', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_oct29', title: 'Mindshare', date: '2026-10-29', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+
+  // ────────── Mindshare Plus ──────────
+  { id: 'def_msplus_jun18', title: 'Mindshare Plus', date: '2026-06-18', categoryId: 'cat_activities', subcategoryId: 'sub_mindshareplus', time: '', description: '' },
+  { id: 'def_msplus_jul23', title: 'Mindshare Plus', date: '2026-07-23', categoryId: 'cat_activities', subcategoryId: 'sub_mindshareplus', time: '', description: '' },
+  { id: 'def_msplus_aug6',  title: 'Mindshare Plus', date: '2026-08-06', categoryId: 'cat_activities', subcategoryId: 'sub_mindshareplus', time: '', description: '' },
+  { id: 'def_msplus_sep10', title: 'Mindshare Plus', date: '2026-09-10', categoryId: 'cat_activities', subcategoryId: 'sub_mindshareplus', time: '', description: '' },
+
+  // ────────── KNOWHOW (نصف شهري) ──────────
+  { id: 'def_kh_apr1',  title: 'KNOWHOW', date: '2026-04-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_apr15', title: 'KNOWHOW', date: '2026-04-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_may1',  title: 'KNOWHOW', date: '2026-05-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_may15', title: 'KNOWHOW', date: '2026-05-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_jun1',  title: 'KNOWHOW', date: '2026-06-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_jun15', title: 'KNOWHOW', date: '2026-06-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_jul1',  title: 'KNOWHOW', date: '2026-07-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_jul15', title: 'KNOWHOW', date: '2026-07-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_aug1',  title: 'KNOWHOW', date: '2026-08-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_aug15', title: 'KNOWHOW', date: '2026-08-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_sep1',  title: 'KNOWHOW', date: '2026-09-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_sep15', title: 'KNOWHOW', date: '2026-09-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_oct1',  title: 'KNOWHOW', date: '2026-10-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_oct15', title: 'KNOWHOW', date: '2026-10-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_nov1',  title: 'KNOWHOW', date: '2026-11-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_nov15', title: 'KNOWHOW', date: '2026-11-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_dec1',  title: 'KNOWHOW', date: '2026-12-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_dec15', title: 'KNOWHOW', date: '2026-12-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+
+  // ────────── Fenjan Qahwa ──────────
+  { id: 'def_fenjan_sep15', title: 'Fenjan Qahwa', date: '2026-09-15', categoryId: 'cat_activities', subcategoryId: 'sub_fenjan', time: '', description: '' },
+  { id: 'def_fenjan_nov24', title: 'Fenjan Qahwa', date: '2026-11-24', categoryId: 'cat_activities', subcategoryId: 'sub_fenjan', time: '', description: '' },
+
+  // ────────── أنشطة عامة (بدون فعالية فرعية) ──────────
+  { id: 'def_natday_cel', title: 'National Day Celebration',         date: '2026-05-18', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+  { id: 'def_leadership', title: 'Leadership Workshop',              date: '2026-05-20', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+  { id: 'def_earth_init', title: 'Earth Day Initiative',             date: '2026-05-22', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+  { id: 'def_corp_comm',  title: 'Corporate Communication Campaign', date: '2026-06-15', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+  { id: 'def_site_visit', title: 'Project Site Visit',               date: '2026-09-10', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
 ];
 
 /* ---------- Storage Helpers ---------- */
