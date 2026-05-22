@@ -148,6 +148,22 @@ input, textarea, select { font-family: inherit; }
 .btn-sm { padding: 6px 12px; font-size: 12.5px; }
 
 .control-menu-wrap { position: relative; }
+.admin-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  box-shadow: 0 0 0 2px rgba(255,253,248,.3), 0 0 8px var(--gold);
+  display: inline-block;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: .7; }
+}
+#controlBtn.is-admin {
+  background: linear-gradient(135deg, var(--gold) 0%, #B6932F 100%);
+  border-color: #B6932F;
+}
 .control-menu {
   position: absolute; top: calc(100% + 8px); left: 0;
   background: var(--card);
@@ -513,39 +529,51 @@ input, textarea, select { font-family: inherit; }
 }
 
 /* ---------- Modals ---------- */
+/* Top-level overlay — guaranteed not to be clipped by any ancestor */
 .modal-backdrop {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background: rgba(36,66,41,.45);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none;
-  z-index: 1000;
-  align-items: center; justify-content: center;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
   padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .modal-backdrop.open { display: flex; animation: fade-in .2s; }
+
 .modal {
   background: var(--card);
-  border-radius: var(--radius-lg);
+  border-radius: 24px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
-  width: min(92vw, 900px);
+  width: calc(100vw - 32px);
   max-width: 900px;
-  max-height: 88vh;
+  max-height: calc(100vh - 32px);
   overflow-y: auto;
   overflow-x: hidden;
   animation: pop .22s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
 }
-.modal-sm { width: min(92vw, 480px); }
+.modal-sm { max-width: 480px; }
+
 .modal-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 24px;
   border-bottom: 1px solid var(--border-soft);
-  position: sticky; top: 0;
+  position: sticky;
+  top: 0;
   background: var(--card);
-  z-index: 2;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 3;
+  border-radius: 24px 24px 0 0;
+  flex-shrink: 0;
 }
 .modal-title { font-family: 'Amiri', serif; font-size: 22px; font-weight: 700; color: var(--green-dark); display: flex; align-items: center; gap: 12px; }
 .modal-title-logo {
@@ -593,7 +621,8 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   gap: 10px; padding: 16px 24px;
   border-top: 1px solid var(--border-soft);
   background: var(--card-2);
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border-radius: 0 0 24px 24px;
+  flex-shrink: 0;
 }
 .detail-row { display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px dashed var(--border-soft); }
 .detail-row:last-child { border-bottom: 0; }
@@ -606,13 +635,29 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 
 /* ---------- Admin Panel Sections ---------- */
-.panel-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; background: var(--bg-2); border-radius: 12px; margin-bottom: 18px; }
+.panel-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-2);
+  border-radius: 12px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.panel-tabs::-webkit-scrollbar { height: 4px; }
+.panel-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .panel-tab {
   border: 0; background: transparent;
   padding: 8px 16px; border-radius: 8px;
   font-size: 13px; font-weight: 600;
   color: var(--text-soft);
   transition: all .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .panel-tab:hover { color: var(--text); }
 .panel-tab.active { background: var(--card); color: var(--green-dark); box-shadow: var(--shadow-sm); }
@@ -695,6 +740,22 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   .quote-note { width: calc(100vw - 32px); bottom: 14px; left: 14px; }
   .month-title { font-size: 22px; }
   .header { padding: 12px 14px; }
+
+  /* Modal: almost full screen on mobile */
+  .modal-backdrop { padding: 8px; align-items: flex-start; }
+  .modal {
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    border-radius: 18px;
+  }
+  .modal-header { padding: 14px 16px; border-radius: 18px 18px 0 0; }
+  .modal-body { padding: 16px 16px 20px !important; }
+  .modal-footer { padding: 12px 16px; border-radius: 0 0 18px 18px; }
+  .modal-title { font-size: 18px; }
+  .panel-tab { padding: 7px 12px; font-size: 12.5px; }
+  .list-item { flex-wrap: wrap; }
+  .list-item .li-main { min-width: 100%; }
+  .add-row .form-control { min-width: 100%; }
 }
 @media (max-width: 480px) {
   .cal-head { font-size: 10px; }
@@ -1026,7 +1087,7 @@ function initState() {
   state.hijriOffset   = load(K.hijriOffset,   0);
   state.filtersHidden = load(K.filtersHidden, []);
   state.countdownId   = load(K.countdownId,   null);
-  state.isAdmin       = localStorage.getItem(K.adminLogged) === 'true';
+  state.isAdmin       = readAdminLoggedIn();
 
   // Merge defaults with stored, removing deleted defaults
   const stored = load(K.events, []);
@@ -1420,7 +1481,7 @@ function renderEventForm(event, dateStr) {
         <textarea class="form-control" id="evDesc" placeholder="تفاصيل إضافية…">${escapeAttr(e.description||'')}</textarea>
       </div>
     </div>
-    <div class="modal-footer" style="margin:22px -24px -26px;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+    <div class="modal-footer" style="margin:22px -24px -26px;border-radius:0 0 24px 24px">
       <div>${event ? `<button class="btn btn-danger" id="evDelete">🗑 حذف</button>` : ''}</div>
       <button class="btn btn-primary" id="evSave">💾 حفظ</button>
     </div>
@@ -1649,20 +1710,50 @@ document.getElementById('quoteClose').onclick = () => {
   save(K.quoteHidden, true);
 };
 
-/* ---------- Admin Login ---------- */
+/* ---------- Admin Login (robust persistence) ---------- */
+function readAdminLoggedIn() {
+  try {
+    return localStorage.getItem(K.adminLogged) === 'true';
+  } catch (e) { return false; }
+}
+function writeAdminLoggedIn(yes) {
+  try {
+    if (yes) localStorage.setItem(K.adminLogged, 'true');
+    else localStorage.removeItem(K.adminLogged);
+  } catch (e) { /* storage blocked — session-only */ }
+  state.isAdmin = !!yes;
+  updateAdminUI();
+}
+
 function updateAdminUI() {
   const btn = document.getElementById('authMenuBtn');
-  btn.textContent = state.isAdmin ? '🚪 خروج المسؤول' : '🔐 دخول المسؤول';
+  if (btn) btn.textContent = state.isAdmin ? '🚪 خروج المسؤول' : '🔐 دخول المسؤول';
+  // Visual badge on the control button so you always see your session state
+  const cb = document.getElementById('controlBtn');
+  if (cb) {
+    cb.classList.toggle('is-admin', state.isAdmin);
+    const dot = cb.querySelector('.admin-dot');
+    if (state.isAdmin && !dot) {
+      const d = document.createElement('span');
+      d.className = 'admin-dot';
+      d.title = 'وضع المسؤول';
+      cb.prepend(d);
+    } else if (!state.isAdmin && dot) {
+      dot.remove();
+    }
+  }
 }
+
 function doLogin() {
   const pwd = document.getElementById('loginPwd').value;
   if (pwd === ADMIN_PASSWORD) {
-    state.isAdmin = true;
-    localStorage.setItem(K.adminLogged, 'true');
+    writeAdminLoggedIn(true);
     document.getElementById('loginErr').style.display = 'none';
     document.getElementById('loginPwd').value = '';
     closeModal('loginModal');
-    updateAdminUI();
+    // After login, jump straight into the admin panel
+    document.getElementById('panelModal').classList.add('open');
+    renderPanel('categories');
     render();
   } else {
     document.getElementById('loginErr').style.display = 'block';
@@ -1672,9 +1763,8 @@ document.getElementById('loginSubmit').onclick = doLogin;
 document.getElementById('loginPwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
 function doLogout() {
-  state.isAdmin = false;
-  localStorage.removeItem(K.adminLogged);
-  updateAdminUI();
+  if (!confirm('هل تريد تسجيل الخروج من وضع المسؤول؟')) return;
+  writeAdminLoggedIn(false);
   render();
 }
 
@@ -2098,6 +2188,11 @@ if ('serviceWorker' in navigator) {
 }
 
 /* ---------- Boot ---------- */
+// Guarantee modals are top-level overlays, never clipped by any ancestor
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  if (m.parentElement !== document.body) document.body.appendChild(m);
+});
+
 initState();
 updateAdminUI();
 renderFilters();
