@@ -543,6 +543,32 @@ input, textarea, select { font-family: inherit; }
   color: var(--text-mute); cursor: pointer; line-height: 1; padding: 4px;
 }
 
+/* Minimized state: floating lightbulb button to restore the quote */
+.quote-mini {
+  position: fixed;
+  bottom: 22px;
+  left: 22px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(155deg, #FFF6D8 0%, #FBEABF 100%);
+  border: 1px solid var(--gold-soft);
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(58,42,29,.18), 0 2px 6px rgba(58,42,29,.1);
+  z-index: 49;
+  display: none;
+  place-items: center;
+  transition: transform .2s, box-shadow .2s;
+  animation: pulse-mini 2.6s ease-in-out infinite;
+}
+.quote-mini.show { display: grid; }
+.quote-mini:hover { transform: scale(1.1) rotate(-6deg); box-shadow: 0 14px 32px rgba(58,42,29,.24); animation: none; }
+@keyframes pulse-mini {
+  0%, 100% { transform: scale(1); box-shadow: 0 10px 28px rgba(58,42,29,.18), 0 0 0 0 rgba(201,166,70,.5); }
+  50%      { transform: scale(1.06); box-shadow: 0 10px 28px rgba(58,42,29,.18), 0 0 0 12px rgba(201,166,70,0); }
+}
+
 /* ---------- Modals ---------- */
 /* Top-level overlay — never clipped, always centered, scrolls internally */
 .modal-backdrop {
@@ -762,6 +788,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   .cell-num { font-size: 15px; }
   .evt-pill { font-size: 10px; padding: 2px 6px; }
   .quote-note { width: calc(100vw - 32px); bottom: 14px; left: 14px; }
+  .quote-mini { bottom: 14px; left: 14px; width: 48px; height: 48px; font-size: 19px; }
   .month-title { font-size: 22px; }
   .header { padding: 12px 14px; }
 
@@ -799,7 +826,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 
 /* Print */
 @media print {
-  .header-actions, .quote-note, .news-ticker, .countdown, .spotlight { display: none !important; }
+  .header-actions, .quote-note, .quote-mini, .news-ticker, .countdown, .spotlight { display: none !important; }
   body { background: white; }
 }
 </style>
@@ -896,10 +923,13 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 
 <!-- Sticky Inspirational Note -->
 <div class="quote-note" id="quoteNote" style="display:none">
-  <button class="quote-close" id="quoteClose" title="إخفاء">✕</button>
+  <button class="quote-close" id="quoteClose" title="تصغير">✕</button>
   <div class="quote-label">عبارة ملهمة</div>
   <div class="quote-text" id="quoteText">—</div>
 </div>
+
+<!-- Minimized floating button (shows when the quote note is hidden) -->
+<button class="quote-mini" id="quoteMini" title="إظهار العبارة الملهمة" aria-label="إظهار العبارة الملهمة">💡</button>
 
 <!-- Tooltip -->
 <div class="tooltip" id="tooltip"></div>
@@ -1194,10 +1224,14 @@ function initState() {
   );
   state.events = [...filteredDefaults, ...stored];
 
-  // Quote hidden state
-  if (load(K.quoteHidden, false)) {
-    document.getElementById('quoteNote').style.display = 'none';
+  // Defensive: ensure quotes is always a non-empty array
+  if (!Array.isArray(state.quotes) || !state.quotes.length) {
+    state.quotes = JSON.parse(JSON.stringify(DEFAULT_QUOTES));
   }
+
+  // Clear any old "permanently hidden" flag for the inspirational note
+  // (the close X now only hides for the current session — refresh brings it back)
+  localStorage.removeItem(K.quoteHidden);
 }
 
 /* ---------- Persisting events (non-default custom events only stored) ---------- */
@@ -1778,6 +1812,7 @@ function startNews() {
 
 /* ---------- Inspirational Quote ---------- */
 let quoteInterval = null;
+let quoteSessionHidden = false;  // session-only — never persisted, refresh always brings it back
 function getQuoteDirection(text) {
   const arabicChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
   const englishChars = (text.match(/[A-Za-z]/g) || []).length;
@@ -1787,10 +1822,25 @@ function startQuotes() {
   if (quoteInterval) clearInterval(quoteInterval);
   const el = document.getElementById('quoteText');
   const note = document.getElementById('quoteNote');
-  if (load(K.quoteHidden, false)) { note.style.display = 'none'; return; }
-  note.style.display = 'block';
+  const mini = document.getElementById('quoteMini');
+  if (quoteSessionHidden) {
+    note.style.display = 'none';
+    if (mini) mini.classList.add('show');
+    return;
+  }
+  // Defensive: rebuild from defaults if quotes were wiped somehow
+  if (!Array.isArray(state.quotes) || !state.quotes.length) {
+    state.quotes = JSON.parse(JSON.stringify(DEFAULT_QUOTES));
+    save(K.quotes, state.quotes);
+  }
   const enabled = state.quotes.filter(q => q.enabled);
-  if (!enabled.length) { el.textContent = '—'; return; }
+  if (!enabled.length) {
+    note.style.display = 'none';
+    if (mini) mini.classList.add('show');
+    return;
+  }
+  note.style.display = 'block';
+  if (mini) mini.classList.remove('show');
   let i = 0;
   const show = () => {
     const q = enabled[i % enabled.length];
@@ -1804,7 +1854,14 @@ function startQuotes() {
 }
 document.getElementById('quoteClose').onclick = () => {
   document.getElementById('quoteNote').style.display = 'none';
-  save(K.quoteHidden, true);
+  document.getElementById('quoteMini').classList.add('show');
+  quoteSessionHidden = true;
+  if (quoteInterval) { clearInterval(quoteInterval); quoteInterval = null; }
+};
+document.getElementById('quoteMini').onclick = () => {
+  quoteSessionHidden = false;
+  document.getElementById('quoteMini').classList.remove('show');
+  startQuotes();
 };
 
 /* ---------- Admin Login (robust persistence) ---------- */
