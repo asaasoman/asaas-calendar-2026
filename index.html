@@ -257,6 +257,7 @@ input, textarea, select { font-family: inherit; }
 }
 @media (max-width: 1050px) { .top-row { grid-template-columns: 1fr; } }
 
+/* ===== Let's Remember / لنتذكّر — image slider ===== */
 .spotlight {
   background: var(--card);
   border: 1px solid var(--border);
@@ -267,39 +268,171 @@ input, textarea, select { font-family: inherit; }
   position: relative;
 }
 .spotlight-label {
-  position: absolute; top: 10px; right: 10px; z-index: 2;
+  position: absolute; top: 10px; right: 10px; z-index: 4;
   background: rgba(49,92,59,.92); color: #FFFDF8;
   padding: 4px 10px; border-radius: 999px;
   font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
   font-weight: 600;
+  backdrop-filter: blur(4px);
 }
 .spotlight-title {
-  position: absolute; bottom: 10px; right: 12px; z-index: 2;
+  position: absolute; bottom: 12px; right: 14px; z-index: 4;
   font-family: 'Co Headline', 'Tajawal', sans-serif;
-  font-size: 22px; font-weight: 700;
+  font-size: 24px; font-weight: 700;
   color: #FFFDF8;
-  text-shadow: 0 2px 12px rgba(0,0,0,.5);
+  text-shadow: 0 2px 14px rgba(0,0,0,.65), 0 1px 3px rgba(0,0,0,.4);
+  letter-spacing: -.3px;
 }
 .spotlight-img-wrap {
   position: relative;
   width: 100%; aspect-ratio: 4/3;
   background: linear-gradient(135deg, var(--beige) 0%, var(--gold-tint) 100%);
+  overflow: hidden;
 }
+/* Soft gradient overlay so title stays readable on any photo */
 .spotlight-img-wrap::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(0deg, rgba(0,0,0,.5) 0%, transparent 50%, rgba(0,0,0,.15) 100%);
+  background:
+    linear-gradient(0deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,.15) 38%, transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,.25) 0%, transparent 28%);
+  pointer-events: none;
+  z-index: 2;
 }
+/* Two stacked images for smooth crossfade */
 .spotlight-img {
+  position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover; display: block;
-  transition: opacity .8s ease, transform 10s ease;
+  opacity: 0;
+  transition: opacity 1s ease;
+  z-index: 1;
 }
+.spotlight-img.active { opacity: 1; }
 .spotlight-placeholder {
   position: absolute; inset: 0;
   display: grid; place-items: center;
   color: var(--clay);
   font-family: 'Co Headline', 'Tajawal', sans-serif;
   font-size: 48px; opacity: .35;
+  z-index: 0;
+}
+/* Navigation arrows */
+.spot-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 5;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,253,248,.85);
+  border: 1px solid rgba(255,253,248,.6);
+  display: grid; place-items: center;
+  color: var(--green-dark);
+  font-size: 16px; font-weight: 700;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .25s, background .15s, transform .15s;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.spotlight:hover .spot-arrow { opacity: 1; }
+.spot-arrow:hover { background: #FFFDF8; transform: translateY(-50%) scale(1.08); }
+.spot-arrow.prev { right: 8px; }
+.spot-arrow.next { left: 8px; }
+.spot-arrow:focus { opacity: 1; outline: none; }
+/* Pagination dots */
+.spot-dots {
+  position: absolute; bottom: 12px; left: 12px;
+  z-index: 5;
+  display: flex; gap: 5px;
+  align-items: center;
+}
+.spot-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,253,248,.45);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+.spot-dot:hover { background: rgba(255,253,248,.75); }
+.spot-dot.active {
+  background: var(--gold);
+  width: 18px;
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(201,166,70,.6);
+}
+.spot-empty {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  z-index: 3;
+  color: var(--clay);
+  text-align: center;
+  padding: 16px;
+}
+.spot-empty .ico { font-size: 44px; opacity: .35; margin-bottom: 8px; }
+.spot-empty .txt { font-size: 12px; color: var(--text-mute); }
+
+@media (max-width: 720px) {
+  .spot-arrow { opacity: 1; width: 28px; height: 28px; font-size: 14px; }
+  .spotlight-title { font-size: 20px; }
+}
+
+/* ===== Spotlight admin panel: upload UI ===== */
+.spot-drop {
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  padding: 24px 16px;
+  text-align: center;
+  background: var(--card-2);
+  cursor: pointer;
+  transition: all .2s;
+}
+.spot-drop:hover { border-color: var(--green); background: var(--green-tint); }
+.spot-drop.drag { border-color: var(--gold); background: var(--gold-tint); transform: scale(1.01); }
+.spot-drop-icon { font-size: 32px; margin-bottom: 6px; }
+.spot-drop-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.spot-drop-sub { font-size: 11.5px; color: var(--text-mute); }
+
+.spot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+.spot-card {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all .15s;
+  display: flex;
+  flex-direction: column;
+}
+.spot-card:hover { border-color: var(--gold-soft); box-shadow: var(--shadow-sm); }
+.spot-card.disabled { opacity: .5; }
+.spot-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: linear-gradient(135deg, var(--beige) 0%, var(--gold-tint) 100%);
+  overflow: hidden;
+}
+.spot-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.spot-thumb.error::after {
+  content: "⚠ تعذر تحميل الصورة";
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-size: 11px; color: var(--danger);
+  background: #FBE8E5;
+}
+.spot-card-body { padding: 8px 10px; flex: 1; }
+.spot-card-label {
+  font-size: 11px; color: var(--text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.spot-card-actions {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px 10px;
+  gap: 8px;
 }
 
 .month-nav-card {
@@ -886,13 +1019,23 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   <!-- ========= TOP CONTROL ROW ========= -->
   <div class="top-row">
 
-    <!-- Spotlight -->
+    <!-- Spotlight / Let's Remember -->
     <div class="spotlight" id="spotlightCard">
       <span class="spotlight-label">Let's Remember</span>
       <span class="spotlight-title">لنتذكّر</span>
       <div class="spotlight-img-wrap">
         <div class="spotlight-placeholder">❦</div>
-        <img class="spotlight-img" id="spotlightImg" style="opacity:0" alt="" />
+        <img class="spotlight-img" id="spotImgA" alt="" />
+        <img class="spotlight-img" id="spotImgB" alt="" />
+        <button class="spot-arrow prev" id="spotPrev" aria-label="السابق" title="السابق">›</button>
+        <button class="spot-arrow next" id="spotNext" aria-label="التالي" title="التالي">‹</button>
+        <div class="spot-dots" id="spotDots" role="tablist" aria-label="مؤشرات الصور"></div>
+        <div class="spot-empty" id="spotEmpty" style="display:none">
+          <div>
+            <div class="ico">🖼</div>
+            <div class="txt">لا توجد صور بعد<br/>أضف صوراً من لوحة التحكم</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1113,11 +1256,11 @@ const DEFAULT_QUOTES = [
 ];
 
 const DEFAULT_SPOTLIGHT = [
-  { id: 's1', path: '/spotlight/spotlight-1.jpg', enabled: true },
-  { id: 's2', path: '/spotlight/spotlight-2.jpg', enabled: true },
-  { id: 's3', path: '/spotlight/spotlight-3.jpg', enabled: true },
-  { id: 's4', path: '/spotlight/spotlight-4.jpg', enabled: true },
-  { id: 's5', path: '/spotlight/spotlight-5.jpg', enabled: true },
+  { id: 's1', path: 'images/remember-01.jpg', enabled: true },
+  { id: 's2', path: 'images/remember-02.jpg', enabled: true },
+  { id: 's3', path: 'images/remember-03.jpg', enabled: true },
+  { id: 's4', path: 'images/remember-04.jpg', enabled: true },
+  { id: 's5', path: 'images/remember-05.jpg', enabled: true },
 ];
 
 const DEFAULT_EVENTS = [
@@ -1794,24 +1937,111 @@ document.getElementById('countdownCard').onclick = () => {
   renderCountdown();
 };
 
-/* ---------- Spotlight Rotation ---------- */
+/* ---------- Spotlight Slider (Let's Remember) ---------- */
 let spotlightInterval = null;
+let spotState = { idx: 0, layer: 'A', items: [], paused: false };
+
+function renderSpotDots() {
+  const dotsEl = document.getElementById('spotDots');
+  if (!dotsEl) return;
+  dotsEl.innerHTML = spotState.items.map((_, i) => `
+    <button class="spot-dot ${i === spotState.idx ? 'active' : ''}"
+            data-i="${i}" role="tab" aria-label="صورة ${i+1}"></button>
+  `).join('');
+  dotsEl.querySelectorAll('.spot-dot').forEach(btn => {
+    btn.onclick = () => showSpotAt(parseInt(btn.dataset.i, 10));
+  });
+}
+
+function showSpotAt(targetIdx) {
+  if (!spotState.items.length) return;
+  spotState.idx = ((targetIdx % spotState.items.length) + spotState.items.length) % spotState.items.length;
+  const item = spotState.items[spotState.idx];
+  const incoming = document.getElementById(spotState.layer === 'A' ? 'spotImgB' : 'spotImgA');
+  const outgoing = document.getElementById(spotState.layer === 'A' ? 'spotImgA' : 'spotImgB');
+  // Preload, then crossfade
+  const tmp = new Image();
+  tmp.onload = () => {
+    incoming.src = item.path;
+    requestAnimationFrame(() => {
+      incoming.classList.add('active');
+      outgoing.classList.remove('active');
+    });
+    spotState.layer = spotState.layer === 'A' ? 'B' : 'A';
+  };
+  tmp.onerror = () => {
+    // Skip broken image; advance to next if there are others
+    if (spotState.items.length > 1) {
+      const next = (spotState.idx + 1) % spotState.items.length;
+      if (next !== spotState.idx) {
+        // Avoid infinite loop if all are broken
+        const triedAll = spotState._tried || new Set();
+        triedAll.add(spotState.idx);
+        spotState._tried = triedAll;
+        if (triedAll.size < spotState.items.length) showSpotAt(next);
+      }
+    }
+  };
+  tmp.src = item.path;
+  // Update dots
+  document.querySelectorAll('.spot-dot').forEach((d, i) =>
+    d.classList.toggle('active', i === spotState.idx)
+  );
+}
+
+function nextSpot() { showSpotAt(spotState.idx + 1); }
+function prevSpot() { showSpotAt(spotState.idx - 1); }
+
 function startSpotlight() {
   if (spotlightInterval) clearInterval(spotlightInterval);
-  const enabled = state.spotlight.filter(s => s.enabled);
-  const img = document.getElementById('spotlightImg');
-  if (!enabled.length) { img.style.opacity = 0; return; }
-  let i = 0;
-  const show = () => {
-    const item = enabled[i % enabled.length];
-    img.onload = () => { img.style.opacity = 1; };
-    img.onerror = () => { img.style.opacity = 0; };
-    img.src = item.path;
-    i++;
-  };
-  show();
-  spotlightInterval = setInterval(show, 5000);
+  spotState.items = state.spotlight.filter(s => s.enabled && s.path);
+  spotState.idx = 0;
+  spotState._tried = new Set();
+
+  const empty = document.getElementById('spotEmpty');
+  const dots  = document.getElementById('spotDots');
+  const prev  = document.getElementById('spotPrev');
+  const next  = document.getElementById('spotNext');
+  const imgA  = document.getElementById('spotImgA');
+  const imgB  = document.getElementById('spotImgB');
+
+  if (!spotState.items.length) {
+    if (empty) empty.style.display = 'grid';
+    if (dots) dots.style.display = 'none';
+    if (prev) prev.style.display = 'none';
+    if (next) next.style.display = 'none';
+    if (imgA) { imgA.classList.remove('active'); imgA.removeAttribute('src'); }
+    if (imgB) { imgB.classList.remove('active'); imgB.removeAttribute('src'); }
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+  if (dots) dots.style.display = spotState.items.length > 1 ? 'flex' : 'none';
+  if (prev) prev.style.display = spotState.items.length > 1 ? 'grid' : 'none';
+  if (next) next.style.display = spotState.items.length > 1 ? 'grid' : 'none';
+
+  renderSpotDots();
+  showSpotAt(0);
+
+  if (spotState.items.length > 1) {
+    spotlightInterval = setInterval(() => {
+      if (!spotState.paused) nextSpot();
+    }, 5000);
+  }
 }
+
+/* Arrow + hover handlers — wired once after DOM is built */
+(function wireSpotControls(){
+  const prev = document.getElementById('spotPrev');
+  const next = document.getElementById('spotNext');
+  const card = document.getElementById('spotlightCard');
+  if (prev) prev.onclick = (e) => { e.stopPropagation(); prevSpot(); };
+  if (next) next.onclick = (e) => { e.stopPropagation(); nextSpot(); };
+  if (card) {
+    card.addEventListener('mouseenter', () => { spotState.paused = true; });
+    card.addEventListener('mouseleave', () => { spotState.paused = false; });
+  }
+})();
 
 /* ---------- News Ticker ---------- */
 let newsInterval = null;
@@ -2103,19 +2333,46 @@ function panelQuotes() {
 function panelSpotlight() {
   return `
     <div class="section-divider">صور "لنتذكّر"</div>
-    <p style="font-size:13px;color:var(--text-mute);margin-bottom:8px">ضع الصور في مجلد <code>/public/spotlight/</code> وأدخل المسار بالضبط مع مراعاة حالة الأحرف والامتداد.</p>
-    <div id="spotList">
-      ${state.spotlight.map(s => `
-        <div class="list-item" data-id="${s.id}">
-          <label class="toggle"><input type="checkbox" class="li-enabled" ${s.enabled?'checked':''}/><span class="toggle-slider"></span></label>
-          <div class="li-main"><input class="form-control li-path" value="${escapeAttr(s.path)}"/></div>
-          <button class="icon-btn-sm danger" data-act="del-spot">✕</button>
+    <p style="font-size:13px;color:var(--text-mute);margin-bottom:12px">
+      ارفع الصور مباشرةً من جهازك (يتم ضغطها وحفظها محلياً)، أو أدخل مسار صورة موضوعة في مجلد <code>images/</code>.
+    </p>
+
+    <!-- Drop zone for uploads -->
+    <div id="spotDropZone" class="spot-drop">
+      <div class="spot-drop-icon">📷</div>
+      <div class="spot-drop-title">اسحب الصور هنا أو اضغط للاختيار</div>
+      <div class="spot-drop-sub">JPG · PNG · WEBP — يمكن اختيار عدة صور</div>
+      <input type="file" id="spotFileInput" accept="image/*" multiple style="display:none" />
+    </div>
+    <div id="spotUploadStatus" style="font-size:12.5px;color:var(--text-mute);margin:8px 2px;min-height:18px"></div>
+
+    <div class="section-divider" style="margin-top:18px">الصور الحالية (${state.spotlight.length})</div>
+    <div id="spotList" class="spot-grid">
+      ${state.spotlight.length === 0
+        ? '<p style="grid-column:1/-1;color:var(--text-mute);text-align:center;padding:20px">لا توجد صور بعد. ارفع أول صورة من الأعلى.</p>'
+        : state.spotlight.map(s => `
+        <div class="spot-card ${s.enabled ? '' : 'disabled'}" data-id="${s.id}">
+          <div class="spot-thumb">
+            <img src="${escapeAttr(s.path)}" alt="" onerror="this.style.display='none';this.parentElement.classList.add('error')"/>
+          </div>
+          <div class="spot-card-body">
+            <div class="spot-card-label">${s.path.startsWith('data:') ? '📷 صورة مرفوعة' : '🔗 ' + s.path.split('/').pop()}</div>
+            ${s.path.startsWith('data:')
+              ? ''
+              : `<input class="form-control li-path" value="${escapeAttr(s.path)}" style="font-size:11px;padding:5px 8px;margin-top:4px"/>`}
+          </div>
+          <div class="spot-card-actions">
+            <label class="toggle" title="تفعيل/تعطيل"><input type="checkbox" class="li-enabled" ${s.enabled?'checked':''}/><span class="toggle-slider"></span></label>
+            <button class="icon-btn-sm danger" data-act="del-spot" title="حذف">✕</button>
+          </div>
         </div>
       `).join('')}
     </div>
+
+    <div class="section-divider" style="margin-top:18px">إضافة مسار (للصور الموجودة في الخادم)</div>
     <div class="add-row">
-      <input class="form-control" id="newSpotPath" placeholder="/spotlight/spotlight-6.jpg" />
-      <button class="btn btn-primary" id="addSpot">+ إضافة</button>
+      <input class="form-control" id="newSpotPath" placeholder="images/remember-06.jpg" />
+      <button class="btn btn-primary" id="addSpot">+ إضافة مسار</button>
     </div>
   `;
 }
@@ -2240,12 +2497,15 @@ function wirePanel(tab) {
     };
   }
   if (tab === 'spotlight') {
-    document.querySelectorAll('#spotList .list-item').forEach(item => {
+    document.querySelectorAll('#spotList .spot-card').forEach(item => {
       const id = item.getAttribute('data-id');
       const s = state.spotlight.find(x => x.id === id);
-      item.querySelector('.li-path').onchange    = e => { s.path = e.target.value; save(K.spotlight, state.spotlight); startSpotlight(); };
-      item.querySelector('.li-enabled').onchange = e => { s.enabled = e.target.checked; save(K.spotlight, state.spotlight); startSpotlight(); };
+      if (!s) return;
+      const pathInput = item.querySelector('.li-path');
+      if (pathInput) pathInput.onchange = e => { s.path = e.target.value; save(K.spotlight, state.spotlight); startSpotlight(); };
+      item.querySelector('.li-enabled').onchange = e => { s.enabled = e.target.checked; item.classList.toggle('disabled', !e.target.checked); save(K.spotlight, state.spotlight); startSpotlight(); };
       item.querySelector('[data-act="del-spot"]').onclick = () => {
+        if (!confirm('حذف هذه الصورة؟')) return;
         state.spotlight = state.spotlight.filter(x => x.id !== id);
         save(K.spotlight, state.spotlight);
         renderPanel('spotlight'); startSpotlight();
@@ -2258,6 +2518,21 @@ function wirePanel(tab) {
       save(K.spotlight, state.spotlight);
       renderPanel('spotlight'); startSpotlight();
     };
+
+    /* ---- Image upload (compress + base64 + localStorage) ---- */
+    const dropZone   = document.getElementById('spotDropZone');
+    const fileInput  = document.getElementById('spotFileInput');
+    const statusEl   = document.getElementById('spotUploadStatus');
+
+    dropZone.onclick = () => fileInput.click();
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag');
+      handleSpotFiles(e.dataTransfer.files);
+    });
+    fileInput.onchange = e => handleSpotFiles(e.target.files);
   }
   if (tab === 'settings') {
     document.getElementById('hijriOffset').onchange = e => {
@@ -2292,6 +2567,78 @@ function wirePanel(tab) {
       };
     });
   }
+}
+
+/* ---- Image upload helper functions (spotlight) ---- */
+function compressImageFile(file, maxW = 1400, maxH = 1000, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) return reject(new Error('ليست صورة'));
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        // Maintain aspect ratio while fitting into maxW × maxH
+        const ratio = Math.min(maxW / width, maxH / height, 1);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFDF8';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        try {
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } catch (err) { reject(err); }
+      };
+      img.onerror = () => reject(new Error('فشل تحميل الصورة'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('فشل قراءة الملف'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleSpotFiles(fileList) {
+  const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+  const statusEl = document.getElementById('spotUploadStatus');
+  let added = 0, failed = 0;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    statusEl.textContent = `⏳ جارٍ معالجة ${i+1}/${files.length}: ${f.name}…`;
+    try {
+      const dataUrl = await compressImageFile(f);
+      state.spotlight.push({
+        id: 's_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+        path: dataUrl,
+        enabled: true,
+        name: f.name,
+      });
+      // Try saving — catches localStorage quota errors
+      try {
+        save(K.spotlight, state.spotlight);
+        added++;
+      } catch (storageErr) {
+        // Rollback the push if save failed
+        state.spotlight.pop();
+        failed++;
+        statusEl.textContent = `⚠ مساحة التخزين ممتلئة. تم حفظ ${added} صورة فقط.`;
+        break;
+      }
+    } catch (err) {
+      failed++;
+    }
+  }
+  const msg = [];
+  if (added)  msg.push(`✓ تمت إضافة ${added} صورة`);
+  if (failed) msg.push(`✕ فشلت ${failed} صورة`);
+  statusEl.textContent = msg.join(' · ');
+  setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 4000);
+  renderPanel('spotlight');
+  startSpotlight();
 }
 
 /* ---------- Export / Import ---------- */
