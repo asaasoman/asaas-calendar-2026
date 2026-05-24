@@ -265,6 +265,11 @@ input, textarea, select { font-family: inherit; }
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   position: relative;
+  /* Flex column lets the image wrap below fill the full grid-row height,
+     so the box never ends short of its neighbors in the top row. */
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
 }
 .spotlight-label {
   position: absolute; top: 10px; right: 10px; z-index: 4;
@@ -284,7 +289,11 @@ input, textarea, select { font-family: inherit; }
 }
 .spotlight-img-wrap {
   position: relative;
-  width: 100%; aspect-ratio: 16/11;
+  width: 100%;
+  /* Grow to fill all available vertical space in the spotlight flex column,
+     so the photo extends from the very top of the box to the very bottom. */
+  flex: 1 1 auto;
+  min-height: 200px;
   background: var(--green-dark);
   overflow: hidden;
 }
@@ -298,9 +307,8 @@ input, textarea, select { font-family: inherit; }
   z-index: 2;
 }
 /* Two stacked images for smooth crossfade.
-   The slight scale(1.08) zooms in just enough to crop out
-   any minor letterbox / empty edge in the source photo, so the
-   image truly fills the box on every side. */
+   A very small scale(1.02) hides 1px hairlines that browsers sometimes
+   render between the image edge and the rounded container. */
 .spotlight-img {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
@@ -308,7 +316,7 @@ input, textarea, select { font-family: inherit; }
   object-position: center;
   display: block;
   opacity: 0;
-  transform: scale(1.08);
+  transform: scale(1.02);
   transform-origin: center center;
   transition: opacity 1s ease;
   z-index: 1;
