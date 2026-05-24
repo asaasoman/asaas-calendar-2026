@@ -600,4 +600,2182 @@ input, textarea, select { font-family: inherit; }
 }
 .evt-pill:hover { transform: translateX(-2px); filter: brightness(.96); }
 .evt-pill .time { font-size: 10px; opacity: .75; margin-inline-end: 4px; }
-.evt-more { font-size: 10.5px; color: var(--text-mute);
+.evt-more { font-size: 10.5px; color: var(--text-mute); padding: 0 8px; cursor: pointer; }
+
+/* ---------- Year View ---------- */
+.year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.year-month-card {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 14px;
+  transition: all .2s;
+}
+.year-month-card:hover { background: var(--card); border-color: var(--gold-soft); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+.ymc-title { font-family: 'Co Headline', 'Tajawal', sans-serif; font-size: 17px; font-weight: 700; color: var(--green-dark); margin-bottom: 8px; cursor: pointer; }
+.ymc-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+.ymc-head { font-size: 9px; color: var(--text-mute); text-align: center; padding: 2px 0; font-weight: 600; }
+.ymc-day {
+  font-size: 10.5px; text-align: center; padding: 4px 0;
+  border-radius: 4px;
+  color: var(--text-soft); position: relative;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.ymc-day.muted { opacity: .25; }
+.ymc-day.has-event { font-weight: 700; color: var(--text); }
+.ymc-day.has-event::after {
+  content: ""; position: absolute; bottom: 1px; left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--current-color, var(--green));
+}
+.ymc-day.today { background: var(--green); color: #FFFDF8; font-weight: 700; }
+
+/* ---------- Tooltip ---------- */
+.tooltip {
+  position: fixed;
+  background: var(--text);
+  color: #FFFDF8;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.tooltip.show { opacity: 1; }
+.tooltip .t-cat { font-size: 10px; opacity: .7; }
+
+/* ---------- Sticky Note (Quote) ---------- */
+.quote-note {
+  position: fixed;
+  bottom: 22px;
+  left: 22px;
+  width: 280px;
+  background: linear-gradient(155deg, #FFF6D8 0%, #FBEABF 100%);
+  border: 1px solid var(--gold-soft);
+  border-radius: 4px;
+  padding: 18px 18px 22px;
+  box-shadow: 0 14px 32px rgba(58,42,29,.18), 0 2px 8px rgba(58,42,29,.1);
+  transform: rotate(-1.6deg);
+  z-index: 50;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  cursor: grab;
+  transition: transform .2s;
+}
+.quote-note::before {
+  content: ""; position: absolute; top: -8px; right: 50%;
+  width: 50px; height: 14px;
+  background: rgba(201,166,70,.4);
+  transform: translateX(50%) rotate(-2deg);
+  border-radius: 2px;
+  box-shadow: inset 0 0 4px rgba(0,0,0,.1);
+}
+.quote-note:hover { transform: rotate(-.5deg) scale(1.02); }
+.quote-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--clay); font-family: 'Co Headline', 'Tajawal', sans-serif; margin-bottom: 6px; font-weight: 600; }
+.quote-text { font-size: 16px; color: var(--text); line-height: 1.6; min-height: 50px; }
+.quote-text.ltr { direction: ltr; text-align: left; font-family: 'Co Headline', 'Georgia', serif; font-style: italic; }
+.quote-close {
+  position: absolute; top: 6px; left: 8px;
+  background: transparent; border: 0; font-size: 14px;
+  color: var(--text-mute); cursor: pointer; line-height: 1; padding: 4px;
+}
+
+/* Minimized state: floating lightbulb button to restore the quote */
+.quote-mini {
+  position: fixed;
+  bottom: 22px;
+  left: 22px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(155deg, #FFF6D8 0%, #FBEABF 100%);
+  border: 1px solid var(--gold-soft);
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(58,42,29,.18), 0 2px 6px rgba(58,42,29,.1);
+  z-index: 49;
+  display: none;
+  place-items: center;
+  transition: transform .2s, box-shadow .2s;
+  animation: pulse-mini 2.6s ease-in-out infinite;
+}
+.quote-mini.show { display: grid; }
+.quote-mini:hover { transform: scale(1.1) rotate(-6deg); box-shadow: 0 14px 32px rgba(58,42,29,.24); animation: none; }
+@keyframes pulse-mini {
+  0%, 100% { transform: scale(1); box-shadow: 0 10px 28px rgba(58,42,29,.18), 0 0 0 0 rgba(201,166,70,.5); }
+  50%      { transform: scale(1.06); box-shadow: 0 10px 28px rgba(58,42,29,.18), 0 0 0 12px rgba(201,166,70,0); }
+}
+
+/* ---------- Modals ---------- */
+/* Top-level overlay — never clipped, always centered, scrolls internally */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 30, 25, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.modal-backdrop.open { display: flex; animation: fade-in .2s ease; }
+
+.modal {
+  background: var(--card);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 25px 70px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 900px;
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  animation: pop .22s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  flex-shrink: 0;
+}
+/* Modern browsers: use dynamic viewport height to handle mobile address bars */
+@supports (max-height: 80dvh) {
+  .modal { max-height: 80dvh; }
+}
+.modal-sm { max-width: 480px; }
+.modal-xs { max-width: 380px; }
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 5;
+  border-radius: 24px 24px 0 0;
+  flex-shrink: 0;
+  gap: 12px;
+}
+.modal-title { font-family: 'Co Headline', 'Tajawal', sans-serif; font-size: 22px; font-weight: 700; color: var(--green-dark); display: flex; align-items: center; gap: 12px; }
+.modal-title-logo {
+  width: 36px; height: 36px; border-radius: 8px; overflow: hidden;
+  background: var(--gold-tint); border: 1px solid var(--gold-soft);
+  display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--green-dark);
+}
+.modal-title-logo img { width: 100%; height: 100%; object-fit: cover; }
+.modal-close {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  font-size: 18px;
+  font-weight: 700;
+  display: grid; place-items: center;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.modal-close:hover { background: #FBE8E5; color: var(--danger); border-color: var(--danger); transform: rotate(90deg); }
+
+.modal-body { padding: 22px 24px 26px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: 12.5px; font-weight: 600; color: var(--text-soft); }
+.form-control {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text);
+  transition: all .15s;
+  width: 100%;
+}
+.form-control:focus { outline: none; border-color: var(--green); background: var(--card); box-shadow: 0 0 0 3px var(--green-tint); }
+textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
+.pwd-wrap { position: relative; }
+.pwd-wrap .form-control { padding-left: 44px; }
+.pwd-toggle {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--text-mute);
+  transition: background .15s;
+  line-height: 1;
+}
+.pwd-toggle:hover { background: var(--bg-2); }
+.pwd-toggle:focus { outline: none; background: var(--green-tint); }
+.color-row { display: flex; align-items: center; gap: 10px; }
+.color-row input[type="color"] { width: 46px; height: 38px; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--card); cursor: pointer; }
+
+.modal-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; padding: 16px 24px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--card-2);
+  border-radius: 0 0 24px 24px;
+  flex-shrink: 0;
+}
+.detail-row { display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px dashed var(--border-soft); }
+.detail-row:last-child { border-bottom: 0; }
+.detail-label { color: var(--text-mute); font-size: 13px; min-width: 110px; }
+.detail-value { color: var(--text); font-size: 14.5px; font-weight: 500; flex: 1; }
+.detail-cat-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+}
+
+/* ---------- Admin Panel Sections ---------- */
+.panel-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-2);
+  border-radius: 12px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.panel-tabs::-webkit-scrollbar { height: 4px; }
+.panel-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.panel-tab {
+  border: 0; background: transparent;
+  padding: 8px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-soft);
+  transition: all .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.panel-tab:hover { color: var(--text); }
+.panel-tab.active { background: var(--card); color: var(--green-dark); box-shadow: var(--shadow-sm); }
+
+.list-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--card-2);
+  margin-bottom: 6px;
+}
+.list-item .li-main { flex: 1; min-width: 0; }
+.list-item .li-title { font-weight: 600; font-size: 14px; }
+.list-item .li-sub { font-size: 12px; color: var(--text-mute); margin-top: 2px; }
+.li-actions { display: flex; gap: 4px; }
+.icon-btn-sm { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); font-size: 13px; display: grid; place-items: center; cursor: pointer; color: var(--text-soft); }
+.icon-btn-sm:hover { background: var(--bg-2); }
+.icon-btn-sm.danger:hover { background: #FBE8E5; color: var(--danger); border-color: var(--danger); }
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 38px; height: 22px;
+}
+.toggle input { display: none; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border);
+  border-radius: 999px;
+  transition: .2s;
+}
+.toggle-slider::before {
+  content: ""; position: absolute;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #FFFDF8;
+  top: 3px; right: 3px;
+  transition: .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle input:checked + .toggle-slider { background: var(--green); }
+.toggle input:checked + .toggle-slider::before { right: 19px; }
+
+.swatch {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.section-divider {
+  font-size: 13px; font-weight: 700; color: var(--text-mute);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin: 18px 0 10px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.add-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.add-row .form-control { flex: 1; min-width: 180px; }
+
+/* ---------- Footer ---------- */
+.footer {
+  text-align: center; margin-top: 30px;
+  color: var(--text-mute); font-size: 11.5px;
+  letter-spacing: 1px;
+}
+
+/* ---------- Animations ---------- */
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes pop { from { transform: scale(.94); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+@keyframes slide-up { from { transform: translateY(8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  .clock-cluster { gap: 12px; padding: 4px 0; }
+  .clock-time { font-size: 24px; min-width: 100px; }
+  .cal-cell { min-height: 70px; padding: 6px 7px; }
+  .cell-num { font-size: 15px; }
+  .evt-pill { font-size: 10px; padding: 2px 6px; }
+  .quote-note { width: calc(100vw - 32px); bottom: 14px; left: 14px; }
+  .quote-mini { bottom: 14px; left: 14px; width: 48px; height: 48px; font-size: 19px; }
+  .month-title { font-size: 22px; }
+  .header { padding: 12px 14px; }
+
+  /* Modal: almost full screen on mobile */
+  .modal-backdrop { padding: 8px; align-items: flex-start; }
+  .modal {
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    border-radius: 18px;
+  }
+  .modal-header { padding: 14px 16px; border-radius: 18px 18px 0 0; }
+  .modal-body { padding: 16px 16px 20px !important; }
+  .modal-footer { padding: 12px 16px; border-radius: 0 0 18px 18px; }
+  .modal-title { font-size: 18px; }
+  .panel-tab { padding: 7px 12px; font-size: 12.5px; }
+  .list-item { flex-wrap: wrap; }
+  .list-item .li-main { min-width: 100%; }
+  .add-row .form-control { min-width: 100%; }
+}
+@media (max-width: 480px) {
+  .cal-head { font-size: 10px; }
+  .calendar-wrap { padding: 12px; }
+  .cal-grid { gap: 4px; }
+  .cal-cell { min-height: 60px; padding: 4px 5px; }
+}
+
+/* Small accent: decorative dots */
+.calendar-wrap { position: relative; }
+.calendar-wrap::before {
+  content: ""; position: absolute;
+  top: 14px; left: 14px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold); opacity: .5;
+}
+
+/* Print */
+@media print {
+  .header-actions, .quote-note, .quote-mini, .news-ticker, .countdown, .spotlight { display: none !important; }
+  body { background: white; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ========= HEADER ========= -->
+  <header class="header">
+    <div class="brand" id="brand">
+      <div class="brand-mark"><img src="/images/Vertical_ASAAS_Logo.png" alt="شعار أساس"></div>
+      <div class="brand-text">
+        <div class="ar">تقويم أساس المؤسسي</div>
+        <div class="en">ASAAS · CORPORATE CALENDAR · 2026</div>
+      </div>
+    </div>
+
+    <div class="clock-cluster">
+      <div class="clock-dates">
+        <div class="clock-date" id="clockDate">—</div>
+        <div class="clock-hijri" id="clockHijri">—</div>
+      </div>
+      <div class="clock-time" id="clockTime">—</div>
+    </div>
+
+    <div class="header-actions">
+      <div class="control-menu-wrap">
+        <button class="btn btn-primary" id="controlBtn">
+          <span>التحكم</span>
+          <span style="font-size:11px">▾</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========= NEWS TICKER ========= -->
+  <div class="news-ticker">
+    <span class="news-dot"></span>
+    <span class="news-label">آخر الأخبار</span>
+    <div class="news-content" id="newsContent">جارٍ تحميل الأخبار…</div>
+  </div>
+
+  <!-- ========= TOP CONTROL ROW ========= -->
+  <div class="top-row">
+
+    <!-- Spotlight / Let's Remember -->
+    <div class="spotlight" id="spotlightCard">
+      <span class="spotlight-label">Let's Remember</span>
+      <span class="spotlight-title">لنتذكّر</span>
+      <div class="spotlight-img-wrap">
+        <div class="spotlight-placeholder">❦</div>
+        <img class="spotlight-img" id="spotImgA" alt="" />
+        <img class="spotlight-img" id="spotImgB" alt="" />
+        <button class="spot-arrow prev" id="spotPrev" aria-label="السابق" title="السابق">›</button>
+        <button class="spot-arrow next" id="spotNext" aria-label="التالي" title="التالي">‹</button>
+        <div class="spot-dots" id="spotDots" role="tablist" aria-label="مؤشرات الصور"></div>
+        <div class="spot-empty" id="spotEmpty" style="display:none">
+          <div>
+            <div class="ico">🖼</div>
+            <div class="txt">لا توجد صور بعد<br/>أضف صوراً من لوحة التحكم</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month nav + filters -->
+    <div class="month-nav-card">
+      <div class="month-nav-top">
+        <div class="month-title" id="monthTitle">— <span class="year">2026</span></div>
+        <div class="nav-btns">
+          <div class="view-toggle">
+            <button data-view="month" class="active" id="viewMonth">الشهري</button>
+            <button data-view="year" id="viewYear">السنوي</button>
+          </div>
+          <button class="icon-btn" id="prevBtn" title="السابق">‹</button>
+          <button class="icon-btn" id="todayBtn" title="اليوم">•</button>
+          <button class="icon-btn" id="nextBtn" title="التالي">›</button>
+        </div>
+      </div>
+      <div class="filters" id="filterChips"></div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="countdown" id="countdownCard">
+      <div class="countdown-label">الحدث القادم</div>
+      <div class="countdown-title">العد التنازلي</div>
+      <div class="countdown-event" id="cdEvent">—</div>
+      <div class="countdown-numbers">
+        <div class="cd-cell"><div class="cd-num" id="cdD">0</div><div class="cd-lbl">يوم</div></div>
+        <div class="cd-cell"><div class="cd-num" id="cdH">0</div><div class="cd-lbl">س</div></div>
+        <div class="cd-cell"><div class="cd-num" id="cdM">0</div><div class="cd-lbl">د</div></div>
+        <div class="cd-cell"><div class="cd-num" id="cdS">0</div><div class="cd-lbl">ث</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= CALENDAR ========= -->
+  <div class="calendar-wrap" id="calendarWrap"></div>
+
+  <div class="footer">
+    ASAAS &nbsp;·&nbsp; التقويم المؤسسي &nbsp;·&nbsp; 2026
+  </div>
+</div>
+
+<!-- Sticky Inspirational Note -->
+<div class="quote-note" id="quoteNote" style="display:none">
+  <button class="quote-close" id="quoteClose" title="تصغير">✕</button>
+  <div class="quote-label">عبارة ملهمة</div>
+  <div class="quote-text" id="quoteText">—</div>
+</div>
+
+<!-- Minimized floating button (shows when the quote note is hidden) -->
+<button class="quote-mini" id="quoteMini" title="إظهار العبارة الملهمة" aria-label="إظهار العبارة الملهمة">💡</button>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- ========= CONTROL MODAL (التحكم) ========= -->
+<div class="modal-backdrop" id="controlMenu">
+  <div class="modal modal-xs">
+    <div class="modal-header">
+      <div class="modal-title">⚙ التحكم</div>
+      <button class="modal-close" data-close="controlMenu" aria-label="إغلاق">✕</button>
+    </div>
+    <div class="modal-body" style="padding:18px 18px 20px">
+      <div class="control-section-label">الإدارة</div>
+      <button class="control-action" data-action="dashboard">
+        <span class="ca-icon">⚙</span>
+        <span>لوحة التحكم</span>
+      </button>
+      <button class="control-action" data-action="planner">
+        <span class="ca-icon">🗂</span>
+        <span>المخطط السنوي</span>
+      </button>
+      <div class="control-section-label">البيانات</div>
+      <button class="control-action gold" data-action="export">
+        <span class="ca-icon">⬇</span>
+        <span>تصدير البيانات</span>
+      </button>
+      <button class="control-action gold" data-action="import">
+        <span class="ca-icon">⬆</span>
+        <span>استيراد البيانات</span>
+      </button>
+      <div class="control-section-label">الحساب</div>
+      <button class="control-action" data-action="auth" id="authMenuBtn">
+        <span class="ca-icon">🔐</span>
+        <span>دخول المسؤول</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========= EVENT MODAL ========= -->
+<div class="modal-backdrop" id="eventModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="eventModalTitle">
+        <span id="eventModalLogo"></span>
+        <span id="eventModalTitleText">إضافة فعالية</span>
+      </div>
+      <button class="modal-close" data-close="eventModal">✕</button>
+    </div>
+    <div class="modal-body" id="eventModalBody"></div>
+  </div>
+</div>
+
+<!-- ========= ADMIN LOGIN MODAL ========= -->
+<div class="modal-backdrop" id="loginModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">🔐 دخول المسؤول</div>
+      <button class="modal-close" data-close="loginModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <div class="pwd-wrap">
+          <input type="password" class="form-control" id="loginPwd" placeholder="••••••••" autocomplete="current-password" />
+          <button type="button" class="pwd-toggle" id="loginPwdToggle" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور">👁</button>
+        </div>
+        <div id="loginErr" style="color:var(--danger);font-size:12.5px;margin-top:6px;display:none">كلمة المرور غير صحيحة</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span style="font-size:12px;color:var(--text-mute)">يتم حفظ الجلسة محلياً</span>
+      <button class="btn btn-primary" id="loginSubmit">تسجيل الدخول</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========= ADMIN PANEL MODAL ========= -->
+<div class="modal-backdrop" id="panelModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⚙ لوحة التحكم</div>
+      <button class="modal-close" data-close="panelModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="panel-tabs">
+        <button class="panel-tab active" data-tab="categories">التصنيفات</button>
+        <button class="panel-tab" data-tab="subcategories">الفعاليات الفرعية</button>
+        <button class="panel-tab" data-tab="news">الأخبار</button>
+        <button class="panel-tab" data-tab="quotes">العبارات الملهمة</button>
+        <button class="panel-tab" data-tab="spotlight">لنتذكّر</button>
+        <button class="panel-tab" data-tab="settings">الإعدادات</button>
+      </div>
+      <div id="panelContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========= IMPORT FILE INPUT ========= -->
+<input type="file" id="importInput" accept=".json" style="display:none" />
+
+<script>
+/* ============================================================
+   ASAAS Calendar — App Logic
+   ============================================================ */
+
+/* ---------- Storage Keys ---------- */
+const K = {
+  events:        'asaas_events',
+  deletedIds:    'asaas_deleted_event_ids',
+  adminLogged:   'asaas_admin_logged_in',
+  categories:    'asaas_categories',
+  subcategories: 'asaas_subcategories',
+  spotlight:     'asaas_spotlight_items',
+  news:          'asaas_news_items',
+  quotes:        'asaas_inspirational_quotes',
+  countdownId:   'asaas_selected_countdown_event_id',
+  hijriOffset:   'asaas_hijri_day_offset',
+  filtersHidden: 'asaas_filters_hidden',
+  quoteHidden:   'asaas_quote_hidden',
+};
+
+const ADMIN_PASSWORD = 'HMF-ASAAS'; // change in code before deployment
+
+/* ---------- Arabic helpers ---------- */
+const AR_WEEKDAYS_FULL  = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const AR_WEEKDAYS_SHORT = ['ح','ن','ث','ر','خ','ج','س'];
+const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+function fmtDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function parseDate(s) {
+  if (!s) return null;
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function uid() { return 'e_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+/* ---------- Defaults ---------- */
+const DEFAULT_CATEGORIES = [
+  { id: 'cat_activities', name: 'أنشطة وفعاليات', color: '#315C3B' },
+  { id: 'cat_religion',   name: 'مناسبات دينية ووطنية', color: '#B36A3C' },
+  { id: 'cat_intl',       name: 'التواريخ المهمة / الأيام العالمية', color: '#C9A646' },
+  { id: 'cat_other',      name: 'أخرى', color: '#6B5749' },
+];
+
+const DEFAULT_SUBCATEGORIES = [
+  { id: 'sub_mindshare',     name: 'Mindshare',      color: '#315C3B', logo: '/subsection-logos/Mindshare.jpg',  initials: 'MS' },
+  { id: 'sub_mindshareplus', name: 'Mindshare Plus', color: '#4A7A55', logo: '/subsection-logos/Mindshare+.jpg', initials: 'M+' },
+  { id: 'sub_knowhow',       name: 'KNOWHOW',        color: '#C9A646', logo: '/subsection-logos/Knowhow.jpg',    initials: 'KH' },
+  { id: 'sub_fenjan',        name: 'Fenjan Qahwa',   color: '#B36A3C', logo: '/subsection-logos/Fenjan.jpg',     initials: 'FQ' },
+  { id: 'sub_zyiara',        name: 'Zyiara',         color: '#8E5524', logo: '/subsection-logos/Ziyara.jpg',     initials: 'ZY' },
+];
+
+const DEFAULT_NEWS = [
+  { id: 'n1', text: 'مرحباً بكم في تقويم أساس المؤسسي لعام 2026 — أهلاً وسهلاً بفريق العمل.', enabled: true },
+  { id: 'n2', text: 'إطلاق مبادرة Mindshare الشهرية — تابعوا التواريخ في التقويم.', enabled: true },
+  { id: 'n3', text: 'ندعو الزملاء للمشاركة في فعاليات KNOWHOW القادمة.', enabled: true },
+];
+
+const DEFAULT_QUOTES = [
+  { id: 'q1', text: 'النجاح لا يأتي إليك، أنت من تذهب إليه.', enabled: true },
+  { id: 'q2', text: 'العمل الجماعي هو الوقود الذي يسمح للأشخاص العاديين بتحقيق نتائج غير عادية.', enabled: true },
+  { id: 'q3', text: 'Excellence is not a destination; it is a continuous journey that never ends.', enabled: true },
+  { id: 'q4', text: 'الإبداع هو الذكاء وهو يستمتع بوقته.', enabled: true },
+];
+
+const DEFAULT_SPOTLIGHT = [
+  { id: 's1', path: 'images/remember-01.jpg', enabled: true },
+  { id: 's2', path: 'images/remember-02.jpg', enabled: true },
+  { id: 's3', path: 'images/remember-03.jpg', enabled: true },
+  { id: 's4', path: 'images/remember-04.jpg', enabled: true },
+  { id: 's5', path: 'images/remember-05.jpg', enabled: true },
+];
+
+const DEFAULT_EVENTS = [
+  // ────────── مناسبات دينية ووطنية ──────────
+  { id: 'def_newyear',  title: 'رأس السنة الميلادية', date: '2026-01-01', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'بداية العام الميلادي الجديد.' },
+  { id: 'def_ren',      title: 'يوم النهضة', date: '2026-02-11', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'الذكرى السنوية ليوم النهضة في سلطنة عُمان.' },
+  { id: 'def_ramadan',  title: 'بداية شهر رمضان المبارك', date: '2026-02-18', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'تقديري — يُحدّد رسمياً عبر هيئة رؤية الهلال.' },
+  { id: 'def_eid_fitr', title: 'عيد الفطر المبارك', date: '2026-03-20', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'كل عام وأنتم بخير.' },
+  { id: 'def_eid_adha', title: 'عيد الأضحى المبارك', date: '2026-05-27', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'تقبّل الله منا ومنكم صالح الأعمال.' },
+  { id: 'def_hijri_ny', title: 'رأس السنة الهجرية', date: '2026-06-17', categoryId: 'cat_religion', subcategoryId: null, time: '', description: '' },
+  { id: 'def_mawlid',   title: 'ذكرى المولد النبوي الشريف', date: '2026-08-26', categoryId: 'cat_religion', subcategoryId: null, time: '', description: '' },
+  { id: 'def_natday',   title: 'اليوم الوطني العُماني', date: '2026-11-20', categoryId: 'cat_religion', subcategoryId: null, time: '', description: 'اليوم الوطني لسلطنة عُمان.' },
+
+  // ────────── التواريخ المهمة / الأيام العالمية ──────────
+  { id: 'def_intl_women', title: 'اليوم العالمي للمرأة', date: '2026-03-08', categoryId: 'cat_intl', subcategoryId: null, time: '', description: '' },
+  { id: 'def_intl_earth', title: 'يوم الأرض العالمي', date: '2026-04-22', categoryId: 'cat_intl', subcategoryId: null, time: '', description: '' },
+  { id: 'def_world_env',  title: 'World Environment Day', date: '2026-06-05', categoryId: 'cat_intl', subcategoryId: null, time: '', description: 'اليوم العالمي للبيئة.' },
+  { id: 'def_comex',      title: 'معرض كومكس العالمي للتكنولوجيا', date: '2026-09-06', categoryId: 'cat_intl', subcategoryId: null, time: '', description: '' },
+
+  // ────────── Mindshare ──────────
+  { id: 'def_mindshare_jun4',  title: 'Mindshare', date: '2026-06-04', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_jun11', title: 'Mindshare', date: '2026-06-11', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_jun25', title: 'Mindshare', date: '2026-06-25', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_jul9',  title: 'Mindshare', date: '2026-07-09', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_aug20', title: 'Mindshare', date: '2026-08-20', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_sep24', title: 'Mindshare', date: '2026-09-24', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_oct15', title: 'Mindshare', date: '2026-10-15', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+  { id: 'def_mindshare_oct29', title: 'Mindshare', date: '2026-10-29', categoryId: 'cat_activities', subcategoryId: 'sub_mindshare', time: '', description: '' },
+
+  // ────────── Mindshare Plus ──────────
+  { id: 'def_msplus_jun18', title: 'Mindshare Plus', date: '2026-06-18', categoryId: 'cat_activities', subcategoryId: 'sub_mindshareplus', time: '', description: '' },
+  { id: 'def_msplus_jul23', title: 'Mindshare Plus', date: '2026-07-23', categoryId: 'cat_activities', subcategoryId: 'sub_mindshareplus', time: '', description: '' },
+  { id: 'def_msplus_aug6',  title: 'Mindshare Plus', date: '2026-08-06', categoryId: 'cat_activities', subcategoryId: 'sub_mindshareplus', time: '', description: '' },
+  { id: 'def_msplus_sep10', title: 'Mindshare Plus', date: '2026-09-10', categoryId: 'cat_activities', subcategoryId: 'sub_mindshareplus', time: '', description: '' },
+
+  // ────────── KNOWHOW (نصف شهري) ──────────
+  { id: 'def_kh_apr1',  title: 'KNOWHOW', date: '2026-04-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_apr15', title: 'KNOWHOW', date: '2026-04-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_may1',  title: 'KNOWHOW', date: '2026-05-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_may15', title: 'KNOWHOW', date: '2026-05-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_jun1',  title: 'KNOWHOW', date: '2026-06-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_jun15', title: 'KNOWHOW', date: '2026-06-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_jul1',  title: 'KNOWHOW', date: '2026-07-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_jul15', title: 'KNOWHOW', date: '2026-07-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_aug1',  title: 'KNOWHOW', date: '2026-08-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_aug15', title: 'KNOWHOW', date: '2026-08-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_sep1',  title: 'KNOWHOW', date: '2026-09-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_sep15', title: 'KNOWHOW', date: '2026-09-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_oct1',  title: 'KNOWHOW', date: '2026-10-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_oct15', title: 'KNOWHOW', date: '2026-10-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_nov1',  title: 'KNOWHOW', date: '2026-11-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_nov15', title: 'KNOWHOW', date: '2026-11-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_dec1',  title: 'KNOWHOW', date: '2026-12-01', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+  { id: 'def_kh_dec15', title: 'KNOWHOW', date: '2026-12-15', categoryId: 'cat_activities', subcategoryId: 'sub_knowhow', time: '', description: '' },
+
+  // ────────── Fenjan Qahwa ──────────
+  { id: 'def_fenjan_sep15', title: 'Fenjan Qahwa', date: '2026-09-15', categoryId: 'cat_activities', subcategoryId: 'sub_fenjan', time: '', description: '' },
+  { id: 'def_fenjan_nov24', title: 'Fenjan Qahwa', date: '2026-11-24', categoryId: 'cat_activities', subcategoryId: 'sub_fenjan', time: '', description: '' },
+
+  // ────────── أنشطة عامة (بدون فعالية فرعية) ──────────
+  { id: 'def_natday_cel', title: 'National Day Celebration',         date: '2026-05-18', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+  { id: 'def_leadership', title: 'Leadership Workshop',              date: '2026-05-20', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+  { id: 'def_earth_init', title: 'Earth Day Initiative',             date: '2026-05-22', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+  { id: 'def_corp_comm',  title: 'Corporate Communication Campaign', date: '2026-06-15', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+  { id: 'def_site_visit', title: 'Project Site Visit',               date: '2026-09-10', categoryId: 'cat_activities', subcategoryId: null, time: '', description: '' },
+];
+
+/* ---------- Storage Helpers ---------- */
+function load(key, fallback) {
+  // Clone the fallback so callers can mutate it without affecting our DEFAULT_* arrays
+  const cloneFallback = () => {
+    try { return JSON.parse(JSON.stringify(fallback)); }
+    catch (e) { return fallback; }
+  };
+  try {
+    const v = localStorage.getItem(key);
+    if (v === null) return cloneFallback();
+    return JSON.parse(v);
+  } catch (e) { return cloneFallback(); }
+}
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+/* ---------- State ---------- */
+const state = {
+  view: 'month',
+  cursor: new Date(2026, 0, 1),
+  today: new Date(),
+  events: [],
+  deletedIds: [],
+  categories: [],
+  subcategories: [],
+  news: [],
+  quotes: [],
+  spotlight: [],
+  hijriOffset: 0,
+  filtersHidden: [],   // ids (cat or sub) currently OFF
+  countdownId: null,
+  spotlightIdx: 0,
+  newsIdx: 0,
+  quoteIdx: 0,
+  isAdmin: false,
+  editingEventId: null,
+};
+
+/* ---------- Initialize ---------- */
+function initState() {
+  state.categories    = load(K.categories,    DEFAULT_CATEGORIES);
+  state.subcategories = load(K.subcategories, DEFAULT_SUBCATEGORIES);
+  state.news          = load(K.news,          DEFAULT_NEWS);
+  state.quotes        = load(K.quotes,        DEFAULT_QUOTES);
+  state.spotlight     = load(K.spotlight,     DEFAULT_SPOTLIGHT);
+  state.deletedIds    = load(K.deletedIds,    []);
+  state.hijriOffset   = load(K.hijriOffset,   0);
+  state.filtersHidden = load(K.filtersHidden, []);
+  state.countdownId   = load(K.countdownId,   null);
+  state.isAdmin       = readAdminLoggedIn();
+
+  // Merge defaults with stored, removing deleted defaults
+  // IMPORTANT: clone each default so editing them in state.events doesn't
+  // mutate the master DEFAULT_EVENTS array (which would break persistEvents'
+  // change-detection comparison and silently drop edits on refresh).
+  const stored = load(K.events, []);
+  const storedIds = new Set(stored.map(e => e.id));
+  const filteredDefaults = DEFAULT_EVENTS
+    .filter(e => !state.deletedIds.includes(e.id) && !storedIds.has(e.id))
+    .map(e => ({ ...e }));
+  state.events = [...filteredDefaults, ...stored];
+
+  // Defensive: ensure quotes is always a non-empty array
+  if (!Array.isArray(state.quotes) || !state.quotes.length) {
+    state.quotes = JSON.parse(JSON.stringify(DEFAULT_QUOTES));
+  }
+
+  // Clear any old "permanently hidden" flag for the inspirational note
+  // (the close X now only hides for the current session — refresh brings it back)
+  localStorage.removeItem(K.quoteHidden);
+}
+
+/* ---------- Persisting events (non-default custom events only stored) ---------- */
+function persistEvents() {
+  // Persist all non-default events + any modified defaults
+  const defaultIds = new Set(DEFAULT_EVENTS.map(e => e.id));
+  const toStore = state.events.filter(e => {
+    if (!defaultIds.has(e.id)) return true;
+    // If a default was modified, store the changed version (overrides default)
+    const def = DEFAULT_EVENTS.find(d => d.id === e.id);
+    return JSON.stringify(def) !== JSON.stringify(e);
+  });
+  save(K.events, toStore);
+}
+
+function deleteEvent(id) {
+  state.deletedIds.push(id);
+  // Dedupe
+  state.deletedIds = [...new Set(state.deletedIds)];
+  save(K.deletedIds, state.deletedIds);
+  state.events = state.events.filter(e => e.id !== id);
+  persistEvents();
+  if (state.countdownId === id) {
+    state.countdownId = null;
+    save(K.countdownId, null);
+  }
+}
+
+/* ---------- Clock + Dates ---------- */
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function updateClock() {
+  const now = new Date();
+  state.today = now;
+  document.getElementById('clockTime').textContent =
+    pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+
+  // Gregorian: weekday, day month year (Arabic)
+  const wd = AR_WEEKDAYS_FULL[now.getDay()];
+  document.getElementById('clockDate').textContent =
+    `${wd}، ${now.getDate()} ${AR_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+
+  // Hijri using Intl
+  try {
+    const offset = state.hijriOffset || 0;
+    const adjusted = new Date(now.getTime() + offset * 86400000);
+    const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    }).format(adjusted);
+    // Strip any duplicate weekday + only one هـ
+    let cleaned = hijri.replace(/هـ/g,'').trim();
+    document.getElementById('clockHijri').textContent = cleaned + ' هـ';
+  } catch (e) {
+    document.getElementById('clockHijri').textContent = '';
+  }
+}
+
+/* ---------- Filters ---------- */
+function isVisible(event) {
+  if (state.filtersHidden.includes(event.categoryId)) return false;
+  if (event.subcategoryId && state.filtersHidden.includes(event.subcategoryId)) return false;
+  return true;
+}
+
+function renderFilters() {
+  const wrap = document.getElementById('filterChips');
+  wrap.innerHTML = '';
+  state.categories.forEach(c => {
+    const off = state.filtersHidden.includes(c.id);
+    const chip = document.createElement('span');
+    chip.className = 'chip ' + (off ? 'inactive' : 'active');
+    chip.innerHTML = `<span class="dot" style="background:${c.color}"></span>${c.name}`;
+    chip.onclick = () => toggleFilter(c.id);
+    wrap.appendChild(chip);
+  });
+  // Subcategories appear after a small separator
+  if (state.subcategories.length) {
+    const sep = document.createElement('span');
+    sep.style.cssText = 'width:1px;background:var(--border);margin:0 4px;align-self:stretch';
+    wrap.appendChild(sep);
+    state.subcategories.forEach(s => {
+      const off = state.filtersHidden.includes(s.id);
+      const chip = document.createElement('span');
+      chip.className = 'chip ' + (off ? 'inactive' : 'active');
+      chip.innerHTML = `<span class="dot" style="background:${s.color}"></span>${s.name}`;
+      chip.onclick = () => toggleFilter(s.id);
+      wrap.appendChild(chip);
+    });
+  }
+}
+function toggleFilter(id) {
+  if (state.filtersHidden.includes(id)) {
+    state.filtersHidden = state.filtersHidden.filter(x => x !== id);
+  } else {
+    state.filtersHidden.push(id);
+  }
+  save(K.filtersHidden, state.filtersHidden);
+  renderFilters();
+  render();
+}
+
+/* ---------- Calendar Rendering ---------- */
+function eventsOn(dateStr) {
+  return state.events.filter(e => e.date === dateStr && isVisible(e));
+}
+
+function categoryOf(id){ return state.categories.find(c=>c.id===id); }
+function subcategoryOf(id){ return state.subcategories.find(s=>s.id===id); }
+function colorFor(event){
+  if (event.subcategoryId) {
+    const s = subcategoryOf(event.subcategoryId);
+    if (s) return s.color;
+  }
+  const c = categoryOf(event.categoryId);
+  return c ? c.color : '#315C3B';
+}
+function tintFor(color){
+  // Return a lighter version. Hex only.
+  const hex = color.replace('#','');
+  const r = parseInt(hex.substring(0,2),16);
+  const g = parseInt(hex.substring(2,4),16);
+  const b = parseInt(hex.substring(4,6),16);
+  return `rgba(${r},${g},${b},0.13)`;
+}
+
+function renderMonthTitle() {
+  document.getElementById('monthTitle').innerHTML =
+    `${AR_MONTHS[state.cursor.getMonth()]} <span class="year">${state.cursor.getFullYear()}</span>`;
+}
+
+function renderMonthView() {
+  renderMonthTitle();
+  const wrap = document.getElementById('calendarWrap');
+  wrap.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'cal-grid';
+
+  AR_WEEKDAYS_FULL.forEach(w => {
+    const h = document.createElement('div');
+    h.className = 'cal-head';
+    h.textContent = w;
+    grid.appendChild(h);
+  });
+
+  const year = state.cursor.getFullYear();
+  const month = state.cursor.getMonth();
+  const first = new Date(year, month, 1);
+  const lead = first.getDay(); // 0 = Sunday (works for our Sun-first grid)
+  const daysIn = new Date(year, month + 1, 0).getDate();
+  const prevDays = new Date(year, month, 0).getDate();
+
+  // Leading days (prev month)
+  for (let i = 0; i < lead; i++) {
+    const d = prevDays - lead + 1 + i;
+    grid.appendChild(makeCell(new Date(year, month - 1, d), true));
+  }
+  // Current month
+  for (let d = 1; d <= daysIn; d++) {
+    grid.appendChild(makeCell(new Date(year, month, d), false));
+  }
+  // Trailing fill
+  const total = lead + daysIn;
+  const trail = (7 - (total % 7)) % 7;
+  for (let i = 1; i <= trail; i++) {
+    grid.appendChild(makeCell(new Date(year, month + 1, i), true));
+  }
+  wrap.appendChild(grid);
+}
+
+function makeCell(d, muted) {
+  const cell = document.createElement('div');
+  cell.className = 'cal-cell';
+  if (muted) cell.classList.add('muted');
+  const dow = d.getDay();
+  if (dow === 5 || dow === 6) cell.classList.add('weekend'); // Fri/Sat
+  const t = state.today;
+  if (d.toDateString() === t.toDateString()) cell.classList.add('today');
+  if (state.isAdmin && !muted) cell.classList.add('admin');
+
+  const dateStr = fmtDate(d);
+  const evs = eventsOn(dateStr);
+
+  // Subcategory logos shown
+  const subLogos = [...new Set(evs.filter(e=>e.subcategoryId).map(e=>e.subcategoryId))]
+    .map(id => subcategoryOf(id)).filter(Boolean);
+
+  cell.innerHTML = `
+    <div class="cell-top">
+      <span class="cell-num">${d.getDate()}</span>
+      <div class="cell-logos">
+        ${subLogos.map(s => `
+          <span class="cell-logo" title="${s.name}" style="background:${tintFor(s.color)};border-color:${s.color}">
+            <img src="${s.logo}" alt="${s.name}" onerror="this.style.display='none';this.parentElement.innerHTML='${s.initials}'"/>
+          </span>`).join('')}
+      </div>
+    </div>
+    <div class="cell-events"></div>
+  `;
+  const cont = cell.querySelector('.cell-events');
+  const maxShow = 3;
+  evs.slice(0, maxShow).forEach(e => {
+    const color = colorFor(e);
+    const pill = document.createElement('div');
+    pill.className = 'evt-pill';
+    pill.style.background = tintFor(color);
+    pill.style.color = color;
+    pill.style.borderRightColor = color;
+    pill.innerHTML = (e.time ? `<span class="time">${e.time}</span>` : '') + e.title;
+    pill.onclick = (ev) => { ev.stopPropagation(); openEventModal(e); };
+    cont.appendChild(pill);
+  });
+  if (evs.length > maxShow) {
+    const more = document.createElement('div');
+    more.className = 'evt-more';
+    more.textContent = `+ ${evs.length - maxShow} المزيد`;
+    more.onclick = (ev) => { ev.stopPropagation(); openEventModal(evs[maxShow]); };
+    cont.appendChild(more);
+  }
+
+  if (state.isAdmin && !muted) {
+    cell.onclick = () => openEventModal(null, dateStr);
+  }
+  return cell;
+}
+
+function renderYearView() {
+  document.getElementById('monthTitle').innerHTML =
+    `العام <span class="year">${state.cursor.getFullYear()}</span>`;
+  const wrap = document.getElementById('calendarWrap');
+  wrap.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'year-grid';
+
+  for (let m = 0; m < 12; m++) {
+    grid.appendChild(makeYearMonth(state.cursor.getFullYear(), m));
+  }
+  wrap.appendChild(grid);
+}
+
+function makeYearMonth(year, month) {
+  const card = document.createElement('div');
+  card.className = 'year-month-card';
+  const first = new Date(year, month, 1);
+  const lead = first.getDay();
+  const daysIn = new Date(year, month + 1, 0).getDate();
+
+  let html = `<div class="ymc-title">${AR_MONTHS[month]}</div>`;
+  html += `<div class="ymc-grid">`;
+  AR_WEEKDAYS_SHORT.forEach(w => { html += `<div class="ymc-head">${w}</div>`; });
+  for (let i = 0; i < lead; i++) html += `<div class="ymc-day muted"></div>`;
+  for (let d = 1; d <= daysIn; d++) {
+    const dateStr = `${year}-${pad(month+1)}-${pad(d)}`;
+    const evs = eventsOn(dateStr);
+    const t = state.today;
+    const isToday = (t.getFullYear()===year && t.getMonth()===month && t.getDate()===d);
+    let cls = 'ymc-day';
+    if (isToday) cls += ' today';
+    if (evs.length) cls += ' has-event';
+    const color = evs.length ? colorFor(evs[0]) : '#315C3B';
+    const tip = evs.length
+      ? evs.map(e => (e.time?e.time+' · ':'') + e.title).join(' | ')
+      : '';
+    html += `<div class="${cls}" style="--current-color:${color}" data-date="${dateStr}" data-tip="${escapeAttr(tip)}">${d}</div>`;
+  }
+  html += `</div>`;
+  card.innerHTML = html;
+
+  card.querySelector('.ymc-title').onclick = () => {
+    state.cursor = new Date(year, month, 1);
+    setView('month');
+  };
+
+  card.querySelectorAll('.ymc-day.has-event').forEach(el => {
+    el.addEventListener('mouseenter', e => showTip(e, el));
+    el.addEventListener('mouseleave', hideTip);
+    el.addEventListener('click', () => {
+      state.cursor = new Date(year, month, 1);
+      setView('month');
+    });
+  });
+  return card;
+}
+
+function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function showTip(e, el) {
+  const tip = document.getElementById('tooltip');
+  const text = el.getAttribute('data-tip');
+  if (!text) return;
+  tip.innerHTML = text.split(' | ').map(s => `<div>${s}</div>`).join('');
+  tip.classList.add('show');
+  const rect = el.getBoundingClientRect();
+  tip.style.left = (rect.left + rect.width/2 - tip.offsetWidth/2) + 'px';
+  tip.style.top  = (rect.top - tip.offsetHeight - 8) + 'px';
+}
+function hideTip() { document.getElementById('tooltip').classList.remove('show'); }
+
+function render() {
+  if (state.view === 'month') renderMonthView();
+  else renderYearView();
+  renderCountdown();
+}
+
+function setView(v) {
+  state.view = v;
+  document.getElementById('viewMonth').classList.toggle('active', v==='month');
+  document.getElementById('viewYear').classList.toggle('active', v==='year');
+  render();
+}
+
+/* ---------- Event Modal ---------- */
+function openEventModal(event, dateStr) {
+  const modal = document.getElementById('eventModal');
+  const titleText = document.getElementById('eventModalTitleText');
+  const logoSlot = document.getElementById('eventModalLogo');
+  const body = document.getElementById('eventModalBody');
+
+  state.editingEventId = event ? event.id : null;
+  logoSlot.innerHTML = '';
+
+  if (state.isAdmin) {
+    // Add or Edit mode
+    titleText.textContent = event ? 'تعديل فعالية' : 'إضافة فعالية';
+    if (event && event.subcategoryId) {
+      const s = subcategoryOf(event.subcategoryId);
+      if (s) logoSlot.innerHTML = `<span class="modal-title-logo" style="background:${tintFor(s.color)};border-color:${s.color}">
+          <img src="${s.logo}" alt="${s.name}" onerror="this.style.display='none';this.parentElement.innerHTML='${s.initials}'"/></span>`;
+    }
+    body.innerHTML = renderEventForm(event, dateStr);
+    wireEventForm(event);
+  } else {
+    // Read-only details
+    if (!event) return;
+    titleText.textContent = event.title;
+    if (event.subcategoryId) {
+      const s = subcategoryOf(event.subcategoryId);
+      if (s) logoSlot.innerHTML = `<span class="modal-title-logo" style="background:${tintFor(s.color)};border-color:${s.color}">
+          <img src="${s.logo}" alt="${s.name}" onerror="this.style.display='none';this.parentElement.innerHTML='${s.initials}'"/></span>`;
+    }
+    body.innerHTML = renderEventDetails(event);
+  }
+
+  modal.classList.add('open');
+}
+
+function renderEventForm(event, dateStr) {
+  const e = event || { title:'', date: dateStr || fmtDate(state.today), time:'', categoryId: state.categories[0].id, subcategoryId: null, description:'' };
+  const isActivities = e.categoryId === 'cat_activities';
+  return `
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>عنوان الفعالية</label>
+        <input class="form-control" id="evTitle" value="${escapeAttr(e.title)}" placeholder="اكتب العنوان…" />
+      </div>
+      <div class="form-group">
+        <label>التاريخ</label>
+        <input type="date" class="form-control" id="evDate" value="${e.date}" />
+      </div>
+      <div class="form-group">
+        <label>الوقت (اختياري)</label>
+        <input type="time" class="form-control" id="evTime" value="${e.time||''}" />
+      </div>
+      <div class="form-group">
+        <label>التصنيف</label>
+        <select class="form-control" id="evCat">
+          ${state.categories.map(c => `<option value="${c.id}" ${c.id===e.categoryId?'selected':''}>${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" id="evSubWrap" style="${isActivities?'':'display:none'}">
+        <label>الفعالية الفرعية</label>
+        <select class="form-control" id="evSub">
+          <option value="">— لا يوجد —</option>
+          ${state.subcategories.map(s => `<option value="${s.id}" ${s.id===e.subcategoryId?'selected':''}>${s.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>الوصف (اختياري)</label>
+        <textarea class="form-control" id="evDesc" placeholder="تفاصيل إضافية…">${escapeAttr(e.description||'')}</textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="margin:22px -24px -26px;border-radius:0 0 24px 24px">
+      <div>${event ? `<button class="btn btn-danger" id="evDelete">🗑 حذف</button>` : ''}</div>
+      <button class="btn btn-primary" id="evSave">💾 حفظ</button>
+    </div>
+  `;
+}
+
+function wireEventForm(event) {
+  document.getElementById('evCat').onchange = (e) => {
+    document.getElementById('evSubWrap').style.display =
+      e.target.value === 'cat_activities' ? '' : 'none';
+  };
+  document.getElementById('evSave').onclick = () => {
+    const title = document.getElementById('evTitle').value.trim();
+    if (!title) { document.getElementById('evTitle').focus(); return; }
+    const date = document.getElementById('evDate').value;
+    const time = document.getElementById('evTime').value;
+    const categoryId = document.getElementById('evCat').value;
+    const subEl = document.getElementById('evSub');
+    const subcategoryId = (categoryId === 'cat_activities' && subEl && subEl.value) ? subEl.value : null;
+    const description = document.getElementById('evDesc').value;
+
+    if (event) {
+      Object.assign(event, { title, date, time, categoryId, subcategoryId, description });
+    } else {
+      state.events.push({ id: uid(), title, date, time, categoryId, subcategoryId, description });
+    }
+    persistEvents();
+    closeModal('eventModal');
+    render();
+  };
+  const del = document.getElementById('evDelete');
+  if (del) del.onclick = () => {
+    if (!confirm('هل تريد حذف هذه الفعالية نهائياً؟')) return;
+    deleteEvent(event.id);
+    closeModal('eventModal');
+    render();
+  };
+}
+
+function renderEventDetails(e) {
+  const cat = categoryOf(e.categoryId);
+  const sub = subcategoryOf(e.subcategoryId);
+  const d = parseDate(e.date);
+  const dateText = `${AR_WEEKDAYS_FULL[d.getDay()]}، ${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return `
+    <div class="detail-row">
+      <div class="detail-label">التاريخ</div>
+      <div class="detail-value">${dateText}</div>
+    </div>
+    ${e.time ? `<div class="detail-row"><div class="detail-label">الوقت</div><div class="detail-value">${e.time}</div></div>`:''}
+    <div class="detail-row">
+      <div class="detail-label">التصنيف</div>
+      <div class="detail-value">
+        ${cat ? `<span class="detail-cat-pill" style="background:${tintFor(cat.color)};color:${cat.color}"><span class="dot" style="background:${cat.color};width:8px;height:8px;border-radius:50%;display:inline-block"></span>${cat.name}</span>`:''}
+      </div>
+    </div>
+    ${sub ? `<div class="detail-row"><div class="detail-label">الفعالية الفرعية</div><div class="detail-value">
+      <span class="detail-cat-pill" style="background:${tintFor(sub.color)};color:${sub.color}">${sub.name}</span>
+    </div></div>` : ''}
+    ${e.description ? `<div class="detail-row"><div class="detail-label">الوصف</div><div class="detail-value" style="white-space:pre-wrap">${escapeAttr(e.description)}</div></div>`:''}
+  `;
+}
+
+/* ---------- Countdown ---------- */
+function getCountdownEvent() {
+  if (state.countdownId) {
+    const ev = state.events.find(e => e.id === state.countdownId);
+    if (ev) {
+      const t = parseDate(ev.date);
+      if (ev.time) {
+        const [h,m] = ev.time.split(':').map(Number);
+        t.setHours(h, m, 0, 0);
+      }
+      if (t > new Date()) return { ev, t };
+    }
+  }
+  // Fallback to nearest upcoming
+  const now = new Date();
+  const upcoming = state.events
+    .filter(e => isVisible(e))
+    .map(e => {
+      const t = parseDate(e.date);
+      if (e.time) {
+        const [h,m] = e.time.split(':').map(Number);
+        t.setHours(h, m, 0, 0);
+      } else {
+        t.setHours(23, 59, 59);
+      }
+      return { ev: e, t };
+    })
+    .filter(x => x.t > now)
+    .sort((a,b) => a.t - b.t);
+  return upcoming[0] || null;
+}
+
+function renderCountdown() {
+  const data = getCountdownEvent();
+  const evEl = document.getElementById('cdEvent');
+  if (!data) {
+    evEl.textContent = 'لا توجد فعاليات قادمة';
+    ['cdD','cdH','cdM','cdS'].forEach(id => document.getElementById(id).textContent = '0');
+    return;
+  }
+  const d = parseDate(data.ev.date);
+  evEl.innerHTML = `${data.ev.title} <span style="opacity:.75">· ${d.getDate()} ${AR_MONTHS[d.getMonth()]}</span>`;
+  tickCountdown(data.t);
+}
+
+let cdInterval = null;
+function tickCountdown(target) {
+  if (cdInterval) clearInterval(cdInterval);
+  const update = () => {
+    const diff = target - new Date();
+    if (diff <= 0) {
+      clearInterval(cdInterval);
+      renderCountdown();
+      return;
+    }
+    const days = Math.floor(diff / 86400000);
+    const hrs  = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cdD').textContent = days;
+    document.getElementById('cdH').textContent = hrs;
+    document.getElementById('cdM').textContent = mins;
+    document.getElementById('cdS').textContent = secs;
+  };
+  update();
+  cdInterval = setInterval(update, 1000);
+}
+
+/* Click countdown to (re)select event (admin only) */
+document.getElementById('countdownCard').onclick = () => {
+  if (!state.isAdmin) return;
+  const now = new Date();
+  const monthEvts = state.events
+    .filter(e => {
+      const d = parseDate(e.date);
+      return d.getMonth() === state.cursor.getMonth() && d.getFullYear() === state.cursor.getFullYear() && d >= new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    })
+    .sort((a,b) => parseDate(a.date) - parseDate(b.date));
+  if (!monthEvts.length) { alert('لا توجد فعاليات قادمة هذا الشهر.'); return; }
+  const choice = prompt(
+    'اختر رقم الفعالية للعد التنازلي:\n\n' +
+    monthEvts.map((e,i) => `${i+1}. ${e.title} (${e.date})`).join('\n') +
+    '\n\nاكتب 0 لإلغاء التحديد (سيستخدم الأقرب تلقائياً).'
+  );
+  if (choice === null) return;
+  const n = parseInt(choice, 10);
+  if (n === 0) {
+    state.countdownId = null;
+    save(K.countdownId, null);
+  } else if (n >= 1 && n <= monthEvts.length) {
+    state.countdownId = monthEvts[n-1].id;
+    save(K.countdownId, state.countdownId);
+  }
+  renderCountdown();
+};
+
+/* ---------- Spotlight Slider (Let's Remember) ---------- */
+let spotlightInterval = null;
+let spotState = { idx: 0, layer: 'A', items: [], paused: false };
+
+function renderSpotDots() {
+  const dotsEl = document.getElementById('spotDots');
+  if (!dotsEl) return;
+  dotsEl.innerHTML = spotState.items.map((_, i) => `
+    <button class="spot-dot ${i === spotState.idx ? 'active' : ''}"
+            data-i="${i}" role="tab" aria-label="صورة ${i+1}"></button>
+  `).join('');
+  dotsEl.querySelectorAll('.spot-dot').forEach(btn => {
+    btn.onclick = () => showSpotAt(parseInt(btn.dataset.i, 10));
+  });
+}
+
+function showSpotAt(targetIdx) {
+  if (!spotState.items.length) return;
+  spotState.idx = ((targetIdx % spotState.items.length) + spotState.items.length) % spotState.items.length;
+  const item = spotState.items[spotState.idx];
+  const incoming = document.getElementById(spotState.layer === 'A' ? 'spotImgB' : 'spotImgA');
+  const outgoing = document.getElementById(spotState.layer === 'A' ? 'spotImgA' : 'spotImgB');
+  // Preload, then crossfade
+  const tmp = new Image();
+  tmp.onload = () => {
+    incoming.src = item.path;
+    requestAnimationFrame(() => {
+      incoming.classList.add('active');
+      outgoing.classList.remove('active');
+    });
+    spotState.layer = spotState.layer === 'A' ? 'B' : 'A';
+  };
+  tmp.onerror = () => {
+    // Skip broken image; advance to next if there are others
+    if (spotState.items.length > 1) {
+      const next = (spotState.idx + 1) % spotState.items.length;
+      if (next !== spotState.idx) {
+        // Avoid infinite loop if all are broken
+        const triedAll = spotState._tried || new Set();
+        triedAll.add(spotState.idx);
+        spotState._tried = triedAll;
+        if (triedAll.size < spotState.items.length) showSpotAt(next);
+      }
+    }
+  };
+  tmp.src = item.path;
+  // Update dots
+  document.querySelectorAll('.spot-dot').forEach((d, i) =>
+    d.classList.toggle('active', i === spotState.idx)
+  );
+}
+
+function nextSpot() { showSpotAt(spotState.idx + 1); }
+function prevSpot() { showSpotAt(spotState.idx - 1); }
+
+function startSpotlight() {
+  if (spotlightInterval) clearInterval(spotlightInterval);
+  spotState.items = state.spotlight.filter(s => s.enabled && s.path);
+  spotState.idx = 0;
+  spotState._tried = new Set();
+
+  const empty = document.getElementById('spotEmpty');
+  const dots  = document.getElementById('spotDots');
+  const prev  = document.getElementById('spotPrev');
+  const next  = document.getElementById('spotNext');
+  const imgA  = document.getElementById('spotImgA');
+  const imgB  = document.getElementById('spotImgB');
+
+  if (!spotState.items.length) {
+    if (empty) empty.style.display = 'grid';
+    if (dots) dots.style.display = 'none';
+    if (prev) prev.style.display = 'none';
+    if (next) next.style.display = 'none';
+    if (imgA) { imgA.classList.remove('active'); imgA.removeAttribute('src'); }
+    if (imgB) { imgB.classList.remove('active'); imgB.removeAttribute('src'); }
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+  if (dots) dots.style.display = spotState.items.length > 1 ? 'flex' : 'none';
+  if (prev) prev.style.display = spotState.items.length > 1 ? 'grid' : 'none';
+  if (next) next.style.display = spotState.items.length > 1 ? 'grid' : 'none';
+
+  renderSpotDots();
+  showSpotAt(0);
+
+  if (spotState.items.length > 1) {
+    spotlightInterval = setInterval(() => {
+      if (!spotState.paused) nextSpot();
+    }, 5000);
+  }
+}
+
+/* Arrow + hover handlers — wired once after DOM is built */
+(function wireSpotControls(){
+  const prev = document.getElementById('spotPrev');
+  const next = document.getElementById('spotNext');
+  const card = document.getElementById('spotlightCard');
+  if (prev) prev.onclick = (e) => { e.stopPropagation(); prevSpot(); };
+  if (next) next.onclick = (e) => { e.stopPropagation(); nextSpot(); };
+  if (card) {
+    card.addEventListener('mouseenter', () => { spotState.paused = true; });
+    card.addEventListener('mouseleave', () => { spotState.paused = false; });
+  }
+})();
+
+/* ---------- News Ticker ---------- */
+let newsInterval = null;
+function startNews() {
+  if (newsInterval) clearInterval(newsInterval);
+  const el = document.getElementById('newsContent');
+  const enabled = state.news.filter(n => n.enabled);
+  if (!enabled.length) { el.textContent = '—'; return; }
+  let i = 0;
+  const show = () => {
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = 'fade-in .4s ease';
+    el.textContent = enabled[i % enabled.length].text;
+    i++;
+  };
+  show();
+  newsInterval = setInterval(show, 5000);
+}
+
+/* ---------- Inspirational Quote ---------- */
+let quoteInterval = null;
+let quoteSessionHidden = false;  // session-only — never persisted, refresh always brings it back
+function getQuoteDirection(text) {
+  const arabicChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
+  const englishChars = (text.match(/[A-Za-z]/g) || []).length;
+  return englishChars > arabicChars ? 'ltr' : 'rtl';
+}
+function startQuotes() {
+  if (quoteInterval) clearInterval(quoteInterval);
+  const el = document.getElementById('quoteText');
+  const note = document.getElementById('quoteNote');
+  const mini = document.getElementById('quoteMini');
+  if (quoteSessionHidden) {
+    note.style.display = 'none';
+    if (mini) mini.classList.add('show');
+    return;
+  }
+  // Defensive: rebuild from defaults if quotes were wiped somehow
+  if (!Array.isArray(state.quotes) || !state.quotes.length) {
+    state.quotes = JSON.parse(JSON.stringify(DEFAULT_QUOTES));
+    save(K.quotes, state.quotes);
+  }
+  const enabled = state.quotes.filter(q => q.enabled);
+  if (!enabled.length) {
+    note.style.display = 'none';
+    if (mini) mini.classList.add('show');
+    return;
+  }
+  note.style.display = 'block';
+  if (mini) mini.classList.remove('show');
+  let i = 0;
+  const show = () => {
+    const q = enabled[i % enabled.length];
+    el.textContent = q.text;
+    const dir = getQuoteDirection(q.text);
+    el.classList.toggle('ltr', dir === 'ltr');
+    i++;
+  };
+  show();
+  quoteInterval = setInterval(show, 5000);
+}
+document.getElementById('quoteClose').onclick = () => {
+  document.getElementById('quoteNote').style.display = 'none';
+  document.getElementById('quoteMini').classList.add('show');
+  quoteSessionHidden = true;
+  if (quoteInterval) { clearInterval(quoteInterval); quoteInterval = null; }
+};
+document.getElementById('quoteMini').onclick = () => {
+  quoteSessionHidden = false;
+  document.getElementById('quoteMini').classList.remove('show');
+  startQuotes();
+};
+
+/* ---------- Admin Login (robust persistence) ---------- */
+function readAdminLoggedIn() {
+  try {
+    return localStorage.getItem(K.adminLogged) === 'true';
+  } catch (e) { return false; }
+}
+function writeAdminLoggedIn(yes) {
+  try {
+    if (yes) localStorage.setItem(K.adminLogged, 'true');
+    else localStorage.removeItem(K.adminLogged);
+  } catch (e) { /* storage blocked — session-only */ }
+  state.isAdmin = !!yes;
+  updateAdminUI();
+}
+
+function updateAdminUI() {
+  const btn = document.getElementById('authMenuBtn');
+  if (btn) {
+    const label = state.isAdmin ? 'خروج المسؤول' : 'دخول المسؤول';
+    const icon = state.isAdmin ? '🚪' : '🔐';
+    // Preserve the .ca-icon span structure if present (new modal), else fallback (legacy)
+    const iconEl = btn.querySelector('.ca-icon');
+    const textEl = btn.querySelectorAll('span:not(.ca-icon)')[0];
+    if (iconEl && textEl) {
+      iconEl.textContent = icon;
+      textEl.textContent = label;
+      btn.classList.toggle('danger', state.isAdmin);
+    } else {
+      btn.textContent = `${icon} ${label}`;
+    }
+  }
+  // Visual badge on the control button so you always see your session state
+  const cb = document.getElementById('controlBtn');
+  if (cb) {
+    cb.classList.toggle('is-admin', state.isAdmin);
+    const dot = cb.querySelector('.admin-dot');
+    if (state.isAdmin && !dot) {
+      const d = document.createElement('span');
+      d.className = 'admin-dot';
+      d.title = 'وضع المسؤول';
+      cb.prepend(d);
+    } else if (!state.isAdmin && dot) {
+      dot.remove();
+    }
+  }
+}
+
+function doLogin() {
+  const pwd = document.getElementById('loginPwd').value;
+  if (pwd === ADMIN_PASSWORD) {
+    writeAdminLoggedIn(true);
+    document.getElementById('loginErr').style.display = 'none';
+    document.getElementById('loginPwd').value = '';
+    closeModal('loginModal');
+    // After login, jump straight into the admin panel
+    document.getElementById('panelModal').classList.add('open');
+    renderPanel('categories');
+    render();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+document.getElementById('loginSubmit').onclick = doLogin;
+document.getElementById('loginPwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginPwdToggle').addEventListener('click', () => {
+  const inp = document.getElementById('loginPwd');
+  const btn = document.getElementById('loginPwdToggle');
+  const showing = inp.type === 'text';
+  inp.type = showing ? 'password' : 'text';
+  btn.textContent = showing ? '👁' : '🙈';
+  const label = showing ? 'إظهار كلمة المرور' : 'إخفاء كلمة المرور';
+  btn.setAttribute('aria-label', label);
+  btn.setAttribute('title', label);
+});
+
+function doLogout() {
+  if (!confirm('هل تريد تسجيل الخروج من وضع المسؤول؟')) return;
+  writeAdminLoggedIn(false);
+  render();
+}
+
+/* ---------- Control Menu (now a centered modal) ---------- */
+const controlBtn = document.getElementById('controlBtn');
+const controlMenu = document.getElementById('controlMenu');
+controlBtn.onclick = (e) => {
+  e.stopPropagation();
+  controlMenu.classList.add('open');
+};
+
+controlMenu.querySelectorAll('.control-action').forEach(btn => {
+  btn.onclick = () => {
+    const action = btn.getAttribute('data-action');
+    controlMenu.classList.remove('open');
+    switch (action) {
+      case 'dashboard': openPanel(); break;
+      case 'planner':   setView('year'); break;
+      case 'export':    exportData(); break;
+      case 'import':    document.getElementById('importInput').click(); break;
+      case 'auth':
+        if (state.isAdmin) doLogout();
+        else document.getElementById('loginModal').classList.add('open');
+        break;
+    }
+  };
+});
+
+/* ---------- Admin Panel ---------- */
+function openPanel() {
+  if (!state.isAdmin) {
+    document.getElementById('loginModal').classList.add('open');
+    return;
+  }
+  document.getElementById('panelModal').classList.add('open');
+  renderPanel('categories');
+}
+
+document.querySelectorAll('.panel-tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.panel-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    renderPanel(t.getAttribute('data-tab'));
+  };
+});
+
+function renderPanel(tab) {
+  const c = document.getElementById('panelContent');
+  if (tab === 'categories') c.innerHTML = panelCategories();
+  if (tab === 'subcategories') c.innerHTML = panelSubcategories();
+  if (tab === 'news') c.innerHTML = panelNews();
+  if (tab === 'quotes') c.innerHTML = panelQuotes();
+  if (tab === 'spotlight') c.innerHTML = panelSpotlight();
+  if (tab === 'settings') c.innerHTML = panelSettings();
+  wirePanel(tab);
+}
+
+function panelCategories() {
+  return `
+    <div class="section-divider">التصنيفات الرئيسية</div>
+    <div id="catList">
+      ${state.categories.map(c => `
+        <div class="list-item" data-id="${c.id}">
+          <div class="swatch" style="background:${c.color}"></div>
+          <div class="li-main">
+            <input class="form-control li-name" value="${escapeAttr(c.name)}" />
+          </div>
+          <input type="color" class="li-color" value="${c.color}" style="width:42px;height:36px;border:1px solid var(--border);border-radius:8px;padding:2px;background:var(--card)"/>
+          <button class="icon-btn-sm danger" data-act="del-cat">✕</button>
+        </div>
+      `).join('')}
+    </div>
+    <div class="add-row">
+      <input class="form-control" id="newCatName" placeholder="اسم التصنيف الجديد…" />
+      <input type="color" id="newCatColor" value="#6B5749" style="width:42px;height:38px;border:1px solid var(--border);border-radius:8px;padding:2px;background:var(--card)"/>
+      <button class="btn btn-primary" id="addCat">+ إضافة</button>
+    </div>
+  `;
+}
+
+function panelSubcategories() {
+  return `
+    <div class="section-divider">فعاليات فرعية تحت "أنشطة وفعاليات"</div>
+    <div id="subList">
+      ${state.subcategories.map(s => `
+        <div class="list-item" data-id="${s.id}">
+          <div class="swatch" style="background:${s.color}"></div>
+          <div class="li-main" style="display:grid;grid-template-columns:1fr 1fr 80px;gap:6px">
+            <input class="form-control li-name" value="${escapeAttr(s.name)}" placeholder="الاسم"/>
+            <input class="form-control li-logo" value="${escapeAttr(s.logo)}" placeholder="مسار الشعار"/>
+            <input class="form-control li-initials" value="${escapeAttr(s.initials||'')}" placeholder="حروف بديلة"/>
+          </div>
+          <input type="color" class="li-color" value="${s.color}" style="width:42px;height:36px;border:1px solid var(--border);border-radius:8px;padding:2px;background:var(--card)"/>
+          <button class="icon-btn-sm danger" data-act="del-sub">✕</button>
+        </div>
+      `).join('')}
+    </div>
+    <div class="add-row">
+      <input class="form-control" id="newSubName" placeholder="الاسم…" />
+      <input class="form-control" id="newSubLogo" placeholder="/subsection-logos/Name.jpg" />
+      <input class="form-control" id="newSubInitials" placeholder="MS" style="max-width:90px"/>
+      <input type="color" id="newSubColor" value="#315C3B" style="width:42px;height:38px;border:1px solid var(--border);border-radius:8px;padding:2px;background:var(--card)"/>
+      <button class="btn btn-primary" id="addSub">+ إضافة</button>
+    </div>
+  `;
+}
+
+function panelNews() {
+  return `
+    <div class="section-divider">إدارة الأخبار</div>
+    <div id="newsList">
+      ${state.news.map(n => `
+        <div class="list-item" data-id="${n.id}">
+          <label class="toggle"><input type="checkbox" class="li-enabled" ${n.enabled?'checked':''}/><span class="toggle-slider"></span></label>
+          <div class="li-main"><input class="form-control li-text" value="${escapeAttr(n.text)}"/></div>
+          <button class="icon-btn-sm danger" data-act="del-news">✕</button>
+        </div>
+      `).join('')}
+    </div>
+    <div class="add-row">
+      <input class="form-control" id="newNewsText" placeholder="نص الخبر الجديد…" />
+      <button class="btn btn-primary" id="addNews">+ إضافة</button>
+    </div>
+  `;
+}
+
+function panelQuotes() {
+  return `
+    <div class="section-divider">إدارة العبارات الملهمة</div>
+    <div id="quoteList">
+      ${state.quotes.map(q => `
+        <div class="list-item" data-id="${q.id}">
+          <label class="toggle"><input type="checkbox" class="li-enabled" ${q.enabled?'checked':''}/><span class="toggle-slider"></span></label>
+          <div class="li-main"><textarea class="form-control li-text" style="min-height:46px">${escapeAttr(q.text)}</textarea></div>
+          <button class="icon-btn-sm danger" data-act="del-quote">✕</button>
+        </div>
+      `).join('')}
+    </div>
+    <div class="add-row">
+      <input class="form-control" id="newQuoteText" placeholder="عبارة ملهمة جديدة…" />
+      <button class="btn btn-primary" id="addQuote">+ إضافة</button>
+      <button class="btn btn-ghost" id="resetQuotes">إعادة للافتراضي</button>
+    </div>
+  `;
+}
+
+function panelSpotlight() {
+  return `
+    <div class="section-divider">صور "لنتذكّر"</div>
+    <p style="font-size:13px;color:var(--text-mute);margin-bottom:12px">
+      ارفع الصور مباشرةً من جهازك (يتم ضغطها وحفظها محلياً)، أو أدخل مسار صورة موضوعة في مجلد <code>images/</code>.
+    </p>
+
+    <!-- Drop zone for uploads -->
+    <div id="spotDropZone" class="spot-drop">
+      <div class="spot-drop-icon">📷</div>
+      <div class="spot-drop-title">اسحب الصور هنا أو اضغط للاختيار</div>
+      <div class="spot-drop-sub">JPG · PNG · WEBP — يمكن اختيار عدة صور</div>
+      <input type="file" id="spotFileInput" accept="image/*" multiple style="display:none" />
+    </div>
+    <div id="spotUploadStatus" style="font-size:12.5px;color:var(--text-mute);margin:8px 2px;min-height:18px"></div>
+
+    <div class="section-divider" style="margin-top:18px">الصور الحالية (${state.spotlight.length})</div>
+    <div id="spotList" class="spot-grid">
+      ${state.spotlight.length === 0
+        ? '<p style="grid-column:1/-1;color:var(--text-mute);text-align:center;padding:20px">لا توجد صور بعد. ارفع أول صورة من الأعلى.</p>'
+        : state.spotlight.map(s => `
+        <div class="spot-card ${s.enabled ? '' : 'disabled'}" data-id="${s.id}">
+          <div class="spot-thumb">
+            <img src="${escapeAttr(s.path)}" alt="" onerror="this.style.display='none';this.parentElement.classList.add('error')"/>
+          </div>
+          <div class="spot-card-body">
+            <div class="spot-card-label">${s.path.startsWith('data:') ? '📷 صورة مرفوعة' : '🔗 ' + s.path.split('/').pop()}</div>
+            ${s.path.startsWith('data:')
+              ? ''
+              : `<input class="form-control li-path" value="${escapeAttr(s.path)}" style="font-size:11px;padding:5px 8px;margin-top:4px"/>`}
+          </div>
+          <div class="spot-card-actions">
+            <label class="toggle" title="تفعيل/تعطيل"><input type="checkbox" class="li-enabled" ${s.enabled?'checked':''}/><span class="toggle-slider"></span></label>
+            <button class="icon-btn-sm danger" data-act="del-spot" title="حذف">✕</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="section-divider" style="margin-top:18px">إضافة مسار (للصور الموجودة في الخادم)</div>
+    <div class="add-row">
+      <input class="form-control" id="newSpotPath" placeholder="images/remember-06.jpg" />
+      <button class="btn btn-primary" id="addSpot">+ إضافة مسار</button>
+    </div>
+  `;
+}
+
+function panelSettings() {
+  return `
+    <div class="section-divider">إعدادات عامة</div>
+    <div class="form-group">
+      <label>تعديل التاريخ الهجري (بالأيام)</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" class="form-control" id="hijriOffset" value="${state.hijriOffset}" style="max-width:120px" min="-3" max="3" step="1"/>
+        <span style="font-size:12px;color:var(--text-mute)">- يُستخدم لمواءمة العرض مع التقويم الرسمي العماني (-3 إلى +3 أيام)</span>
+      </div>
+    </div>
+    <div style="height:14px"></div>
+    <div class="section-divider">إعادة تعيين</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn btn-danger" data-reset="events">إعادة الفعاليات</button>
+      <button class="btn btn-danger" data-reset="news">إعادة الأخبار</button>
+      <button class="btn btn-danger" data-reset="quotes">إعادة العبارات</button>
+      <button class="btn btn-danger" data-reset="all">إعادة الكل (حذف شامل)</button>
+    </div>
+  `;
+}
+
+function wirePanel(tab) {
+  if (tab === 'categories') {
+    document.querySelectorAll('#catList .list-item').forEach(item => {
+      const id = item.getAttribute('data-id');
+      const cat = categoryOf(id);
+      item.querySelector('.li-name').onchange = e => { cat.name = e.target.value; save(K.categories, state.categories); renderFilters(); render(); };
+      item.querySelector('.li-color').onchange = e => { cat.color = e.target.value; item.querySelector('.swatch').style.background = e.target.value; save(K.categories, state.categories); renderFilters(); render(); };
+      item.querySelector('[data-act="del-cat"]').onclick = () => {
+        if (!confirm('حذف التصنيف؟ الفعاليات المرتبطة ستبقى لكن قد تظهر بلون افتراضي.')) return;
+        state.categories = state.categories.filter(c => c.id !== id);
+        save(K.categories, state.categories);
+        renderPanel('categories'); renderFilters(); render();
+      };
+    });
+    document.getElementById('addCat').onclick = () => {
+      const name = document.getElementById('newCatName').value.trim();
+      if (!name) return;
+      const color = document.getElementById('newCatColor').value;
+      state.categories.push({ id: 'cat_'+Date.now().toString(36), name, color });
+      save(K.categories, state.categories);
+      renderPanel('categories'); renderFilters(); render();
+    };
+  }
+  if (tab === 'subcategories') {
+    document.querySelectorAll('#subList .list-item').forEach(item => {
+      const id = item.getAttribute('data-id');
+      const sub = subcategoryOf(id);
+      item.querySelector('.li-name').onchange     = e => { sub.name = e.target.value; save(K.subcategories, state.subcategories); renderFilters(); render(); };
+      item.querySelector('.li-logo').onchange     = e => { sub.logo = e.target.value; save(K.subcategories, state.subcategories); render(); };
+      item.querySelector('.li-initials').onchange = e => { sub.initials = e.target.value; save(K.subcategories, state.subcategories); render(); };
+      item.querySelector('.li-color').onchange    = e => { sub.color = e.target.value; item.querySelector('.swatch').style.background = e.target.value; save(K.subcategories, state.subcategories); renderFilters(); render(); };
+      item.querySelector('[data-act="del-sub"]').onclick = () => {
+        if (!confirm('حذف الفعالية الفرعية؟')) return;
+        state.subcategories = state.subcategories.filter(s => s.id !== id);
+        save(K.subcategories, state.subcategories);
+        renderPanel('subcategories'); renderFilters(); render();
+      };
+    });
+    document.getElementById('addSub').onclick = () => {
+      const name = document.getElementById('newSubName').value.trim();
+      if (!name) return;
+      state.subcategories.push({
+        id: 'sub_'+Date.now().toString(36),
+        name,
+        logo: document.getElementById('newSubLogo').value.trim(),
+        initials: document.getElementById('newSubInitials').value.trim() || name.slice(0,2),
+        color: document.getElementById('newSubColor').value,
+      });
+      save(K.subcategories, state.subcategories);
+      renderPanel('subcategories'); renderFilters(); render();
+    };
+  }
+  if (tab === 'news') {
+    document.querySelectorAll('#newsList .list-item').forEach(item => {
+      const id = item.getAttribute('data-id');
+      const n = state.news.find(x => x.id === id);
+      item.querySelector('.li-text').onchange    = e => { n.text = e.target.value; save(K.news, state.news); startNews(); };
+      item.querySelector('.li-enabled').onchange = e => { n.enabled = e.target.checked; save(K.news, state.news); startNews(); };
+      item.querySelector('[data-act="del-news"]').onclick = () => {
+        state.news = state.news.filter(x => x.id !== id);
+        save(K.news, state.news);
+        renderPanel('news'); startNews();
+      };
+    });
+    document.getElementById('addNews').onclick = () => {
+      const text = document.getElementById('newNewsText').value.trim();
+      if (!text) return;
+      state.news.push({ id: 'n_'+Date.now().toString(36), text, enabled: true });
+      save(K.news, state.news);
+      renderPanel('news'); startNews();
+    };
+  }
+  if (tab === 'quotes') {
+    document.querySelectorAll('#quoteList .list-item').forEach(item => {
+      const id = item.getAttribute('data-id');
+      const q = state.quotes.find(x => x.id === id);
+      item.querySelector('.li-text').onchange    = e => { q.text = e.target.value; save(K.quotes, state.quotes); startQuotes(); };
+      item.querySelector('.li-enabled').onchange = e => { q.enabled = e.target.checked; save(K.quotes, state.quotes); startQuotes(); };
+      item.querySelector('[data-act="del-quote"]').onclick = () => {
+        state.quotes = state.quotes.filter(x => x.id !== id);
+        save(K.quotes, state.quotes);
+        renderPanel('quotes'); startQuotes();
+      };
+    });
+    document.getElementById('addQuote').onclick = () => {
+      const text = document.getElementById('newQuoteText').value.trim();
+      if (!text) return;
+      state.quotes.push({ id: 'q_'+Date.now().toString(36), text, enabled: true });
+      save(K.quotes, state.quotes);
+      renderPanel('quotes'); startQuotes();
+    };
+    document.getElementById('resetQuotes').onclick = () => {
+      if (!confirm('إعادة العبارات للافتراضي؟')) return;
+      state.quotes = JSON.parse(JSON.stringify(DEFAULT_QUOTES));
+      save(K.quotes, state.quotes);
+      renderPanel('quotes'); startQuotes();
+    };
+  }
+  if (tab === 'spotlight') {
+    document.querySelectorAll('#spotList .spot-card').forEach(item => {
+      const id = item.getAttribute('data-id');
+      const s = state.spotlight.find(x => x.id === id);
+      if (!s) return;
+      const pathInput = item.querySelector('.li-path');
+      if (pathInput) pathInput.onchange = e => { s.path = e.target.value; save(K.spotlight, state.spotlight); startSpotlight(); };
+      item.querySelector('.li-enabled').onchange = e => { s.enabled = e.target.checked; item.classList.toggle('disabled', !e.target.checked); save(K.spotlight, state.spotlight); startSpotlight(); };
+      item.querySelector('[data-act="del-spot"]').onclick = () => {
+        if (!confirm('حذف هذه الصورة؟')) return;
+        state.spotlight = state.spotlight.filter(x => x.id !== id);
+        save(K.spotlight, state.spotlight);
+        renderPanel('spotlight'); startSpotlight();
+      };
+    });
+    document.getElementById('addSpot').onclick = () => {
+      const path = document.getElementById('newSpotPath').value.trim();
+      if (!path) return;
+      state.spotlight.push({ id: 's_'+Date.now().toString(36), path, enabled: true });
+      save(K.spotlight, state.spotlight);
+      renderPanel('spotlight'); startSpotlight();
+    };
+
+    /* ---- Image upload (compress + base64 + localStorage) ---- */
+    const dropZone   = document.getElementById('spotDropZone');
+    const fileInput  = document.getElementById('spotFileInput');
+    const statusEl   = document.getElementById('spotUploadStatus');
+
+    dropZone.onclick = () => fileInput.click();
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag');
+      handleSpotFiles(e.dataTransfer.files);
+    });
+    fileInput.onchange = e => handleSpotFiles(e.target.files);
+  }
+  if (tab === 'settings') {
+    document.getElementById('hijriOffset').onchange = e => {
+      state.hijriOffset = parseInt(e.target.value || '0', 10);
+      save(K.hijriOffset, state.hijriOffset);
+      updateClock();
+    };
+    document.querySelectorAll('[data-reset]').forEach(btn => {
+      btn.onclick = () => {
+        const what = btn.getAttribute('data-reset');
+        if (!confirm('سيتم حذف البيانات المختارة نهائياً. متأكد؟')) return;
+        if (what === 'events' || what === 'all') {
+          localStorage.removeItem(K.events);
+          localStorage.removeItem(K.deletedIds);
+          state.events = DEFAULT_EVENTS.map(e => ({ ...e }));
+          state.deletedIds = [];
+        }
+        if (what === 'news' || what === 'all') {
+          localStorage.removeItem(K.news);
+          state.news = JSON.parse(JSON.stringify(DEFAULT_NEWS));
+        }
+        if (what === 'quotes' || what === 'all') {
+          localStorage.removeItem(K.quotes);
+          state.quotes = JSON.parse(JSON.stringify(DEFAULT_QUOTES));
+        }
+        if (what === 'all') {
+          Object.values(K).forEach(k => localStorage.removeItem(k));
+          location.reload();
+          return;
+        }
+        renderPanel(tab); render(); startNews(); startQuotes();
+      };
+    });
+  }
+}
+
+/* ---- Image upload helper functions (spotlight) ---- */
+function compressImageFile(file, maxW = 1400, maxH = 1000, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) return reject(new Error('ليست صورة'));
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        // Maintain aspect ratio while fitting into maxW × maxH
+        const ratio = Math.min(maxW / width, maxH / height, 1);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFDF8';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        try {
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } catch (err) { reject(err); }
+      };
+      img.onerror = () => reject(new Error('فشل تحميل الصورة'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('فشل قراءة الملف'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleSpotFiles(fileList) {
+  const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+  const statusEl = document.getElementById('spotUploadStatus');
+  let added = 0, failed = 0;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    statusEl.textContent = `⏳ جارٍ معالجة ${i+1}/${files.length}: ${f.name}…`;
+    try {
+      const dataUrl = await compressImageFile(f);
+      state.spotlight.push({
+        id: 's_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+        path: dataUrl,
+        enabled: true,
+        name: f.name,
+      });
+      // Try saving — catches localStorage quota errors
+      try {
+        save(K.spotlight, state.spotlight);
+        added++;
+      } catch (storageErr) {
+        // Rollback the push if save failed
+        state.spotlight.pop();
+        failed++;
+        statusEl.textContent = `⚠ مساحة التخزين ممتلئة. تم حفظ ${added} صورة فقط.`;
+        break;
+      }
+    } catch (err) {
+      failed++;
+    }
+  }
+  const msg = [];
+  if (added)  msg.push(`✓ تمت إضافة ${added} صورة`);
+  if (failed) msg.push(`✕ فشلت ${failed} صورة`);
+  statusEl.textContent = msg.join(' · ');
+  setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 4000);
+  renderPanel('spotlight');
+  startSpotlight();
+}
+
+/* ---------- Export / Import ---------- */
+function exportData() {
+  const data = {};
+  Object.entries(K).forEach(([name, key]) => {
+    const v = localStorage.getItem(key);
+    if (v !== null) data[key] = JSON.parse(v);
+  });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'asaas-calendar-backup-' + fmtDate(new Date()) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('importInput').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!confirm('سيتم استبدال البيانات الحالية. متابعة؟')) return;
+      Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
+      location.reload();
+    } catch (err) {
+      alert('ملف غير صالح: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+};
+
+/* ---------- Modal helpers ---------- */
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.onclick = () => closeModal(btn.getAttribute('data-close'));
+});
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+  bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); });
+});
+// ESC key closes the topmost open modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const openModals = document.querySelectorAll('.modal-backdrop.open');
+    if (openModals.length) openModals[openModals.length - 1].classList.remove('open');
+  }
+});
+
+/* ---------- Brand click → home ---------- */
+document.getElementById('brand').onclick = () => {
+  state.cursor = new Date(2026, state.today.getMonth() < 11 && state.today.getFullYear() === 2026 ? state.today.getMonth() : 0, 1);
+  setView('month');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+/* ---------- Navigation buttons ---------- */
+document.getElementById('prevBtn').onclick = () => {
+  if (state.view === 'month') {
+    state.cursor = new Date(state.cursor.getFullYear(), state.cursor.getMonth() - 1, 1);
+  } else {
+    state.cursor = new Date(state.cursor.getFullYear() - 1, 0, 1);
+  }
+  render();
+};
+document.getElementById('nextBtn').onclick = () => {
+  if (state.view === 'month') {
+    state.cursor = new Date(state.cursor.getFullYear(), state.cursor.getMonth() + 1, 1);
+  } else {
+    state.cursor = new Date(state.cursor.getFullYear() + 1, 0, 1);
+  }
+  render();
+};
+document.getElementById('todayBtn').onclick = () => {
+  state.cursor = new Date(state.today.getFullYear(), state.today.getMonth(), 1);
+  render();
+};
+document.getElementById('viewMonth').onclick = () => setView('month');
+document.getElementById('viewYear').onclick  = () => setView('year');
+
+/* ---------- PWA Service Worker (optional, ignored if file missing) ---------- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{ /* ok if missing */ });
+  });
+}
+
+/* ---------- Boot ---------- */
+// Guarantee modals are top-level overlays, never clipped by any ancestor
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  if (m.parentElement !== document.body) document.body.appendChild(m);
+});
+
+initState();
+updateAdminUI();
+renderFilters();
+render();
+updateClock();
+setInterval(updateClock, 1000);
+startSpotlight();
+startNews();
+startQuotes();
+
+// Default cursor to today's month if it's 2026, else January 2026
+const t = new Date();
+if (t.getFullYear() === 2026) state.cursor = new Date(2026, t.getMonth(), 1);
+render();
+</script>
+</body>
+</html>
