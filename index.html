@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#315C3B" />
+<!-- Always fetch the latest deployed HTML — no stale caching for employees -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <title>تقويم أساس المؤسسي 2026</title>
 <link rel="manifest" href="manifest.webmanifest" />
 <style>
@@ -2764,11 +2768,24 @@ document.getElementById('todayBtn').onclick = () => {
 document.getElementById('viewMonth').onclick = () => setView('month');
 document.getElementById('viewYear').onclick  = () => setView('year');
 
-/* ---------- PWA Service Worker (optional, ignored if file missing) ---------- */
+/* ---------- Cache Kill-Switch ----------
+   The previous version of this page registered a service worker, which made
+   browsers (especially Edge) hold onto an old cached copy of the page even
+   after new versions were deployed. This block runs on every load and:
+     1) Unregisters any service worker that was previously installed
+     2) Deletes any caches those service workers created
+   The result: every visitor — including employees who saw an older version —
+   automatically gets the latest deployed page on their next refresh.
+   Safe to keep even after all clients are clean. */
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(()=>{ /* ok if missing */ });
-  });
+  navigator.serviceWorker.getRegistrations()
+    .then(regs => regs.forEach(reg => reg.unregister()))
+    .catch(() => { /* ignore */ });
+}
+if (window.caches && caches.keys) {
+  caches.keys()
+    .then(keys => keys.forEach(k => caches.delete(k)))
+    .catch(() => { /* ignore */ });
 }
 
 /* ---------- Boot ---------- */
