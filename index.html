@@ -1685,10 +1685,11 @@ function renderFilters() {
     chip.onclick = () => toggleFilter(c.id);
     wrap.appendChild(chip);
   });
-  // Subcategories appear after a small separator
+  // Subcategories appear on a new line — the separator takes the full row width
+  // so the flex container wraps every subcategory to the next line.
   if (state.subcategories.length) {
     const sep = document.createElement('span');
-    sep.style.cssText = 'width:1px;background:var(--border);margin:0 4px;align-self:stretch';
+    sep.style.cssText = 'flex-basis:100%;height:0;margin:2px 0 0;';
     wrap.appendChild(sep);
     state.subcategories.forEach(s => {
       const off = state.filtersHidden.includes(s.id);
