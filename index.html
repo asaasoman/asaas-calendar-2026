@@ -1337,56 +1337,19 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 <!-- ========= IMPORT FILE INPUT ========= -->
 <input type="file" id="importInput" accept=".json" style="display:none" />
 
-<!-- ============================================================
-     FIREBASE SDK — v10 compat (CDN)
-     ============================================================ -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
 <script>
-/* ============================================================
-   FIREBASE CONFIGURATION
-   ─────────────────────────────────────────────────────────────
-   Paste your Firebase project config here.
-   Get it from: Firebase Console → Project Settings → Your apps
-   ============================================================ */
-const firebaseConfig = {
-  apiKey:            "AIzaSyBzV9l4Y6X8RyjoNFIrLUTyT1KeDjMnVAw",
-  authDomain:        "asaas-calendar.firebaseapp.com",
-  projectId:         "asaas-calendar",
-  storageBucket:     "asaas-calendar.firebasestorage.app",
-  messagingSenderId: "622587893645",
-  appId:             "1:622587893645:web:d90feeee58399197f08fc4",
-  measurementId:     "G-260T4EXX43"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// ─────────────────────────────────────────────────────────────────────────────
-// YOUR ACTUAL FIRESTORE STRUCTURE (confirmed from Firebase Console):
-//   calendar (collection)
-//     └─ events (document)
-//          └─ value: [ {id, title, date, ...}, {id, title, ...}, ... ]  ← array field
-//     └─ categories (document)  ← same pattern
-//
-// Events are stored as an ARRAY inside a single document: calendar/events
-// The array field is named "value".
-// ─────────────────────────────────────────────────────────────────────────────
-const EVENTS_DOC = db.collection('calendar').doc('events'); // path: calendar/events
-
 /* ============================================================
    ASAAS Calendar — App Logic
    ============================================================ */
 
 /* ---------- Storage Keys ---------- */
 const K = {
-  // NOTE: 'events' and 'deletedIds' keys are NO LONGER USED for events —
-  // Firestore collection "events" is the sole source of truth.
-  adminLogged:   'asaas_admin_logged_in',  // ← localStorage kept for admin session only
+  events:        'asaas_events',
+  deletedIds:    'asaas_deleted_event_ids',
+  adminLogged:   'asaas_admin_logged_in',
   categories:    'asaas_categories',
   subcategories: 'asaas_subcategories',
-  spotlight:     'asaas_spotlight_items_v2',
+  spotlight:     'asaas_spotlight_items',
   news:          'asaas_news_items',
   quotes:        'asaas_inspirational_quotes',
   countdownId:   'asaas_selected_countdown_event_id',
@@ -1442,10 +1405,11 @@ const DEFAULT_QUOTES = [
 ];
 
 const DEFAULT_SPOTLIGHT = [
-  { id: 's1', path: '/images/remember-01.jpg', enabled: true },
-  { id: 's2', path: '/images/remember-02.jpg', enabled: true },
-  { id: 's3', path: '/images/remember-03.jpg', enabled: true },
-  { id: 's4', path: '/images/remember-04.jpg', enabled: true },
+  { id: 's1', path: 'images/remember-01.jpg', enabled: true },
+  { id: 's2', path: 'images/remember-02.jpg', enabled: true },
+  { id: 's3', path: 'images/remember-03.jpg', enabled: true },
+  { id: 's4', path: 'images/remember-04.jpg', enabled: true },
+  { id: 's5', path: 'images/remember-05.jpg', enabled: true },
 ];
 
 const DEFAULT_EVENTS = [
@@ -1533,14 +1497,15 @@ const state = {
   view: 'month',
   cursor: new Date(2026, 0, 1),
   today: new Date(),
-  events: [],            // ← loaded from Firestore on boot
+  events: [],
+  deletedIds: [],
   categories: [],
   subcategories: [],
   news: [],
   quotes: [],
   spotlight: [],
   hijriOffset: 0,
-  filtersHidden: [],
+  filtersHidden: [],   // ids (cat or sub) currently OFF
   countdownId: null,
   spotlightIdx: 0,
   newsIdx: 0,
@@ -1550,155 +1515,63 @@ const state = {
 };
 
 /* ---------- Initialize ---------- */
-// initState now loads events FROM Firestore (async).
-// Everything that depends on events is deferred until loadEventsFromFirestore() resolves.
 function initState() {
-  // Non-event state loads from localStorage as before
   state.categories    = load(K.categories,    DEFAULT_CATEGORIES);
   state.subcategories = load(K.subcategories, DEFAULT_SUBCATEGORIES);
   state.news          = load(K.news,          DEFAULT_NEWS);
   state.quotes        = load(K.quotes,        DEFAULT_QUOTES);
   state.spotlight     = load(K.spotlight,     DEFAULT_SPOTLIGHT);
+  state.deletedIds    = load(K.deletedIds,    []);
   state.hijriOffset   = load(K.hijriOffset,   0);
   state.filtersHidden = load(K.filtersHidden, []);
   state.countdownId   = load(K.countdownId,   null);
   state.isAdmin       = readAdminLoggedIn();
 
+  // Merge defaults with stored, removing deleted defaults
+  // IMPORTANT: clone each default so editing them in state.events doesn't
+  // mutate the master DEFAULT_EVENTS array (which would break persistEvents'
+  // change-detection comparison and silently drop edits on refresh).
+  const stored = load(K.events, []);
+  const storedIds = new Set(stored.map(e => e.id));
+  const filteredDefaults = DEFAULT_EVENTS
+    .filter(e => !state.deletedIds.includes(e.id) && !storedIds.has(e.id))
+    .map(e => ({ ...e }));
+  state.events = [...filteredDefaults, ...stored];
+
   // Defensive: ensure quotes is always a non-empty array
   if (!Array.isArray(state.quotes) || !state.quotes.length) {
     state.quotes = JSON.parse(JSON.stringify(DEFAULT_QUOTES));
   }
-  // Clear old session-only quote-hidden flag
+
+  // Clear any old "permanently hidden" flag for the inspirational note
+  // (the close X now only hides for the current session — refresh brings it back)
   localStorage.removeItem(K.quoteHidden);
 }
 
-/* ---------- Firebase: read/write helpers (array-in-document pattern) ---------- */
-// Your Firestore stores events as an ARRAY inside calendar/events document:
-//   calendar/events  →  { value: [ {...}, {...}, ... ], updatedAt: 1234 }
-//
-// All writes replace the entire "value" array (atomic, avoids partial updates).
-
-async function _readEventsArray() {
-  const snap = await EVENTS_DOC.get();
-  if (!snap.exists) return null;   // document not yet created
-  const data = snap.data();
-  return Array.isArray(data.value) ? data.value : null;
-}
-
-async function _writeEventsArray(arr) {
-  await EVENTS_DOC.set({ value: arr, updatedAt: Date.now() });
-}
-
-/* ---------- Firebase: load all events from Firestore ---------- */
-async function loadEventsFromFirestore() {
-  try {
-    const arr = await _readEventsArray();
-
-    if (arr === null) {
-      // ── FIRST-RUN MIGRATION ──────────────────────────────────
-      // Document doesn't exist yet → upload all DEFAULT_EVENTS as the array.
-      console.log('[ASAAS] No events document in Firestore. Migrating DEFAULT_EVENTS…');
-      const eventsToUpload = DEFAULT_EVENTS.map(ev => ({
-        id:            ev.id,
-        title:         ev.title,
-        date:          ev.date,
-        categoryId:    ev.categoryId,
-        subcategoryId: ev.subcategoryId ?? null,
-        time:          ev.time          ?? '',
-        description:   ev.description   ?? '',
-      }));
-      await _writeEventsArray(eventsToUpload);
-      state.events = DEFAULT_EVENTS.map(e => ({ ...e }));
-      console.log('[ASAAS] Migration complete:', state.events.length, 'events uploaded.');
-    } else if (arr.length === 0) {
-      // Document exists but array is empty — also migrate defaults
-      console.log('[ASAAS] Events array is empty. Migrating DEFAULT_EVENTS…');
-      const eventsToUpload = DEFAULT_EVENTS.map(ev => ({
-        id: ev.id, title: ev.title, date: ev.date,
-        categoryId: ev.categoryId, subcategoryId: ev.subcategoryId ?? null,
-        time: ev.time ?? '', description: ev.description ?? '',
-      }));
-      await _writeEventsArray(eventsToUpload);
-      state.events = DEFAULT_EVENTS.map(e => ({ ...e }));
-    } else {
-      // Normal load: array already populated
-      state.events = arr.map(d => ({
-        id:            d.id            || '',
-        title:         d.title         || '',
-        date:          d.date          || '',
-        categoryId:    d.categoryId    || 'cat_other',
-        subcategoryId: d.subcategoryId || null,
-        time:          d.time          || '',
-        description:   d.description   || '',
-      }));
-      console.log('[ASAAS] Loaded', state.events.length, 'events from Firestore.');
-    }
-  } catch (err) {
-    console.error('[ASAAS] Firestore load failed — falling back to DEFAULT_EVENTS.', err);
-    state.events = DEFAULT_EVENTS.map(e => ({ ...e }));
-    showFirebaseError('تعذّر الاتصال بقاعدة البيانات. يتم عرض الأحداث الافتراضية مؤقتاً.');
-  }
-}
-
-/* ---------- persistEvents: write full state.events array to Firestore ---------- */
-async function persistEvents() {
-  try {
-    const arr = state.events.map(ev => ({
-      id:            ev.id,
-      title:         ev.title,
-      date:          ev.date,
-      categoryId:    ev.categoryId,
-      subcategoryId: ev.subcategoryId ?? null,
-      time:          ev.time          ?? '',
-      description:   ev.description   ?? '',
-    }));
-    await _writeEventsArray(arr);
-  } catch (err) {
-    console.error('[ASAAS] Firestore write failed:', err);
-    showFirebaseError('حدث خطأ أثناء الحفظ في قاعدة البيانات.');
-  }
-}
-
-/* ---------- saveEventToFirestore: add or update one event ---------- */
-async function saveEventToFirestore(ev) {
-  // Find and replace in array, or push if new
-  const idx = state.events.findIndex(e => e.id === ev.id);
-  if (idx === -1) state.events.push(ev);
-  else state.events[idx] = ev;
-  await persistEvents();
-}
-
-/* ---------- deleteEventFromFirestore: remove one event by id ---------- */
-async function deleteEventFromFirestore(id) {
-  state.events = state.events.filter(e => e.id !== id);
-  await persistEvents();
-}
-
-/* ---------- Helper: non-blocking Firebase error banner ---------- */
-function showFirebaseError(msg) {
-  let banner = document.getElementById('firebaseBanner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id = 'firebaseBanner';
-    banner.style.cssText = \`
-      position:fixed;bottom:16px;right:16px;left:16px;max-width:480px;margin:auto;
-      background:#FBE8E5;border:1px solid #A8423A;border-radius:12px;
-      padding:12px 18px;color:#A8423A;font-size:13.5px;font-weight:500;
-      z-index:999999;box-shadow:0 4px 16px rgba(0,0,0,.12);
-      display:flex;align-items:center;gap:10px;
-    \`;
-    document.body.appendChild(banner);
-  }
-  banner.innerHTML = \`<span style="font-size:18px">⚠️</span><span>\${msg}</span>
-    <button onclick="this.parentElement.remove()" style="margin-right:auto;background:none;border:none;font-size:18px;cursor:pointer;color:#A8423A">✕</button>\`;
+/* ---------- Persisting events (non-default custom events only stored) ---------- */
+function persistEvents() {
+  // Persist all non-default events + any modified defaults
+  const defaultIds = new Set(DEFAULT_EVENTS.map(e => e.id));
+  const toStore = state.events.filter(e => {
+    if (!defaultIds.has(e.id)) return true;
+    // If a default was modified, store the changed version (overrides default)
+    const def = DEFAULT_EVENTS.find(d => d.id === e.id);
+    return JSON.stringify(def) !== JSON.stringify(e);
+  });
+  save(K.events, toStore);
 }
 
 function deleteEvent(id) {
+  state.deletedIds.push(id);
+  // Dedupe
+  state.deletedIds = [...new Set(state.deletedIds)];
+  save(K.deletedIds, state.deletedIds);
+  state.events = state.events.filter(e => e.id !== id);
+  persistEvents();
   if (state.countdownId === id) {
     state.countdownId = null;
     save(K.countdownId, null);
   }
-  deleteEventFromFirestore(id);   // removes from state.events + writes array to Firestore
 }
 
 /* ---------- Clock + Dates ---------- */
@@ -2090,17 +1963,12 @@ function wireEventForm(event) {
     const subcategoryId = (categoryId === 'cat_activities' && subEl && subEl.value) ? subEl.value : null;
     const description = document.getElementById('evDesc').value;
 
-    let savedEv;
     if (event) {
-      // Edit existing event
       Object.assign(event, { title, date, time, categoryId, subcategoryId, description });
-      savedEv = event;
     } else {
-      // New event
-      savedEv = { id: uid(), title, date, time, categoryId, subcategoryId, description };
-      state.events.push(savedEv);
+      state.events.push({ id: uid(), title, date, time, categoryId, subcategoryId, description });
     }
-    saveEventToFirestore(savedEv);   // ← write to Firestore
+    persistEvents();
     closeModal('eventModal');
     render();
   };
@@ -2925,14 +2793,14 @@ function wirePanel(tab) {
       updateClock();
     };
     document.querySelectorAll('[data-reset]').forEach(btn => {
-      btn.onclick = async () => {
+      btn.onclick = () => {
         const what = btn.getAttribute('data-reset');
         if (!confirm('سيتم حذف البيانات المختارة نهائياً. متأكد؟')) return;
         if (what === 'events' || what === 'all') {
-          // Reset: restore defaults and overwrite Firestore array
+          localStorage.removeItem(K.events);
+          localStorage.removeItem(K.deletedIds);
           state.events = DEFAULT_EVENTS.map(e => ({ ...e }));
-          try { await persistEvents(); }
-          catch (err) { console.error('[ASAAS] Reset events Firestore error:', err); }
+          state.deletedIds = [];
         }
         if (what === 'news' || what === 'all') {
           localStorage.removeItem(K.news);
@@ -3118,46 +2986,20 @@ document.querySelectorAll('.modal-backdrop').forEach(m => {
   if (m.parentElement !== document.body) document.body.appendChild(m);
 });
 
-// Show a subtle loading indicator while Firestore loads
-(function showLoadingBar() {
-  const bar = document.createElement('div');
-  bar.id = 'fsLoadBar';
-  bar.style.cssText = `
-    position:fixed;top:0;left:0;right:0;height:3px;z-index:999999;
-    background:linear-gradient(90deg,#315C3B,#C9A646,#315C3B);
-    background-size:200%;
-    animation:fsbar 1.4s linear infinite;
-  `;
-  const style = document.createElement('style');
-  style.textContent = '@keyframes fsbar{0%{background-position:200% 0}100%{background-position:-200% 0}}';
-  document.head.appendChild(style);
-  document.body.appendChild(bar);
-})();
+initState();
+updateAdminUI();
+renderFilters();
+render();
+updateClock();
+setInterval(updateClock, 1000);
+startSpotlight();
+startNews();
+startQuotes();
 
-(async function boot() {
-  initState();
-  updateAdminUI();
-  renderFilters();
-
-  // Load events from Firestore (or fall back to defaults)
-  await loadEventsFromFirestore();
-
-  // Remove loading bar
-  const bar = document.getElementById('fsLoadBar');
-  if (bar) bar.remove();
-
-  render();
-  updateClock();
-  setInterval(updateClock, 1000);
-  startSpotlight();
-  startNews();
-  startQuotes();
-
-  // Default cursor to today's month if it's 2026, else January 2026
-  const t = new Date();
-  if (t.getFullYear() === 2026) state.cursor = new Date(2026, t.getMonth(), 1);
-  render();
-})();
+// Default cursor to today's month if it's 2026, else January 2026
+const t = new Date();
+if (t.getFullYear() === 2026) state.cursor = new Date(2026, t.getMonth(), 1);
+render();
 </script>
 </body>
 </html>
