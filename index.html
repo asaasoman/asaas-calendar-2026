@@ -4,17 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#315C3B" />
-<!-- Always fetch the latest deployed HTML — no stale caching for employees -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
 <title>تقويم أساس المؤسسي 2026</title>
 <link rel="manifest" href="manifest.webmanifest" />
-
-<!-- Firebase SDK (compat builds, work in plain non-module scripts) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 <style>
 /* Co Headline W23 Arabic Regular — host the font file at /fonts/ */
 @font-face {
@@ -115,6 +106,7 @@ input, textarea, select { font-family: inherit; }
   width: 50px; height: 50px;
   display: grid; place-items: center;
   flex-shrink: 0;
+  transform: translateY(-5px);
 }
 .brand-mark img {
   width: 100%; height: 100%;
@@ -274,11 +266,6 @@ input, textarea, select { font-family: inherit; }
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   position: relative;
-  /* Flex column lets the image wrap below fill the full grid-row height,
-     so the box never ends short of its neighbors in the top row. */
-  display: flex;
-  flex-direction: column;
-  min-height: 220px;
 }
 .spotlight-label {
   position: absolute; top: 10px; right: 10px; z-index: 4;
@@ -298,12 +285,8 @@ input, textarea, select { font-family: inherit; }
 }
 .spotlight-img-wrap {
   position: relative;
-  width: 100%;
-  /* Grow to fill all available vertical space in the spotlight flex column,
-     so the photo extends from the very top of the box to the very bottom. */
-  flex: 1 1 auto;
-  min-height: 240px;
-  background: var(--green-dark);
+  width: 100%; aspect-ratio: 4/3;
+  background: linear-gradient(135deg, var(--beige) 0%, var(--gold-tint) 100%);
   overflow: hidden;
 }
 /* Soft gradient overlay so title stays readable on any photo */
@@ -315,28 +298,12 @@ input, textarea, select { font-family: inherit; }
   pointer-events: none;
   z-index: 2;
 }
-/* Two stacked images for smooth crossfade.
-   Belt-and-suspenders sizing: every property that influences the rendered
-   box and how the photo fits in it is locked down so the photo will always
-   completely cover the wrap with no possible gap. */
+/* Two stacked images for smooth crossfade */
 .spotlight-img {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  max-height: none !important;
-  min-width: 100% !important;
-  min-height: 100% !important;
-  object-fit: cover !important;
-  object-position: center center;
-  display: block;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
   opacity: 0;
-  transform: scale(1.02);
-  transform-origin: center center;
   transition: opacity 1s ease;
   z-index: 1;
 }
@@ -517,9 +484,41 @@ input, textarea, select { font-family: inherit; }
 .view-toggle button.active { background: var(--green); color: #FFFDF8; box-shadow: 0 2px 6px rgba(49,92,59,.25); }
 
 .filters {
-  display: flex; flex-wrap: wrap; gap: 6px;
+  display: flex; flex-direction: column; gap: 12px;
   padding-top: 10px;
   border-top: 1px dashed var(--border-soft);
+}
+.filter-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter-parent-label {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 2px;
+}
+.filter-parent-label::before,
+.filter-parent-label::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border) 20%, var(--border) 80%, transparent 100%);
+}
+.filter-parent-label .pl-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+  padding: 4px 12px;
+  background: var(--green-tint);
+  border: 1px solid var(--green-light);
+  border-radius: 999px;
+  font-size: 11.5px; font-weight: 600;
+  color: var(--green-dark);
+}
+.filter-parent-label .pl-chip .pl-dot { width: 7px; height: 7px; border-radius: 50%; }
+.filter-row.sub-row {
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(230,237,231,.55) 0%, transparent 100%);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  margin-inline-start: 24px;
+}
+@media (max-width: 720px) {
+  .filter-row.sub-row { margin-inline-start: 10px; padding: 8px 10px; }
+  .filter-parent-label .pl-chip { font-size: 11px; padding: 3px 10px; }
 }
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -603,8 +602,7 @@ input, textarea, select { font-family: inherit; }
 .cal-cell.muted { opacity: .35; }
 .cal-cell.today { border-color: var(--green); box-shadow: 0 0 0 2px rgba(49,92,59,.18), var(--shadow-sm); background: linear-gradient(160deg, var(--card) 0%, var(--green-tint) 100%); }
 .cal-cell.weekend { background: var(--bg-2); }
-.cal-cell:not(.muted) { cursor: pointer; }
-.cal-cell.admin:hover { background: var(--green-tint); border-color: var(--green-light); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.cal-cell.admin:hover { background: var(--green-tint); border-color: var(--green-light); cursor: pointer; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .cell-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
 .cell-num { font-family: 'Co Headline', 'Tajawal', sans-serif; font-weight: 700; font-size: 19px; color: var(--text); line-height: 1; }
 .cal-cell.today .cell-num { color: var(--green-dark); }
@@ -625,15 +623,16 @@ input, textarea, select { font-family: inherit; }
   font-size: 11.5px;
   padding: 3px 8px;
   border-radius: 6px;
-  background: var(--green);
-  color: #FFFDF8;
+  background: var(--green-tint);
+  color: var(--green-dark);
+  border-right: 3px solid var(--green);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   cursor: pointer;
   transition: all .12s;
   font-weight: 500;
 }
-.evt-pill:hover { transform: translateX(-2px); filter: brightness(1.08); }
-.evt-pill .time { font-size: 10px; opacity: .85; margin-inline-end: 4px; }
+.evt-pill:hover { transform: translateX(-2px); filter: brightness(.96); }
+.evt-pill .time { font-size: 10px; opacity: .75; margin-inline-end: 4px; }
 .evt-more { font-size: 10.5px; color: var(--text-mute); padding: 0 8px; cursor: pointer; }
 
 /* ---------- Year View ---------- */
@@ -967,6 +966,103 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .add-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .add-row .form-control { flex: 1; min-width: 180px; }
 
+/* ---------- Achievements panel ---------- */
+.ach-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.ach-stat {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.ach-stat-num {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 24px; font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.ach-stat-lbl {
+  font-size: 11px; color: var(--text-mute);
+  margin-top: 4px;
+  letter-spacing: .3px;
+}
+.ach-stat.done { background: var(--green-tint); border-color: var(--green-light); }
+.ach-stat.done .ach-stat-num { color: var(--green-dark); }
+.ach-stat.upcoming { background: var(--gold-tint); border-color: var(--gold-soft); }
+.ach-stat.upcoming .ach-stat-num { color: var(--clay); }
+.ach-stat.pct .ach-stat-num { color: var(--green); }
+@media (max-width: 600px) {
+  .ach-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+.ach-overall { margin-top: 12px; }
+.ach-bar-track {
+  background: var(--bg-2);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+}
+.ach-bar-track.sm { height: 7px; }
+.ach-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green-light), var(--green));
+  border-radius: 999px;
+  transition: width .35s ease;
+}
+
+.ach-list { display: flex; flex-direction: column; gap: 12px; }
+.ach-row {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.ach-row-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.ach-row-head .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.ach-row-name { font-weight: 600; color: var(--text); flex: 1; }
+.ach-row-count {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-soft);
+  background: var(--card);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.ach-recent { display: flex; flex-direction: column; gap: 6px; }
+.ach-recent-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+}
+.ach-recent-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ach-recent-title { flex: 1; color: var(--text); font-weight: 500; }
+.ach-recent-tag {
+  font-size: 10.5px; font-weight: 600;
+  padding: 2px 8px;
+  background: var(--card);
+  border: 1px solid;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.ach-recent-date {
+  font-size: 11.5px; color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* ---------- Footer ---------- */
 .footer {
   text-align: center; margin-top: 30px;
@@ -1227,6 +1323,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
       <div class="panel-tabs">
         <button class="panel-tab active" data-tab="categories">التصنيفات</button>
         <button class="panel-tab" data-tab="subcategories">الفعاليات الفرعية</button>
+        <button class="panel-tab" data-tab="achievements">إنجازات الأنشطة</button>
         <button class="panel-tab" data-tab="news">الأخبار</button>
         <button class="panel-tab" data-tab="quotes">العبارات الملهمة</button>
         <button class="panel-tab" data-tab="spotlight">لنتذكّر</button>
@@ -1260,163 +1357,6 @@ const K = {
   filtersHidden: 'asaas_filters_hidden',
   quoteHidden:   'asaas_quote_hidden',
 };
-
-/* ==========================================================================
-   CLOUD SYNC LAYER (Firebase Firestore)
-   --------------------------------------------------------------------------
-   All shared calendar content (events, news, quotes, spotlight, etc.) is
-   mirrored to a Firestore collection called `calendar`, one document per
-   logical data type. localStorage is kept as an offline cache and as the
-   path used by the rest of the app — the cloud sync layer just keeps both
-   sides in agreement.
-
-   Keys NOT synced: `adminLogged` (per-device session state) and
-   `quoteHidden` (per-session UI state).
-   ========================================================================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyBzV9l4Y6X8RyjoNFIrLUTyT1KeDjMnVAw",
-  authDomain: "asaas-calendar.firebaseapp.com",
-  projectId: "asaas-calendar",
-  storageBucket: "asaas-calendar.firebasestorage.app",
-  messagingSenderId: "622587893645",
-  appId: "1:622587893645:web:d90feeee58399197f08fc4",
-  measurementId: "G-260T4EXX43"
-};
-
-// Which K.* keys are shared across all users (and which are local-only)
-const SHARED_KEYS = [
-  'events', 'deletedIds', 'categories', 'subcategories',
-  'spotlight', 'news', 'quotes', 'countdownId', 'hijriOffset'
-];
-
-const cloud = {
-  db: null,
-  auth: null,
-  ready: false,        // true after first snapshot arrives for every shared key
-  signedIn: false,     // true after anonymous auth completes (writes allowed)
-  // Flag set when an incoming snapshot is updating localStorage — used to
-  // avoid echoing that same value straight back up to the cloud.
-  applyingRemote: false,
-  pending: new Set(SHARED_KEYS),
-  errors: [],
-};
-
-try {
-  firebase.initializeApp(firebaseConfig);
-  cloud.db = firebase.firestore();
-  cloud.auth = firebase.auth();
-  // Anonymous auth so security rules allow writes (rules require auth != null)
-  cloud.auth.signInAnonymously()
-    .then(() => { cloud.signedIn = true; })
-    .catch(err => {
-      console.warn('Firebase anonymous sign-in failed:', err);
-      cloud.errors.push('auth: ' + err.message);
-    });
-} catch (e) {
-  console.warn('Firebase initialization failed — running in offline mode:', e);
-  cloud.errors.push('init: ' + e.message);
-}
-
-// Subscribe to all shared documents. Calls onAllReady() once every doc has
-// delivered its first snapshot (existing or empty). Re-renders the app on
-// every subsequent remote change so other editors' updates appear live.
-function startCloudSync(onAllReady) {
-  if (!cloud.db) { onAllReady(); return; }
-  let firstPassDone = false;
-  SHARED_KEYS.forEach(logicalKey => {
-    const lskey = K[logicalKey];
-    const docRef = cloud.db.collection('calendar').doc(logicalKey);
-    docRef.onSnapshot(
-      snap => {
-        if (snap.exists) {
-          const data = snap.data();
-          if (data && 'value' in data) {
-            const incoming = JSON.stringify(data.value);
-            const current  = localStorage.getItem(lskey);
-            if (incoming !== current) {
-              cloud.applyingRemote = true;
-              try {
-                localStorage.setItem(lskey, incoming);
-              } finally {
-                cloud.applyingRemote = false;
-              }
-              // After initial boot, refresh the UI so other admins' edits
-              // appear without requiring a manual reload.
-              if (firstPassDone && typeof initState === 'function') {
-                initState();
-                if (typeof render === 'function') render();
-                if (typeof renderFilters === 'function') renderFilters();
-                if (typeof renderCountdown === 'function') renderCountdown();
-                if (typeof renderSpotDots === 'function') renderSpotDots();
-              }
-            }
-          }
-        }
-        if (!cloud.ready) {
-          cloud.pending.delete(logicalKey);
-          if (cloud.pending.size === 0) {
-            cloud.ready = true;
-            firstPassDone = true;
-            onAllReady();
-          }
-        }
-      },
-      err => {
-        console.warn('Cloud subscription failed for', logicalKey, err);
-        cloud.errors.push(logicalKey + ': ' + err.message);
-        if (!cloud.ready) {
-          cloud.pending.delete(logicalKey);
-          if (cloud.pending.size === 0) {
-            cloud.ready = true;
-            firstPassDone = true;
-            onAllReady();
-          }
-        }
-      }
-    );
-  });
-  // Safety net: if Firestore is unreachable, don't block the boot forever.
-  setTimeout(() => {
-    if (!cloud.ready) {
-      cloud.ready = true;
-      firstPassDone = true;
-      console.warn('Cloud sync timed out after 8s — booting from local cache.');
-      onAllReady();
-    }
-  }, 8000);
-}
-
-// Push one logical key's value up to Firestore. No-op for local-only keys.
-function cloudWrite(lskey, val) {
-  if (!cloud.db) return;
-  if (cloud.applyingRemote) return; // don't echo remote-driven local writes
-  const logicalKey = Object.keys(K).find(k => K[k] === lskey);
-  if (!logicalKey || !SHARED_KEYS.includes(logicalKey)) return;
-  cloud.db.collection('calendar').doc(logicalKey)
-    .set({ value: val, updatedAt: Date.now() })
-    .catch(err => {
-      console.warn('Cloud write failed for', logicalKey, err);
-      // Common cause: too large (1 MB document limit) — flag to admin if they uploaded a huge image
-      if (err && err.code === 'invalid-argument') {
-        alert('تعذّر حفظ التحديث في السحابة لأن حجم البيانات كبير جداً. حاول استخدام صور أصغر.');
-      }
-    });
-}
-
-// Admin action: push everything currently in this browser up to the cloud.
-// Used once after initial deployment so existing local data goes live.
-function cloudUploadAll() {
-  if (!cloud.db) { alert('السحابة غير متاحة حالياً.'); return Promise.resolve(); }
-  const writes = SHARED_KEYS.map(logicalKey => {
-    const lskey = K[logicalKey];
-    const raw = localStorage.getItem(lskey);
-    if (raw === null) return Promise.resolve();
-    let val; try { val = JSON.parse(raw); } catch (e) { return Promise.resolve(); }
-    return cloud.db.collection('calendar').doc(logicalKey)
-      .set({ value: val, updatedAt: Date.now() });
-  });
-  return Promise.all(writes);
-}
 
 const ADMIN_PASSWORD = 'HMF-ASAAS'; // change in code before deployment
 
@@ -1550,11 +1490,7 @@ function load(key, fallback) {
     return JSON.parse(v);
   } catch (e) { return cloneFallback(); }
 }
-function save(key, val) {
-  localStorage.setItem(key, JSON.stringify(val));
-  // Mirror shared content to Firestore so other browsers/users see the change.
-  cloudWrite(key, val);
-}
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
 /* ---------- State ---------- */
 const state = {
@@ -1677,28 +1613,42 @@ function isVisible(event) {
 function renderFilters() {
   const wrap = document.getElementById('filterChips');
   wrap.innerHTML = '';
+
+  // Row 1: Main categories
+  const mainRow = document.createElement('div');
+  mainRow.className = 'filter-row main-row';
   state.categories.forEach(c => {
     const off = state.filtersHidden.includes(c.id);
     const chip = document.createElement('span');
     chip.className = 'chip ' + (off ? 'inactive' : 'active');
     chip.innerHTML = `<span class="dot" style="background:${c.color}"></span>${c.name}`;
     chip.onclick = () => toggleFilter(c.id);
-    wrap.appendChild(chip);
+    mainRow.appendChild(chip);
   });
-  // Subcategories appear on a new line — the separator takes the full row width
-  // so the flex container wraps every subcategory to the next line.
+  wrap.appendChild(mainRow);
+
+  // Parent label + Row 2: Subcategories (children of "أنشطة وفعاليات")
   if (state.subcategories.length) {
-    const sep = document.createElement('span');
-    sep.style.cssText = 'flex-basis:100%;height:0;margin:2px 0 0;';
-    wrap.appendChild(sep);
+    const parentCat = state.categories.find(c => c.id === 'cat_activities');
+    const parentName  = parentCat ? parentCat.name  : 'أنشطة وفعاليات';
+    const parentColor = parentCat ? parentCat.color : '#315C3B';
+
+    const label = document.createElement('div');
+    label.className = 'filter-parent-label';
+    label.innerHTML = `<span class="pl-chip"><span class="pl-dot" style="background:${parentColor}"></span>التصنيفات التابعة لـ: ${parentName}</span>`;
+    wrap.appendChild(label);
+
+    const subRow = document.createElement('div');
+    subRow.className = 'filter-row sub-row';
     state.subcategories.forEach(s => {
       const off = state.filtersHidden.includes(s.id);
       const chip = document.createElement('span');
       chip.className = 'chip ' + (off ? 'inactive' : 'active');
       chip.innerHTML = `<span class="dot" style="background:${s.color}"></span>${s.name}`;
       chip.onclick = () => toggleFilter(s.id);
-      wrap.appendChild(chip);
+      subRow.appendChild(chip);
     });
+    wrap.appendChild(subRow);
   }
 }
 function toggleFilter(id) {
@@ -1815,8 +1765,8 @@ function makeCell(d, muted) {
     const color = colorFor(e);
     const pill = document.createElement('div');
     pill.className = 'evt-pill';
-    pill.style.background = color;
-    pill.style.color = '#FFFDF8';
+    pill.style.background = tintFor(color);
+    pill.style.color = color;
     pill.style.borderRightColor = color;
     pill.innerHTML = (e.time ? `<span class="time">${e.time}</span>` : '') + e.title;
     pill.onclick = (ev) => { ev.stopPropagation(); openEventModal(e); };
@@ -2458,6 +2408,7 @@ function renderPanel(tab) {
   const c = document.getElementById('panelContent');
   if (tab === 'categories') c.innerHTML = panelCategories();
   if (tab === 'subcategories') c.innerHTML = panelSubcategories();
+  if (tab === 'achievements') c.innerHTML = panelAchievements();
   if (tab === 'news') c.innerHTML = panelNews();
   if (tab === 'quotes') c.innerHTML = panelQuotes();
   if (tab === 'spotlight') c.innerHTML = panelSpotlight();
@@ -2485,6 +2436,83 @@ function panelCategories() {
       <input type="color" id="newCatColor" value="#6B5749" style="width:42px;height:38px;border:1px solid var(--border);border-radius:8px;padding:2px;background:var(--card)"/>
       <button class="btn btn-primary" id="addCat">+ إضافة</button>
     </div>
+  `;
+}
+
+function panelAchievements() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const acts = state.events.filter(e => e.categoryId === 'cat_activities');
+  const past = acts.filter(e => new Date(e.date) < today);
+  const upcoming = acts.filter(e => new Date(e.date) >= today);
+  const pct = acts.length ? Math.round((past.length / acts.length) * 100) : 0;
+
+  // Per-subcategory breakdown
+  const bySub = state.subcategories.map(s => {
+    const inSub = acts.filter(e => e.subcategoryId === s.id);
+    const done = inSub.filter(e => new Date(e.date) < today).length;
+    const subPct = inSub.length ? Math.round((done / inSub.length) * 100) : 0;
+    return { sub: s, total: inSub.length, done, pct: subPct };
+  });
+
+  // Recently completed (last 8)
+  const recent = [...past].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+
+  const fmtDate = d => new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  return `
+    <div class="section-divider">ملخص إنجازات "أنشطة وفعاليات"</div>
+    <div class="ach-stats">
+      <div class="ach-stat">
+        <div class="ach-stat-num">${acts.length}</div>
+        <div class="ach-stat-lbl">إجمالي الفعاليات</div>
+      </div>
+      <div class="ach-stat done">
+        <div class="ach-stat-num">${past.length}</div>
+        <div class="ach-stat-lbl">منجزة</div>
+      </div>
+      <div class="ach-stat upcoming">
+        <div class="ach-stat-num">${upcoming.length}</div>
+        <div class="ach-stat-lbl">قادمة</div>
+      </div>
+      <div class="ach-stat pct">
+        <div class="ach-stat-num">${pct}%</div>
+        <div class="ach-stat-lbl">نسبة الإنجاز</div>
+      </div>
+    </div>
+    <div class="ach-overall">
+      <div class="ach-bar-track"><div class="ach-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+
+    <div class="section-divider" style="margin-top:18px">تقدّم كل فعالية فرعية</div>
+    <div class="ach-list">
+      ${bySub.map(b => `
+        <div class="ach-row">
+          <div class="ach-row-head">
+            <span class="dot" style="background:${b.sub.color}"></span>
+            <span class="ach-row-name">${escapeAttr(b.sub.name)}</span>
+            <span class="ach-row-count">${b.done} / ${b.total}</span>
+          </div>
+          <div class="ach-bar-track sm"><div class="ach-bar-fill" style="width:${b.pct}%;background:${b.sub.color}"></div></div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${recent.length ? `
+      <div class="section-divider" style="margin-top:18px">آخر الإنجازات</div>
+      <div class="ach-recent">
+        ${recent.map(e => {
+          const sub = state.subcategories.find(s => s.id === e.subcategoryId);
+          return `
+            <div class="ach-recent-item">
+              <span class="dot" style="background:${sub ? sub.color : '#968172'}"></span>
+              <span class="ach-recent-title">${escapeAttr(e.title)}</span>
+              ${sub ? `<span class="ach-recent-tag" style="border-color:${sub.color};color:${sub.color}">${escapeAttr(sub.name)}</span>` : ''}
+              <span class="ach-recent-date">${fmtDate(e.date)}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '<div style="text-align:center;padding:24px;color:var(--text-mute);font-size:13px">لم تُنجز أي فعالية بعد.</div>'}
   `;
 }
 
@@ -2610,16 +2638,6 @@ function panelSettings() {
         <input type="number" class="form-control" id="hijriOffset" value="${state.hijriOffset}" style="max-width:120px" min="-3" max="3" step="1"/>
         <span style="font-size:12px;color:var(--text-mute)">- يُستخدم لمواءمة العرض مع التقويم الرسمي العماني (-3 إلى +3 أيام)</span>
       </div>
-    </div>
-    <div style="height:14px"></div>
-    <div class="section-divider">المزامنة السحابية</div>
-    <div style="font-size:13px;color:var(--text-mute);line-height:1.7;margin-bottom:10px">
-      جميع الإضافات والتعديلات تُحفظ تلقائياً في السحابة وتظهر فوراً لجميع المستخدمين.
-      <br/>استخدم زر "رفع بيانات هذا المتصفح" مرة واحدة بعد التحديث الأولي إذا كانت لديك بيانات محفوظة محلياً تريد نشرها للجميع.
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-      <button class="btn btn-primary" id="btnCloudUpload">📤 رفع بيانات هذا المتصفح إلى السحابة</button>
-      <span id="cloudStatus" style="font-size:12px;color:var(--text-mute)"></span>
     </div>
     <div style="height:14px"></div>
     <div class="section-divider">إعادة تعيين</div>
@@ -2774,27 +2792,6 @@ function wirePanel(tab) {
       save(K.hijriOffset, state.hijriOffset);
       updateClock();
     };
-    // Cloud upload button — pushes everything in this browser to Firestore
-    const cloudBtn = document.getElementById('btnCloudUpload');
-    const cloudStatusEl = document.getElementById('cloudStatus');
-    if (cloudBtn) {
-      cloudBtn.onclick = () => {
-        if (!confirm('سيتم رفع جميع البيانات الموجودة في هذا المتصفح إلى السحابة، وستظهر للجميع. متابعة؟')) return;
-        cloudBtn.disabled = true;
-        cloudStatusEl.textContent = 'جاري الرفع...';
-        cloudUploadAll()
-          .then(() => {
-            cloudStatusEl.textContent = '✅ تم الرفع بنجاح. البيانات متاحة الآن لجميع المستخدمين.';
-            cloudStatusEl.style.color = 'var(--green-dark)';
-          })
-          .catch(err => {
-            console.error(err);
-            cloudStatusEl.textContent = '❌ فشل الرفع: ' + (err.message || err);
-            cloudStatusEl.style.color = '#a32020';
-          })
-          .finally(() => { cloudBtn.disabled = false; });
-      };
-    }
     document.querySelectorAll('[data-reset]').forEach(btn => {
       btn.onclick = () => {
         const what = btn.getAttribute('data-reset');
@@ -2976,24 +2973,11 @@ document.getElementById('todayBtn').onclick = () => {
 document.getElementById('viewMonth').onclick = () => setView('month');
 document.getElementById('viewYear').onclick  = () => setView('year');
 
-/* ---------- Cache Kill-Switch ----------
-   The previous version of this page registered a service worker, which made
-   browsers (especially Edge) hold onto an old cached copy of the page even
-   after new versions were deployed. This block runs on every load and:
-     1) Unregisters any service worker that was previously installed
-     2) Deletes any caches those service workers created
-   The result: every visitor — including employees who saw an older version —
-   automatically gets the latest deployed page on their next refresh.
-   Safe to keep even after all clients are clean. */
+/* ---------- PWA Service Worker (optional, ignored if file missing) ---------- */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations()
-    .then(regs => regs.forEach(reg => reg.unregister()))
-    .catch(() => { /* ignore */ });
-}
-if (window.caches && caches.keys) {
-  caches.keys()
-    .then(keys => keys.forEach(k => caches.delete(k)))
-    .catch(() => { /* ignore */ });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{ /* ok if missing */ });
+  });
 }
 
 /* ---------- Boot ---------- */
@@ -3002,25 +2986,20 @@ document.querySelectorAll('.modal-backdrop').forEach(m => {
   if (m.parentElement !== document.body) document.body.appendChild(m);
 });
 
-// Boot AFTER the cloud sync has delivered its first batch of data — that way
-// every visitor sees the latest published content immediately, not the local
-// cache from a previous session.
-startCloudSync(() => {
-  initState();
-  updateAdminUI();
-  renderFilters();
-  render();
-  updateClock();
-  setInterval(updateClock, 1000);
-  startSpotlight();
-  startNews();
-  startQuotes();
+initState();
+updateAdminUI();
+renderFilters();
+render();
+updateClock();
+setInterval(updateClock, 1000);
+startSpotlight();
+startNews();
+startQuotes();
 
-  // Default cursor to today's month if it's 2026, else January 2026
-  const t = new Date();
-  if (t.getFullYear() === 2026) state.cursor = new Date(2026, t.getMonth(), 1);
-  render();
-});
+// Default cursor to today's month if it's 2026, else January 2026
+const t = new Date();
+if (t.getFullYear() === 2026) state.cursor = new Date(2026, t.getMonth(), 1);
+render();
 </script>
 </body>
 </html>
