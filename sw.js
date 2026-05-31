@@ -1,7 +1,7 @@
 /* ASAAS Calendar — minimal service worker
    Network-first to avoid breaking updates. Falls back to cache when offline. */
 
-const CACHE = 'asaas-cal-v1';
+const CACHE = 'asaas-cal-v2';
 const ASSETS = [
   '/',
   '/index.html',
