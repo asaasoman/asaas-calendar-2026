@@ -1983,7 +1983,7 @@ function makeCell(d, muted) {
     pill.style.background = tintFor(color);
     pill.style.color = color;
     pill.style.borderRightColor = color;
-    pill.innerHTML = (e.time ? `<span class="time">${e.time}</span>` : '') + e.title;
+    pill.innerHTML = e.title;
     pill.onclick = (ev) => { ev.stopPropagation(); openEventModal(e); };
     cont.appendChild(pill);
   });
