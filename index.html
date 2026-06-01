@@ -17,6 +17,194 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* ===== مساحتك — Community Wall ===== */
+.masahatak-section {
+  margin: 28px 0 0;
+  direction: rtl;
+}
+.masahatak-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.masahatak-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.3px;
+}
+.masahatak-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.masahatak-form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px 18px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.masahatak-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 600px) { .masahatak-form-row { grid-template-columns: 1fr; } }
+.masahatak-input, .masahatak-textarea {
+  width: 100%;
+  background: var(--beige);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  box-sizing: border-box;
+  direction: rtl;
+}
+.masahatak-input:focus, .masahatak-textarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(49,92,59,.1);
+}
+.masahatak-textarea {
+  resize: vertical;
+  min-height: 80px;
+  margin-bottom: 12px;
+}
+.masahatak-form-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.masahatak-char {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.masahatak-char.warn { color: #C9503A; }
+.masahatak-submit {
+  background: var(--green);
+  color: #FFFDF8;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 22px;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, transform .15s;
+  display: flex; align-items: center; gap: 7px;
+}
+.masahatak-submit:hover { background: #264d31; transform: translateY(-1px); }
+.masahatak-submit:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; transform: none; }
+.masahatak-submit .submit-icon { font-size: 16px; }
+
+/* Cards grid */
+.masahatak-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.masahatak-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform .2s, box-shadow .2s;
+  animation: cardIn .35s ease both;
+  position: relative;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.masahatak-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+.masahatak-card-text {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  flex: 1;
+}
+.masahatak-card-text::before { content: '\201C'; color: var(--gold); font-size: 22px; line-height: 0; vertical-align: -6px; margin-left: 3px; }
+.masahatak-card-text::after  { content: '\201D'; color: var(--gold); font-size: 22px; line-height: 0; vertical-align: -6px; margin-right: 3px; }
+.masahatak-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 9px;
+  margin-top: 2px;
+}
+.masahatak-card-author {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  display: flex; align-items: center; gap: 5px;
+}
+
+.masahatak-card-author::before {
+  content: var(--ini, '؟');
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.masahatak-card-date {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  opacity: .7;
+}
+.masahatak-card-delete {
+  position: absolute; top: 10px; left: 10px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 14px; opacity: 0;
+  transition: opacity .2s;
+  padding: 2px 6px; border-radius: 6px;
+}
+.masahatak-card:hover .masahatak-card-delete { opacity: 1; }
+.masahatak-card-delete:hover { background: #FBE8E5; color: #C9503A; }
+
+/* Empty state */
+.masahatak-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.masahatak-empty .empty-ico { font-size: 36px; margin-bottom: 10px; opacity: .5; }
+
+/* Loading */
+.masahatak-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 30px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 </style>
 <!-- Fallback fonts in case Co Headline doesn't load -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1224,6 +1412,37 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 
   <!-- ========= CALENDAR ========= -->
   <div class="calendar-wrap" id="calendarWrap"></div>
+
+
+  <!-- ========= مساحتك — Community Wall ========= -->
+  <div class="masahatak-section" id="masahatakSection">
+    <div class="masahatak-header">
+      <div>
+        <div class="masahatak-title">✦ مساحتك</div>
+        <div class="masahatak-subtitle">شارك مقولة، فائدة، فكرة، أو رأي قصير مع الفريق</div>
+      </div>
+    </div>
+
+    <!-- Submission form -->
+    <div class="masahatak-form-card">
+      <div class="masahatak-form-row">
+        <input class="masahatak-input" id="mName" placeholder="اسمك (اختياري)" maxlength="40" autocomplete="off" />
+        <input class="masahatak-input" id="mType" placeholder="نوع المشاركة — مقولة، فائدة، فكرة، رأي…" maxlength="30" autocomplete="off" />
+      </div>
+      <textarea class="masahatak-textarea" id="mText" placeholder="اكتب هنا…" maxlength="280"></textarea>
+      <div class="masahatak-form-bottom">
+        <span class="masahatak-char" id="mChar">٠ / ٢٨٠</span>
+        <button class="masahatak-submit" id="mSubmit" disabled>
+          <span class="submit-icon">✦</span> شارك
+        </button>
+      </div>
+    </div>
+
+    <!-- Cards wall -->
+    <div class="masahatak-grid" id="masahatakGrid">
+      <div class="masahatak-loading">جارٍ التحميل…</div>
+    </div>
+  </div>
 
   <div class="footer">
     ASAAS &nbsp;·&nbsp; التقويم المؤسسي &nbsp;·&nbsp; 2026
@@ -3266,6 +3485,151 @@ document.querySelectorAll('.modal-backdrop').forEach(m => {
   if (t.getFullYear() === 2026) state.cursor = new Date(2026, t.getMonth(), 1);
   render();
 })();
+
+/* ================================================================
+   مساحتك — Community Wall
+   Firestore path: calendar/masahatak  →  { entries: [...] }
+   Each entry: { id, name, type, text, ts }
+   ================================================================ */
+
+const MASAHATAK_DOC = db.collection('calendar').doc('masahatak');
+
+// ── Helpers ──────────────────────────────────────────────────────
+function mArabicNum(n) {
+  return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+}
+
+function mFormatDate(ts) {
+  const d = new Date(ts);
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو',
+                  'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+function mInitial(name) {
+  if (!name) return '؟';
+  return [...name.trim()][0].toUpperCase();
+}
+
+// ── Render wall ──────────────────────────────────────────────────
+function renderMasahatak(entries) {
+  const grid = document.getElementById('masahatakGrid');
+  if (!grid) return;
+  if (!entries || !entries.length) {
+    grid.innerHTML = `<div class="masahatak-empty">
+      <div class="empty-ico">✦</div>
+      <div>لا توجد مشاركات بعد — كن أول من يشارك!</div>
+    </div>`;
+    return;
+  }
+  // newest first
+  const sorted = [...entries].sort((a,b) => b.ts - a.ts);
+  grid.innerHTML = sorted.map(e => {
+    const initial = mInitial(e.name);
+    const author  = e.name ? e.name : 'مجهول';
+    const typeTag = e.type ? `<span style="font-size:11px;background:var(--gold-tint);color:var(--clay);padding:2px 8px;border-radius:99px;font-weight:600;">${e.type}</span>` : '';
+    const delBtn  = state.isAdmin
+      ? `<button class="masahatak-card-delete" onclick="mDeleteEntry('${e.id}')" title="حذف">✕</button>` : '';
+    return `<div class="masahatak-card" data-mid="${e.id}">
+      ${delBtn}
+      <div class="masahatak-card-text">${e.text}</div>
+      <div class="masahatak-card-footer">
+        <span class="masahatak-card-author" style="--ini:'${initial}'">${typeTag}&nbsp;${author}</span>
+        <span class="masahatak-card-date">${mFormatDate(e.ts)}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Set initials via pseudo-element workaround using style attr
+  grid.querySelectorAll('.masahatak-card-author').forEach(el => {
+    const ini = el.getAttribute('style').match(/'([^']+)'/)?.[1] || '؟';
+    el.style.setProperty('--ini', `'${ini}'`);
+  });
+}
+
+// ── Load from Firestore ──────────────────────────────────────────
+async function loadMasahatak() {
+  try {
+    const snap = await MASAHATAK_DOC.get();
+    const entries = snap.exists ? (snap.data().entries || []) : [];
+    renderMasahatak(entries);
+  } catch(err) {
+    console.error('[ASAAS] Masahatak load error:', err);
+    const grid = document.getElementById('masahatakGrid');
+    if (grid) grid.innerHTML = '<div class="masahatak-empty"><div class="empty-ico">⚠️</div><div>تعذّر تحميل المشاركات.</div></div>';
+  }
+}
+
+// ── Save entry to Firestore ──────────────────────────────────────
+async function mSaveEntry(entry) {
+  const snap = await MASAHATAK_DOC.get();
+  const entries = snap.exists ? (snap.data().entries || []) : [];
+  entries.push(entry);
+  await MASAHATAK_DOC.set({ entries }, { merge: false });
+  return entries;
+}
+
+// ── Delete entry (admin only) ────────────────────────────────────
+async function mDeleteEntry(id) {
+  if (!state.isAdmin) return;
+  if (!confirm('حذف هذه المشاركة؟')) return;
+  const snap = await MASAHATAK_DOC.get();
+  if (!snap.exists) return;
+  const entries = (snap.data().entries || []).filter(e => e.id !== id);
+  await MASAHATAK_DOC.set({ entries });
+  renderMasahatak(entries);
+}
+
+// ── Wire form ────────────────────────────────────────────────────
+function wireMasahatak() {
+  const textEl   = document.getElementById('mText');
+  const charEl   = document.getElementById('mChar');
+  const submitEl = document.getElementById('mSubmit');
+  if (!textEl) return;
+
+  const MAX = 280;
+  textEl.addEventListener('input', () => {
+    const len = textEl.value.length;
+    charEl.textContent = mArabicNum(len) + ' / ' + mArabicNum(MAX);
+    charEl.classList.toggle('warn', len > MAX * 0.85);
+    submitEl.disabled = len < 2;
+  });
+
+  submitEl.addEventListener('click', async () => {
+    const text = textEl.value.trim();
+    if (text.length < 2) return;
+    const name = document.getElementById('mName').value.trim();
+    const type = document.getElementById('mType').value.trim();
+    const entry = { id: uid(), name, type, text, ts: Date.now() };
+
+    submitEl.disabled = true;
+    submitEl.innerHTML = '<span class="submit-icon">⏳</span> جارٍ الإرسال…';
+    try {
+      const entries = await mSaveEntry(entry);
+      renderMasahatak(entries);
+      textEl.value = '';
+      document.getElementById('mName').value = '';
+      document.getElementById('mType').value = '';
+      charEl.textContent = '٠ / ٢٨٠';
+      charEl.classList.remove('warn');
+      submitEl.innerHTML = '<span class="submit-icon">✓</span> تم الإرسال!';
+      setTimeout(() => {
+        submitEl.innerHTML = '<span class="submit-icon">✦</span> شارك';
+        submitEl.disabled = false;
+      }, 2000);
+    } catch(err) {
+      console.error('[ASAAS] Masahatak save error:', err);
+      submitEl.innerHTML = '<span class="submit-icon">✦</span> شارك';
+      submitEl.disabled = false;
+      alert('حدث خطأ أثناء الإرسال، حاول مرة أخرى.');
+    }
+  });
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+wireMasahatak();
+loadMasahatak();
+
 </script>
 </body>
 </html>
