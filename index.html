@@ -253,6 +253,7 @@ input, textarea, select { font-family: inherit; }
   display: grid;
   grid-template-columns: 220px 1fr 280px;
   gap: 16px;
+  align-items: stretch;
 }
 @media (max-width: 1050px) { .top-row { grid-template-columns: 1fr; } }
 
@@ -265,6 +266,8 @@ input, textarea, select { font-family: inherit; }
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 .spotlight-label {
   position: absolute; top: 10px; right: 10px; z-index: 4;
@@ -284,7 +287,9 @@ input, textarea, select { font-family: inherit; }
 }
 .spotlight-img-wrap {
   position: relative;
-  width: 100%; aspect-ratio: 4/3;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
   background: linear-gradient(135deg, var(--beige) 0%, var(--gold-tint) 100%);
   overflow: hidden;
 }
