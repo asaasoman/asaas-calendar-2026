@@ -205,6 +205,84 @@
   font-size: 13px;
 }
 
+
+/* Image upload */
+.masahatak-img-upload {
+  margin-bottom: 12px;
+}
+.masahatak-img-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  background: var(--beige);
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  transition: border-color .2s, color .2s, background .2s;
+  user-select: none;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+}
+.masahatak-img-label:hover {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(49,92,59,.05);
+}
+.masahatak-img-label.has-img {
+  border-style: solid;
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(49,92,59,.06);
+}
+#mImageInput { display: none; }
+
+.masahatak-img-preview-wrap {
+  position: relative;
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 180px;
+  display: none;
+}
+.masahatak-img-preview-wrap.visible { display: block; }
+.masahatak-img-preview {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+.masahatak-img-remove {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.masahatak-img-remove:hover { background: #C9503A; }
+
+/* Card image */
+.masahatak-card-img {
+  width: calc(100% + 36px);
+  margin: -18px -18px 4px;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
 </style>
 <!-- Fallback fonts in case Co Headline doesn't load -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1430,6 +1508,16 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
         <input class="masahatak-input" id="mType" placeholder="نوع المشاركة — مقولة، فائدة، فكرة، رأي…" maxlength="30" autocomplete="off" />
       </div>
       <textarea class="masahatak-textarea" id="mText" placeholder="اكتب هنا…" maxlength="280"></textarea>
+      <div class="masahatak-img-upload">
+        <label class="masahatak-img-label" id="mImgLabel" for="mImageInput">
+          <span>🖼</span> أضف صورة (اختياري)
+        </label>
+        <input type="file" id="mImageInput" accept="image/*" />
+        <div class="masahatak-img-preview-wrap" id="mImgPreviewWrap">
+          <img class="masahatak-img-preview" id="mImgPreview" src="" alt="معاينة الصورة" />
+          <button class="masahatak-img-remove" id="mImgRemove" title="إزالة الصورة">✕</button>
+        </div>
+      </div>
       <div class="masahatak-form-bottom">
         <span class="masahatak-char" id="mChar">٠ / ٢٨٠</span>
         <button class="masahatak-submit" id="mSubmit" disabled>
@@ -3580,47 +3668,128 @@ async function mDeleteEntry(id) {
   renderMasahatak(entries);
 }
 
+// ── Compress image to base64 (max 800px wide, quality 0.72) ─────
+function mCompressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX_W = 800;
+        const scale = img.width > MAX_W ? MAX_W / img.width : 1;
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width  * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 // ── Wire form ────────────────────────────────────────────────────
 function wireMasahatak() {
-  const textEl   = document.getElementById('mText');
-  const charEl   = document.getElementById('mChar');
-  const submitEl = document.getElementById('mSubmit');
+  const textEl      = document.getElementById('mText');
+  const charEl      = document.getElementById('mChar');
+  const submitEl    = document.getElementById('mSubmit');
+  const imgInput    = document.getElementById('mImageInput');
+  const imgLabel    = document.getElementById('mImgLabel');
+  const imgPreview  = document.getElementById('mImgPreview');
+  const previewWrap = document.getElementById('mImgPreviewWrap');
+  const imgRemove   = document.getElementById('mImgRemove');
   if (!textEl) return;
+
+  let mImageBase64 = null;
+
+  // Text counter — enable submit if text OR image present
+  function updateSubmit() {
+    const hasText  = textEl.value.trim().length >= 2;
+    const hasImage = !!mImageBase64;
+    submitEl.disabled = !(hasText || hasImage);
+  }
 
   const MAX = 280;
   textEl.addEventListener('input', () => {
     const len = textEl.value.length;
     charEl.textContent = mArabicNum(len) + ' / ' + mArabicNum(MAX);
     charEl.classList.toggle('warn', len > MAX * 0.85);
-    submitEl.disabled = len < 2;
+    updateSubmit();
   });
 
+  // Image input handler
+  imgInput.addEventListener('change', async () => {
+    const file = imgInput.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('حجم الصورة كبير جداً، الحد الأقصى ٥ ميجابايت.');
+      imgInput.value = '';
+      return;
+    }
+    try {
+      mImageBase64 = await mCompressImage(file);
+      imgPreview.src = mImageBase64;
+      previewWrap.classList.add('visible');
+      imgLabel.classList.add('has-img');
+      imgLabel.innerHTML = '<span>✓</span> تم اختيار الصورة';
+      updateSubmit();
+    } catch(e) {
+      alert('تعذّر تحميل الصورة، جرّب صورة أخرى.');
+    }
+  });
+
+  // Remove image
+  imgRemove.addEventListener('click', () => {
+    mImageBase64 = null;
+    imgInput.value = '';
+    imgPreview.src = '';
+    previewWrap.classList.remove('visible');
+    imgLabel.classList.remove('has-img');
+    imgLabel.innerHTML = '<span>🖼</span> أضف صورة (اختياري)';
+    updateSubmit();
+  });
+
+  // Submit
   submitEl.addEventListener('click', async () => {
     const text = textEl.value.trim();
-    if (text.length < 2) return;
-    const name = document.getElementById('mName').value.trim();
-    const type = document.getElementById('mType').value.trim();
+    const hasText  = text.length >= 2;
+    const hasImage = !!mImageBase64;
+    if (!hasText && !hasImage) return;
+
+    const name  = document.getElementById('mName').value.trim();
+    const type  = document.getElementById('mType').value.trim();
     const entry = { id: uid(), name, type, text, ts: Date.now() };
+    if (mImageBase64) entry.image = mImageBase64;
 
     submitEl.disabled = true;
     submitEl.innerHTML = '<span class="submit-icon">⏳</span> جارٍ الإرسال…';
     try {
       const entries = await mSaveEntry(entry);
       renderMasahatak(entries);
+      // Reset form
       textEl.value = '';
       document.getElementById('mName').value = '';
       document.getElementById('mType').value = '';
       charEl.textContent = '٠ / ٢٨٠';
       charEl.classList.remove('warn');
+      mImageBase64 = null;
+      imgInput.value = '';
+      imgPreview.src = '';
+      previewWrap.classList.remove('visible');
+      imgLabel.classList.remove('has-img');
+      imgLabel.innerHTML = '<span>🖼</span> أضف صورة (اختياري)';
       submitEl.innerHTML = '<span class="submit-icon">✓</span> تم الإرسال!';
       setTimeout(() => {
         submitEl.innerHTML = '<span class="submit-icon">✦</span> شارك';
-        submitEl.disabled = false;
+        submitEl.disabled = true;
       }, 2000);
     } catch(err) {
       console.error('[ASAAS] Masahatak save error:', err);
       submitEl.innerHTML = '<span class="submit-icon">✦</span> شارك';
-      submitEl.disabled = false;
+      updateSubmit();
       alert('حدث خطأ أثناء الإرسال، حاول مرة أخرى.');
     }
   });
