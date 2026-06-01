@@ -10,10 +10,9 @@
 /* Co Headline W23 Arabic Regular — host the font file at /fonts/ */
 @font-face {
   font-family: 'Co Headline';
-  src: url('/fonts/CoHeadlineW23Arabic-Regular.woff2') format('woff2'),
-       url('/fonts/CoHeadlineW23Arabic-Regular.woff') format('woff'),
-       url('/fonts/CoHeadlineW23Arabic-Regular.ttf') format('truetype'),
-       url('/fonts/CoHeadlineW23Arabic-Regular.otf') format('opentype');
+  src: url('Co Headline W23 Arabic Regular.otf') format('opentype'),
+       url('Co Headline W23 Arabic Light.otf') format('opentype'),
+       url('Co Headline Corp Regular.ttf') format('truetype');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -1132,7 +1131,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   <!-- ========= HEADER ========= -->
   <header class="header">
     <div class="brand" id="brand">
-      <div class="brand-mark"><img src="/images/Vertical_ASAAS_Logo.png" alt="شعار أساس"></div>
+      <div class="brand-mark"><img src="images/Vertical_ASAAS_Logo.png" alt="شعار أساس"></div>
       <div class="brand-text">
         <div class="ar">تقويم أساس المؤسسي</div>
         <div class="en">ASAAS · CORPORATE CALENDAR · 2026</div>
@@ -1421,11 +1420,11 @@ const DEFAULT_CATEGORIES = [
 ];
 
 const DEFAULT_SUBCATEGORIES = [
-  { id: 'sub_mindshare',     name: 'Mindshare',      color: '#315C3B', logo: '/subsection-logos/Mindshare.jpg',  initials: 'MS' },
-  { id: 'sub_mindshareplus', name: 'Mindshare Plus', color: '#4A7A55', logo: '/subsection-logos/Mindshare+.jpg', initials: 'M+' },
-  { id: 'sub_knowhow',       name: 'KNOWHOW',        color: '#C9A646', logo: '/subsection-logos/Knowhow.jpg',    initials: 'KH' },
-  { id: 'sub_fenjan',        name: 'Fenjan Qahwa',   color: '#B36A3C', logo: '/subsection-logos/Fenjan.jpg',     initials: 'FQ' },
-  { id: 'sub_zyiara',        name: 'Zyiara',         color: '#8E5524', logo: '/subsection-logos/Ziyara.jpg',     initials: 'ZY' },
+  { id: 'sub_mindshare',     name: 'Mindshare',      color: '#315C3B', logo: 'images/Mindshare.jpg',  initials: 'MS' },
+  { id: 'sub_mindshareplus', name: 'Mindshare Plus', color: '#4A7A55', logo: 'images/Mindshare+.jpg', initials: 'M+' },
+  { id: 'sub_knowhow',       name: 'KNOWHOW',        color: '#C9A646', logo: 'images/Knowhow.jpg',    initials: 'KH' },
+  { id: 'sub_fenjan',        name: 'Fenjan Qahwa',   color: '#B36A3C', logo: 'images/Fenjan.jpg',     initials: 'FQ' },
+  { id: 'sub_zyiara',        name: 'Zyiara',         color: '#8E5524', logo: 'images/Ziyara.jpg',     initials: 'ZY' },
 ];
 
 const DEFAULT_NEWS = [
@@ -1442,10 +1441,10 @@ const DEFAULT_QUOTES = [
 ];
 
 const DEFAULT_SPOTLIGHT = [
-  { id: 's1', path: '/images/remember-01.jpg', enabled: true },
-  { id: 's2', path: '/images/remember-02.jpg', enabled: true },
-  { id: 's3', path: '/images/remember-03.jpg', enabled: true },
-  { id: 's4', path: '/images/remember-04.jpg', enabled: true },
+  { id: 's1', path: 'images/remember-01.jpg', enabled: true },
+  { id: 's2', path: 'images/remember-02.jpg', enabled: true },
+  { id: 's3', path: 'images/remember-03.jpg', enabled: true },
+  { id: 's4', path: 'images/remember-04.jpg', enabled: true },
 ];
 
 const DEFAULT_EVENTS = [
