@@ -2237,10 +2237,17 @@ function getCountdownEvent() {
       if (t > new Date()) return { ev, t };
     }
   }
-  // Fallback to nearest upcoming
+  // Fallback to nearest upcoming — only from allowed categories/subcategories:
+  // Fenjan Qahwa, Mindshare, Mindshare Plus, مناسبات دينية ووطنية
+  const COUNTDOWN_SUBS = new Set(['sub_fenjan', 'sub_mindshare', 'sub_mindshareplus']);
+  const COUNTDOWN_CATS = new Set(['cat_national']);
+
   const now = new Date();
   const upcoming = state.events
-    .filter(e => isVisible(e))
+    .filter(e => {
+      if (!isVisible(e)) return false;
+      return COUNTDOWN_SUBS.has(e.subcategoryId) || COUNTDOWN_CATS.has(e.categoryId);
+    })
     .map(e => {
       const t = parseDate(e.date);
       if (e.time) {
@@ -2296,10 +2303,14 @@ function tickCountdown(target) {
 document.getElementById('countdownCard').onclick = () => {
   if (!state.isAdmin) return;
   const now = new Date();
+  const ALLOWED_SUBS = new Set(['sub_fenjan', 'sub_mindshare', 'sub_mindshareplus']);
+  const ALLOWED_CATS = new Set(['cat_national']);
   const monthEvts = state.events
     .filter(e => {
       const d = parseDate(e.date);
-      return d.getMonth() === state.cursor.getMonth() && d.getFullYear() === state.cursor.getFullYear() && d >= new Date(now.getFullYear(),now.getMonth(),now.getDate());
+      const inRange = d.getMonth() === state.cursor.getMonth() && d.getFullYear() === state.cursor.getFullYear() && d >= new Date(now.getFullYear(),now.getMonth(),now.getDate());
+      const allowed = ALLOWED_SUBS.has(e.subcategoryId) || ALLOWED_CATS.has(e.categoryId);
+      return inRange && allowed;
     })
     .sort((a,b) => parseDate(a.date) - parseDate(b.date));
   if (!monthEvts.length) { alert('لا توجد فعاليات قادمة هذا الشهر.'); return; }
