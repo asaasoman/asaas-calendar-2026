@@ -276,8 +276,8 @@
 /* Card image */
 .masahatak-card-img {
   width: calc(100% + 36px);
-  margin: -18px -18px 4px;
-  height: 160px;
+  margin: -18px -18px 12px;
+  height: 180px;
   object-fit: cover;
   display: block;
   border-radius: var(--radius) var(--radius) 0 0;
@@ -3618,9 +3618,12 @@ function renderMasahatak(entries) {
     const typeTag = e.type ? `<span style="font-size:11px;background:var(--gold-tint);color:var(--clay);padding:2px 8px;border-radius:99px;font-weight:600;">${e.type}</span>` : '';
     const delBtn  = state.isAdmin
       ? `<button class="masahatak-card-delete" onclick="mDeleteEntry('${e.id}')" title="حذف">✕</button>` : '';
+    const imgHtml  = e.image  ? `<img class="masahatak-card-img" src="${e.image}" alt="صورة" loading="lazy" />` : '';
+    const textHtml = e.text   ? `<div class="masahatak-card-text">${e.text}</div>` : '';
     return `<div class="masahatak-card" data-mid="${e.id}">
       ${delBtn}
-      <div class="masahatak-card-text">${e.text}</div>
+      ${imgHtml}
+      ${textHtml}
       <div class="masahatak-card-footer">
         <span class="masahatak-card-author" style="--ini:'${initial}'">${typeTag}&nbsp;${author}</span>
         <span class="masahatak-card-date">${mFormatDate(e.ts)}</span>
