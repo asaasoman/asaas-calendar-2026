@@ -1746,6 +1746,317 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   background: var(--gold); opacity: .5;
 }
 
+/* ═════════════════════════════════════════════════════════════════
+   WORLD CUP 2026 PREDICTIONS — تحدّي توقعات كأس العالم
+   ═════════════════════════════════════════════════════════════════ */
+.wc-section {
+  margin: 32px 0 0;
+  direction: rtl;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 26px;
+  box-shadow: var(--shadow-sm);
+}
+.wc-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 18px;
+  padding-bottom: 14px; border-bottom: 1px dashed var(--border-soft);
+}
+.wc-title-wrap { flex: 1; min-width: 200px; }
+.wc-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 22px; font-weight: 700; color: var(--text);
+  letter-spacing: -.3px;
+  display: flex; align-items: center; gap: 10px;
+}
+.wc-title-ico {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 18px; color: #FFFDF8;
+}
+.wc-subtitle { font-size: 13px; color: var(--text-mute); margin-top: 4px; }
+.wc-user-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold-tint); border: 1px solid var(--gold-soft);
+  border-radius: 999px; padding: 5px 14px;
+  font-size: 12.5px; font-weight: 600; color: var(--clay);
+}
+.wc-user-clear {
+  background: transparent; border: 0; cursor: pointer;
+  color: var(--clay); font-size: 14px; padding: 0; opacity: .6;
+}
+.wc-user-clear:hover { opacity: 1; }
+
+.wc-tabs {
+  display: flex; gap: 4px;
+  background: var(--bg-2); padding: 4px;
+  border-radius: 12px; margin-bottom: 20px;
+  overflow-x: auto; scrollbar-width: thin;
+}
+.wc-tab {
+  flex: 1; min-width: max-content;
+  padding: 9px 14px; border-radius: 9px;
+  border: 0; background: transparent;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--text-soft); cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.wc-tab:hover { color: var(--text); }
+.wc-tab.active {
+  background: var(--card); color: var(--green-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.wc-register {
+  background: linear-gradient(135deg, var(--green-tint) 0%, transparent 100%);
+  border: 1px dashed var(--green-light);
+  border-radius: 12px; padding: 18px;
+  margin-bottom: 18px;
+}
+.wc-register-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--green-dark); margin-bottom: 10px;
+}
+.wc-register-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.wc-register-row .form-control { flex: 1; min-width: 180px; max-width: 360px; }
+
+.wc-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.wc-group {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: all .15s;
+}
+.wc-group.complete { border-color: var(--green-light); background: var(--green-tint); }
+.wc-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.wc-group-label {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 14px; font-weight: 700; color: var(--green-dark);
+}
+.wc-group-progress {
+  font-size: 11px; color: var(--text-mute);
+  background: var(--card); padding: 2px 8px;
+  border-radius: 999px; border: 1px solid var(--border-soft);
+}
+.wc-group.complete .wc-group-progress {
+  background: var(--green); color: #FFFDF8; border-color: var(--green);
+}
+.wc-team-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  margin-bottom: 5px;
+  cursor: pointer; transition: all .12s;
+  font-size: 13px; user-select: none;
+}
+.wc-team-row:hover { border-color: var(--green-light); }
+.wc-team-row.selected {
+  background: var(--green-tint); border-color: var(--green);
+  font-weight: 600;
+}
+.wc-team-row.disabled { opacity: .5; cursor: not-allowed; }
+.wc-team-flag { font-size: 18px; line-height: 1; }
+.wc-team-name { flex: 1; color: var(--text); }
+.wc-team-check {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  display: grid; place-items: center;
+  font-size: 10px; color: transparent;
+  flex-shrink: 0;
+}
+.wc-team-row.selected .wc-team-check {
+  background: var(--green); border-color: var(--green); color: #FFFDF8;
+}
+
+.wc-knockout-stage { margin-bottom: 22px; }
+.wc-stage-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 16px; font-weight: 700; color: var(--text);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.wc-stage-title::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+}
+.wc-match-card {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 10px 14px; margin-bottom: 8px;
+}
+.wc-match-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 10px;
+}
+.wc-match-team {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text);
+}
+.wc-match-team.home { justify-content: flex-end; }
+.wc-match-team.away { justify-content: flex-start; }
+.wc-match-team .wc-team-flag { font-size: 16px; }
+.wc-match-team-tbd { color: var(--text-mute); font-style: italic; font-size: 12px; }
+.wc-match-score { display: flex; align-items: center; gap: 6px; }
+.wc-match-score input {
+  width: 38px; padding: 5px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  font-size: 14px; font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.wc-match-score input:focus {
+  outline: none; border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-tint);
+}
+.wc-match-score input:disabled { opacity: .5; cursor: not-allowed; }
+.wc-match-dash { color: var(--text-mute); font-weight: 700; }
+.wc-empty {
+  text-align: center; padding: 24px 16px;
+  background: var(--bg-2); border-radius: 10px;
+  border: 1px dashed var(--border);
+  color: var(--text-mute); font-size: 13px;
+}
+.wc-empty-ico { font-size: 28px; margin-bottom: 6px; opacity: .5; }
+
+.wc-submit-row {
+  position: sticky; bottom: 0;
+  background: linear-gradient(180deg, transparent 0%, var(--card) 30%);
+  margin: 20px -22px -26px;
+  padding: 14px 22px 18px;
+  display: flex; gap: 10px; justify-content: flex-end;
+  border-top: 1px solid var(--border-soft);
+}
+.wc-submit-btn {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+  color: #FFFDF8; border: 0;
+  padding: 11px 24px;
+  border-radius: 99px;
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+  display: inline-flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 14px rgba(49,92,59,.25);
+}
+.wc-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(49,92,59,.32);
+}
+.wc-submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.wc-leaderboard {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.wc-lb-header {
+  background: var(--bg-2);
+  display: grid;
+  grid-template-columns: 50px 1fr 90px;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 11.5px; font-weight: 700;
+  color: var(--text-mute); letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-soft);
+}
+.wc-lb-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 90px;
+  gap: 10px;
+  padding: 11px 14px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 13.5px;
+}
+.wc-lb-row:last-child { border-bottom: 0; }
+.wc-lb-rank {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 16px; font-weight: 700;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+.wc-lb-row.gold { background: linear-gradient(90deg, var(--gold-tint) 0%, transparent 50%); }
+.wc-lb-row.me { background: var(--green-tint); }
+.wc-lb-name { color: var(--text); font-weight: 500; }
+.wc-lb-row.me .wc-lb-name::after {
+  content: " (أنت)"; color: var(--green); font-weight: 600; font-size: 11.5px;
+}
+.wc-lb-points {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700; color: var(--green-dark);
+}
+.wc-lb-empty {
+  text-align: center; padding: 40px 16px;
+  color: var(--text-mute); font-size: 13.5px;
+}
+
+.wc-admin-warn {
+  background: var(--gold-tint);
+  border: 1px solid var(--gold-soft);
+  border-radius: 10px;
+  padding: 10px 14px; font-size: 12.5px;
+  color: var(--clay); margin-bottom: 14px;
+}
+.wc-admin-section {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 14px; margin-bottom: 14px;
+}
+.wc-admin-section-title {
+  font-size: 13.5px; font-weight: 700;
+  color: var(--text); margin-bottom: 10px;
+  letter-spacing: .3px;
+}
+.wc-adm-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 1fr;
+  gap: 8px; margin-bottom: 8px; align-items: center;
+}
+.wc-adm-row select {
+  padding: 7px 10px; font-size: 13px;
+}
+.wc-adm-score {
+  display: flex; gap: 4px; align-items: center; justify-content: center;
+}
+.wc-adm-score input {
+  width: 38px; text-align: center; padding: 5px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-weight: 700; background: var(--card);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  .wc-section { padding: 16px 14px 20px; }
+  .wc-groups-grid { grid-template-columns: 1fr; }
+  .wc-title { font-size: 19px; }
+  .wc-match-score input { width: 34px; }
+  .wc-lb-header, .wc-lb-row { grid-template-columns: 40px 1fr 80px; padding: 9px 10px; }
+  .wc-submit-row { margin: 16px -14px -20px; padding: 12px 14px 14px; }
+  .wc-adm-row { grid-template-columns: 1fr; gap: 6px; }
+  .wc-adm-row select { width: 100%; }
+}
+
 /* Print */
 @media print {
   .header-actions, .quote-note, .quote-mini, .news-ticker, .countdown, .spotlight { display: none !important; }
@@ -1959,6 +2270,30 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ========= World Cup 2026 Predictions — توقعات كأس العالم ========= -->
+  <div class="wc-section" id="wcSection">
+    <div class="wc-header">
+      <div class="wc-title-wrap">
+        <div class="wc-title">
+          <span class="wc-title-ico">⚽</span>
+          تحدّي توقعات كأس العالم 2026
+        </div>
+        <div class="wc-subtitle">شارك في التحدّي — توقّع المتأهلين، تابع ترتيبك في القائمة العامة</div>
+      </div>
+      <div id="wcUserSlot"></div>
+    </div>
+
+    <div class="wc-tabs" id="wcTabs">
+      <button class="wc-tab active" data-wctab="predict">🎯 توقعاتي</button>
+      <button class="wc-tab" data-wctab="leaderboard">🏆 المتصدّرون</button>
+      <button class="wc-tab" data-wctab="admin" id="wcAdminTab" style="display:none">⚙ إدارة النتائج</button>
+    </div>
+
+    <div id="wcTabContent">
+      <div class="wc-empty"><div class="wc-empty-ico">⏳</div>جارٍ التحميل…</div>
     </div>
   </div>
 
@@ -4605,6 +4940,562 @@ function initQuickBreak() {
   qbLoad();
 }
 initQuickBreak();
+
+/* ════════════════════════════════════════════════════════════════
+   WORLD CUP 2026 PREDICTIONS — تحدّي توقعات كأس العالم
+   Data stored in Firestore:
+     calendar/wc_predictions  → { value: [ {id, name, ts, groups, knockout}, ... ] }
+     calendar/wc_results      → { value: { groups: {...}, knockout: {...} } }
+   ════════════════════════════════════════════════════════════════ */
+
+const WC_PRED_DOC = db.collection('calendar').doc('wc_predictions');
+const WC_RESULTS_DOC = db.collection('calendar').doc('wc_results');
+
+// ── Official 2026 groups (final draw, Dec 5, 2025) ──────────────
+const WC_GROUPS = [
+  { id: 'A', teams: [['MEX','🇲🇽','المكسيك'],['RSA','🇿🇦','جنوب أفريقيا'],['KOR','🇰🇷','كوريا الجنوبية'],['CZE','🇨🇿','التشيك']] },
+  { id: 'B', teams: [['CAN','🇨🇦','كندا'],['BIH','🇧🇦','البوسنة'],['QAT','🇶🇦','قطر'],['SUI','🇨🇭','سويسرا']] },
+  { id: 'C', teams: [['BRA','🇧🇷','البرازيل'],['MAR','🇲🇦','المغرب'],['HAI','🇭🇹','هاييتي'],['SCO','🏴󠁧󠁢󠁳󠁣󠁴󠁿','اسكتلندا']] },
+  { id: 'D', teams: [['USA','🇺🇸','الولايات المتحدة'],['PAR','🇵🇾','باراغواي'],['AUS','🇦🇺','أستراليا'],['TUR','🇹🇷','تركيا']] },
+  { id: 'E', teams: [['GER','🇩🇪','ألمانيا'],['CUW','🇨🇼','كوراساو'],['CIV','🇨🇮','ساحل العاج'],['ECU','🇪🇨','الإكوادور']] },
+  { id: 'F', teams: [['NED','🇳🇱','هولندا'],['JPN','🇯🇵','اليابان'],['TUN','🇹🇳','تونس'],['SWE','🇸🇪','السويد']] },
+  { id: 'G', teams: [['BEL','🇧🇪','بلجيكا'],['EGY','🇪🇬','مصر'],['IRN','🇮🇷','إيران'],['NZL','🇳🇿','نيوزيلندا']] },
+  { id: 'H', teams: [['ESP','🇪🇸','إسبانيا'],['CPV','🇨🇻','الرأس الأخضر'],['KSA','🇸🇦','السعودية'],['URU','🇺🇾','الأوروغواي']] },
+  { id: 'I', teams: [['FRA','🇫🇷','فرنسا'],['SEN','🇸🇳','السنغال'],['NOR','🇳🇴','النرويج'],['IRQ','🇮🇶','العراق']] },
+  { id: 'J', teams: [['ARG','🇦🇷','الأرجنتين'],['ALG','🇩🇿','الجزائر'],['AUT','🇦🇹','النمسا'],['JOR','🇯🇴','الأردن']] },
+  { id: 'K', teams: [['POR','🇵🇹','البرتغال'],['UZB','🇺🇿','أوزبكستان'],['COL','🇨🇴','كولومبيا'],['COD','🇨🇩','الكونغو الديمقراطية']] },
+  { id: 'L', teams: [['ENG','🏴󠁧󠁢󠁥󠁮󠁧󠁿','إنجلترا'],['CRO','🇭🇷','كرواتيا'],['GHA','🇬🇭','غانا'],['PAN','🇵🇦','بنما']] },
+];
+
+const WC_TEAM_MAP = {};
+WC_GROUPS.forEach(g => g.teams.forEach(t => {
+  WC_TEAM_MAP[t[0]] = { code: t[0], flag: t[1], name: t[2], group: g.id };
+}));
+
+const WC_KNOCKOUT_STAGES = [
+  { id: 'r16',   name: 'دور الـ 16',    count: 8 },
+  { id: 'qf',    name: 'ربع النهائي',   count: 4 },
+  { id: 'sf',    name: 'نصف النهائي',   count: 2 },
+  { id: 'final', name: 'النهائي',       count: 1 },
+];
+
+// ── State ───────────────────────────────────────────────────────
+const wcState = {
+  myId: null,
+  myName: '',
+  predictions: [],
+  results: { groups: {}, knockout: { r16:[], qf:[], sf:[], final:[] } },
+  tab: 'predict',
+  draft: null,
+  bootedPredictTab: false, // first render done flag (prevents wiping inputs)
+};
+
+const WC_LS_PLAYER = 'asaas_wc_player';
+
+function wcEsc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function wcLoadIdentity() {
+  try {
+    const raw = localStorage.getItem(WC_LS_PLAYER);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (o && o.id && o.name) return o;
+  } catch (e) {}
+  return null;
+}
+function wcSaveIdentity(name) {
+  const ex = wcLoadIdentity();
+  const id = ex ? ex.id : 'wcp_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  localStorage.setItem(WC_LS_PLAYER, JSON.stringify({ id, name }));
+  wcState.myId = id; wcState.myName = name;
+}
+function wcClearIdentity() {
+  localStorage.removeItem(WC_LS_PLAYER);
+  wcState.myId = null; wcState.myName = ''; wcState.draft = null;
+  wcState.bootedPredictTab = false;
+}
+
+// ── Firestore subscription ─────────────────────────────────────
+function wcSubscribe() {
+  WC_PRED_DOC.onSnapshot(snap => {
+    wcState.predictions = (snap.exists && Array.isArray(snap.data().value)) ? snap.data().value : [];
+    wcMaybeRender('predictions');
+  }, err => console.error('[WC] pred sub error:', err));
+
+  WC_RESULTS_DOC.onSnapshot(snap => {
+    if (snap.exists && snap.data().value) wcState.results = snap.data().value;
+    else wcState.results = { groups: {}, knockout: { r16:[], qf:[], sf:[], final:[] } };
+    // Ensure knockout sub-arrays exist
+    if (!wcState.results.groups) wcState.results.groups = {};
+    if (!wcState.results.knockout) wcState.results.knockout = { r16:[], qf:[], sf:[], final:[] };
+    ['r16','qf','sf','final'].forEach(s => { if (!wcState.results.knockout[s]) wcState.results.knockout[s] = []; });
+    wcMaybeRender('results');
+  }, err => console.error('[WC] results sub error:', err));
+}
+
+// Avoid full re-render of predict tab when user is actively editing inputs
+function wcMaybeRender(source) {
+  // Always render if user is on leaderboard or admin tabs
+  if (wcState.tab === 'leaderboard' || wcState.tab === 'admin') { wcRender(); return; }
+  // On predict tab: re-render only when matchup/lock structure changes (results source),
+  // not when other people's predictions change.
+  if (wcState.tab === 'predict' && source === 'predictions') return;
+  wcRender();
+}
+
+async function wcSaveMyPrediction() {
+  if (!wcState.myId || !wcState.myName || !wcState.draft) return;
+  const myPred = {
+    id: wcState.myId,
+    name: wcState.myName,
+    ts: Date.now(),
+    groups: { ...(wcState.draft.groups || {}) },
+    knockout: {
+      r16: [...(wcState.draft.knockout?.r16 || [])],
+      qf:  [...(wcState.draft.knockout?.qf  || [])],
+      sf:  [...(wcState.draft.knockout?.sf  || [])],
+      final:[...(wcState.draft.knockout?.final|| [])],
+    }
+  };
+  const arr = [...wcState.predictions];
+  const idx = arr.findIndex(p => p.id === wcState.myId);
+  if (idx >= 0) arr[idx] = myPred; else arr.push(myPred);
+  await WC_PRED_DOC.set({ value: arr, updatedAt: Date.now() });
+}
+
+async function wcSaveResults() {
+  await WC_RESULTS_DOC.set({ value: wcState.results, updatedAt: Date.now() });
+}
+
+// ── Scoring ────────────────────────────────────────────────────
+function wcScoreFor(pred) {
+  let total = 0;
+  const r = wcState.results || {};
+
+  // Group qualifiers: 3 pts per correctly predicted qualifier
+  if (r.groups && pred.groups) {
+    WC_GROUPS.forEach(g => {
+      const actual = r.groups[g.id] || [];
+      const guess = pred.groups[g.id] || [];
+      if (actual.length === 2 && guess.length === 2) {
+        const hits = guess.filter(x => actual.includes(x)).length;
+        total += hits * 3;
+      }
+    });
+  }
+
+  // Knockout: 5 pts exact score, 3 pts correct winner
+  ['r16','qf','sf','final'].forEach(s => {
+    const actuals = (r.knockout && r.knockout[s]) || [];
+    const guesses = (pred.knockout && pred.knockout[s]) || [];
+    actuals.forEach((a, i) => {
+      const p = guesses[i];
+      if (!p || !a) return;
+      if (a.homeScore == null || a.awayScore == null) return;
+      if (p.homeScore == null || p.awayScore == null) return;
+      const exact = (p.homeScore === a.homeScore && p.awayScore === a.awayScore);
+      const aw = a.homeScore > a.awayScore ? 'h' : a.homeScore < a.awayScore ? 'a' : 'd';
+      const pw = p.homeScore > p.awayScore ? 'h' : p.homeScore < p.awayScore ? 'a' : 'd';
+      if (exact) total += 5;
+      else if (aw === pw) total += 3;
+    });
+  });
+
+  return total;
+}
+
+// ── Draft init ─────────────────────────────────────────────────
+function wcInitDraft() {
+  const mine = wcState.predictions.find(p => p.id === wcState.myId);
+  wcState.draft = {
+    groups: mine ? { ...(mine.groups || {}) } : {},
+    knockout: mine ? {
+      r16: [...(mine.knockout?.r16 || [])],
+      qf:  [...(mine.knockout?.qf  || [])],
+      sf:  [...(mine.knockout?.sf  || [])],
+      final:[...(mine.knockout?.final|| [])],
+    } : { r16: [], qf: [], sf: [], final: [] }
+  };
+}
+
+// ── Render dispatcher ──────────────────────────────────────────
+function wcRender() {
+  // User badge
+  const slot = document.getElementById('wcUserSlot');
+  if (slot) {
+    slot.innerHTML = wcState.myName
+      ? `<div class="wc-user-badge"><span>👤</span> ${wcEsc(wcState.myName)}
+          <button class="wc-user-clear" onclick="wcLogout()" title="تسجيل خروج">✕</button></div>`
+      : '';
+  }
+  // Admin tab gate
+  const adminTab = document.getElementById('wcAdminTab');
+  if (adminTab) adminTab.style.display = (typeof state !== 'undefined' && state.isAdmin) ? '' : 'none';
+  if (wcState.tab === 'admin' && !(typeof state !== 'undefined' && state.isAdmin)) wcState.tab = 'predict';
+
+  // Tab visual state
+  document.querySelectorAll('#wcTabs .wc-tab').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-wctab') === wcState.tab);
+  });
+
+  const c = document.getElementById('wcTabContent');
+  if (!c) return;
+  if (wcState.tab === 'predict')     c.innerHTML = wcRenderPredict();
+  else if (wcState.tab === 'leaderboard') c.innerHTML = wcRenderLeaderboard();
+  else if (wcState.tab === 'admin')  c.innerHTML = wcRenderAdmin();
+  wcWireEvents();
+}
+
+// ── Predict tab ───────────────────────────────────────────────
+function wcRenderPredict() {
+  if (!wcState.myName) {
+    return `
+      <div class="wc-register">
+        <div class="wc-register-title">✦ ابدأ التحدّي — أدخل اسمك</div>
+        <div class="wc-register-row">
+          <input type="text" class="form-control" id="wcNameInput" placeholder="اسمك الكامل أو اللقب" maxlength="40" />
+          <button class="btn btn-primary" id="wcRegBtn">ابدأ</button>
+        </div>
+        <div style="font-size:11.5px;color:var(--text-mute);margin-top:8px">
+          اسمك سيظهر في القائمة العامة للمتصدّرين. يتم حفظ هويتك محلياً على هذا المتصفح.
+        </div>
+      </div>
+    `;
+  }
+  if (!wcState.draft) wcInitDraft();
+
+  return `
+    ${wcRenderGroupsSection()}
+    ${wcRenderKnockoutSection()}
+    <div class="wc-submit-row">
+      <button class="wc-submit-btn" id="wcSubmitBtn">💾 حفظ توقعاتي</button>
+    </div>
+  `;
+}
+
+function wcRenderGroupsSection() {
+  const cards = WC_GROUPS.map(g => {
+    const picks = (wcState.draft.groups[g.id] || []).filter(Boolean);
+    const locked = !!(wcState.results.groups && wcState.results.groups[g.id]?.length === 2);
+    const complete = picks.length === 2;
+    return `
+      <div class="wc-group ${complete?'complete':''}" data-wcgroup="${g.id}">
+        <div class="wc-group-header">
+          <div class="wc-group-label">المجموعة ${g.id}</div>
+          <div class="wc-group-progress">${picks.length}/2 ${locked?'🔒':''}</div>
+        </div>
+        ${g.teams.map(t => {
+          const [code, flag, name] = t;
+          const sel = picks.includes(code);
+          const dis = locked || (!sel && picks.length >= 2);
+          return `
+            <div class="wc-team-row ${sel?'selected':''} ${dis?'disabled':''}"
+                 data-wcteam="${code}" data-wcgrp="${g.id}">
+              <span class="wc-team-flag">${flag}</span>
+              <span class="wc-team-name">${name}</span>
+              <span class="wc-team-check">✓</span>
+            </div>`;
+        }).join('')}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="wc-stage-title">📋 دور المجموعات — اختر متأهلَين من كل مجموعة</div>
+    <div class="wc-groups-grid">${cards}</div>
+    <div style="height:24px"></div>
+  `;
+}
+
+function wcRenderKnockoutSection() {
+  return WC_KNOCKOUT_STAGES.map(stage => {
+    const matchups = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
+    const draftArr = (wcState.draft.knockout && wcState.draft.knockout[stage.id]) || [];
+
+    let body;
+    if (!matchups.length || matchups.every(m => !m.home && !m.away)) {
+      body = `<div class="wc-empty"><div class="wc-empty-ico">⏳</div>
+              ستفتح التوقعات بعد إعلان مواجهات هذا الدور.</div>`;
+    } else {
+      body = matchups.map((m, i) => {
+        const d = draftArr[i] || {};
+        const resultIn = (m.homeScore != null && m.awayScore != null);
+        const home = m.home ? WC_TEAM_MAP[m.home] : null;
+        const away = m.away ? WC_TEAM_MAP[m.away] : null;
+        return `
+          <div class="wc-match-card" data-wcstage="${stage.id}" data-wcidx="${i}">
+            <div class="wc-match-row">
+              <div class="wc-match-team home">
+                ${home ? `<span>${home.name}</span><span class="wc-team-flag">${home.flag}</span>`
+                       : '<span class="wc-match-team-tbd">منتظر</span>'}
+              </div>
+              <div class="wc-match-score">
+                <input type="number" min="0" max="20" data-wci="home" value="${d.homeScore ?? ''}" ${resultIn?'disabled':''} />
+                <span class="wc-match-dash">−</span>
+                <input type="number" min="0" max="20" data-wci="away" value="${d.awayScore ?? ''}" ${resultIn?'disabled':''} />
+              </div>
+              <div class="wc-match-team away">
+                ${away ? `<span class="wc-team-flag">${away.flag}</span><span>${away.name}</span>`
+                       : '<span class="wc-match-team-tbd">منتظر</span>'}
+              </div>
+            </div>
+            ${resultIn ? `<div style="text-align:center;font-size:11px;color:var(--green-dark);margin-top:6px;font-weight:600">
+                النتيجة الرسمية: ${m.homeScore} − ${m.awayScore}</div>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    return `
+      <div class="wc-knockout-stage">
+        <div class="wc-stage-title">⚔️ ${stage.name}</div>
+        ${body}
+      </div>`;
+  }).join('');
+}
+
+// ── Leaderboard tab ───────────────────────────────────────────
+function wcRenderLeaderboard() {
+  if (!wcState.predictions.length) {
+    return `<div class="wc-leaderboard"><div class="wc-lb-empty">لا توجد توقعات بعد — كن أول المشاركين!</div></div>`;
+  }
+  const ranked = wcState.predictions
+    .map(p => ({ ...p, score: wcScoreFor(p) }))
+    .sort((a,b) => b.score - a.score || a.ts - b.ts);
+
+  const rows = ranked.map((p, i) => {
+    const rank = i + 1;
+    const isMe = p.id === wcState.myId;
+    const cls = rank === 1 ? 'gold' : '';
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    return `
+      <div class="wc-lb-row ${cls} ${isMe?'me':''}">
+        <div class="wc-lb-rank">${medal}</div>
+        <div class="wc-lb-name">${wcEsc(p.name)}</div>
+        <div class="wc-lb-points">${p.score} نقطة</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div style="font-size:12.5px;color:var(--text-mute);margin-bottom:10px">
+      ${ranked.length} مشارك · يُحدَّث تلقائياً عند إدخال نتائج جديدة
+    </div>
+    <div class="wc-leaderboard">
+      <div class="wc-lb-header">
+        <div>الترتيب</div>
+        <div>الاسم</div>
+        <div style="text-align:end">النقاط</div>
+      </div>
+      ${rows}
+    </div>
+    <div style="margin-top:14px;padding:10px 14px;background:var(--bg-2);border-radius:10px;font-size:11.5px;color:var(--text-mute);line-height:1.7">
+      <strong style="color:var(--text-soft)">نظام النقاط:</strong>
+      كل منتخب متأهّل صح من مجموعة = ٣ نقاط ·
+      توقّع الفائز فقط = ٣ نقاط ·
+      توقّع النتيجة الصحيحة بالضبط = ٥ نقاط
+    </div>`;
+}
+
+// ── Admin tab ─────────────────────────────────────────────────
+function wcRenderAdmin() {
+  const r = wcState.results;
+  return `
+    <div class="wc-admin-warn">
+      ⚠️ <strong>تنبيه:</strong> أي تعديل هنا يُحدّث نقاط جميع المشاركين تلقائياً. تأكّد من الأرقام قبل الإدخال.
+    </div>
+
+    <div class="wc-admin-section">
+      <div class="wc-admin-section-title">🏁 نتائج دور المجموعات (متأهّلَين لكل مجموعة)</div>
+      <div class="wc-groups-grid">
+        ${WC_GROUPS.map(g => {
+          const actual = (r.groups && r.groups[g.id]) || [];
+          return `
+            <div class="wc-group ${actual.length===2?'complete':''}" data-wcadmingrp="${g.id}">
+              <div class="wc-group-header">
+                <div class="wc-group-label">المجموعة ${g.id}</div>
+                <div class="wc-group-progress">${actual.length}/2</div>
+              </div>
+              ${g.teams.map(t => {
+                const sel = actual.includes(t[0]);
+                const dis = !sel && actual.length >= 2;
+                return `
+                  <div class="wc-team-row ${sel?'selected':''} ${dis?'disabled':''}"
+                       data-wcadmteam="${t[0]}" data-wcadmgrpid="${g.id}">
+                    <span class="wc-team-flag">${t[1]}</span>
+                    <span class="wc-team-name">${t[2]}</span>
+                    <span class="wc-team-check">✓</span>
+                  </div>`;
+              }).join('')}
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    ${WC_KNOCKOUT_STAGES.map(s => wcRenderAdminStage(s)).join('')}
+
+    <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-mute)">
+      التعديلات تُحفظ تلقائياً.
+    </div>`;
+}
+
+function wcRenderAdminStage(stage) {
+  const arr = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
+  while (arr.length < stage.count) arr.push({});
+
+  return `
+    <div class="wc-admin-section">
+      <div class="wc-admin-section-title">⚔️ ${stage.name} — مواجهات ونتائج</div>
+      ${Array.from({length: stage.count}, (_, i) => {
+        const m = arr[i] || {};
+        return `
+          <div class="wc-adm-row">
+            ${wcAdmTeamSelect(stage.id, i, 'home', m.home)}
+            <div class="wc-adm-score">
+              <input type="number" min="0" max="20" data-wcadmstage="${stage.id}" data-wcadmidx="${i}" data-wcadmfield="homeScore" value="${m.homeScore ?? ''}" />
+              <span style="font-weight:700;color:var(--text-mute)">−</span>
+              <input type="number" min="0" max="20" data-wcadmstage="${stage.id}" data-wcadmidx="${i}" data-wcadmfield="awayScore" value="${m.awayScore ?? ''}" />
+            </div>
+            ${wcAdmTeamSelect(stage.id, i, 'away', m.away)}
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function wcAdmTeamSelect(stageId, idx, field, current) {
+  let opts = '<option value="">— اختر منتخب —</option>';
+  WC_GROUPS.forEach(g => {
+    g.teams.forEach(t => {
+      const sel = t[0] === current ? ' selected' : '';
+      opts += `<option value="${t[0]}"${sel}>${t[1]} ${t[2]} (${g.id})</option>`;
+    });
+  });
+  return `<select class="form-control" data-wcadmstage="${stageId}" data-wcadmidx="${idx}" data-wcadmfield="${field}">${opts}</select>`;
+}
+
+// ── Wiring ─────────────────────────────────────────────────────
+function wcWireEvents() {
+  document.querySelectorAll('#wcTabs .wc-tab').forEach(b => {
+    b.onclick = () => { wcState.tab = b.getAttribute('data-wctab'); wcRender(); };
+  });
+
+  // Register
+  const regBtn = document.getElementById('wcRegBtn');
+  if (regBtn) {
+    regBtn.onclick = () => {
+      const name = (document.getElementById('wcNameInput').value || '').trim();
+      if (!name) return alert('الرجاء إدخال اسمك');
+      if (name.length < 2) return alert('الاسم قصير جداً');
+      wcSaveIdentity(name);
+      wcRender();
+    };
+    document.getElementById('wcNameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') regBtn.click();
+    });
+  }
+
+  // Group picks (predict tab)
+  document.querySelectorAll('[data-wcteam][data-wcgrp]').forEach(row => {
+    row.onclick = () => {
+      if (row.classList.contains('disabled')) return;
+      const team = row.getAttribute('data-wcteam');
+      const grp  = row.getAttribute('data-wcgrp');
+      if (!wcState.draft.groups[grp]) wcState.draft.groups[grp] = [];
+      const arr = wcState.draft.groups[grp];
+      const i = arr.indexOf(team);
+      if (i >= 0) arr.splice(i, 1);
+      else if (arr.length < 2) arr.push(team);
+      wcRender();
+    };
+  });
+
+  // Knockout score inputs (predict tab) — only update draft, no re-render
+  document.querySelectorAll('[data-wci]').forEach(inp => {
+    inp.onchange = () => {
+      const card = inp.closest('[data-wcstage]');
+      if (!card) return;
+      const stage = card.getAttribute('data-wcstage');
+      const idx = parseInt(card.getAttribute('data-wcidx'), 10);
+      const field = inp.getAttribute('data-wci');
+      if (!wcState.draft.knockout[stage]) wcState.draft.knockout[stage] = [];
+      while (wcState.draft.knockout[stage].length <= idx) wcState.draft.knockout[stage].push({});
+      const v = inp.value === '' ? null : parseInt(inp.value, 10);
+      wcState.draft.knockout[stage][idx][field === 'home' ? 'homeScore' : 'awayScore'] = v;
+    };
+  });
+
+  // Submit
+  const submitBtn = document.getElementById('wcSubmitBtn');
+  if (submitBtn) {
+    submitBtn.onclick = async () => {
+      submitBtn.disabled = true;
+      const orig = submitBtn.innerHTML;
+      submitBtn.innerHTML = '⏳ جارٍ الحفظ…';
+      try {
+        await wcSaveMyPrediction();
+        submitBtn.innerHTML = '✓ تم الحفظ';
+        setTimeout(() => {
+          const b = document.getElementById('wcSubmitBtn');
+          if (b) { b.disabled = false; b.innerHTML = orig; }
+        }, 1500);
+      } catch (e) {
+        console.error('[WC] save error:', e);
+        alert('حدث خطأ أثناء الحفظ. حاول مرة أخرى.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = orig;
+      }
+    };
+  }
+
+  // Admin: group results
+  document.querySelectorAll('[data-wcadmteam]').forEach(row => {
+    row.onclick = async () => {
+      if (row.classList.contains('disabled')) return;
+      const team = row.getAttribute('data-wcadmteam');
+      const grp  = row.getAttribute('data-wcadmgrpid');
+      if (!wcState.results.groups) wcState.results.groups = {};
+      if (!wcState.results.groups[grp]) wcState.results.groups[grp] = [];
+      const arr = wcState.results.groups[grp];
+      const i = arr.indexOf(team);
+      if (i >= 0) arr.splice(i, 1);
+      else if (arr.length < 2) arr.push(team);
+      try { await wcSaveResults(); } catch(e){ console.error(e); }
+      wcRender();
+    };
+  });
+
+  // Admin: knockout fields (select + score inputs)
+  document.querySelectorAll('[data-wcadmstage]').forEach(el => {
+    el.onchange = async () => {
+      const stage = el.getAttribute('data-wcadmstage');
+      const idx   = parseInt(el.getAttribute('data-wcadmidx'), 10);
+      const field = el.getAttribute('data-wcadmfield');
+      if (!wcState.results.knockout) wcState.results.knockout = { r16:[], qf:[], sf:[], final:[] };
+      if (!wcState.results.knockout[stage]) wcState.results.knockout[stage] = [];
+      while (wcState.results.knockout[stage].length <= idx) wcState.results.knockout[stage].push({});
+      let v = el.value;
+      if (field === 'homeScore' || field === 'awayScore') v = (v === '' ? null : parseInt(v, 10));
+      wcState.results.knockout[stage][idx][field] = v;
+      try { await wcSaveResults(); } catch(e){ console.error(e); }
+    };
+  });
+}
+
+window.wcLogout = function() {
+  if (!confirm('هل تريد تسجيل الخروج من تحدّي التوقعات؟ سيُحتفظ بتوقعاتك المحفوظة في القائمة.')) return;
+  wcClearIdentity();
+  wcRender();
+};
+
+// ── Init ────────────────────────────────────────────────────────
+function initWorldCup() {
+  const me = wcLoadIdentity();
+  if (me) { wcState.myId = me.id; wcState.myName = me.name; }
+  wcSubscribe();
+  wcRender();
+}
+initWorldCup();
 
 </script>
 </body>
