@@ -1868,7 +1868,17 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-weight: 600;
 }
 .wc-team-row.disabled { opacity: .5; cursor: not-allowed; }
-.wc-team-flag { font-size: 18px; line-height: 1; }
+.wc-team-flag {
+  display: inline-flex; align-items: center;
+  line-height: 1;
+}
+.wc-flag-img {
+  display: inline-block; vertical-align: middle;
+  border-radius: 2px;
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,.08);
+  object-fit: cover;
+  width: auto;
+}
 .wc-team-name { flex: 1; color: var(--text); }
 .wc-team-check {
   width: 18px; height: 18px;
@@ -1910,7 +1920,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-match-team.home { justify-content: flex-end; }
 .wc-match-team.away { justify-content: flex-start; }
-.wc-match-team .wc-team-flag { font-size: 16px; }
+.wc-match-team .wc-flag-img { height: 16px; }
 .wc-match-team-tbd { color: var(--text-mute); font-style: italic; font-size: 12px; }
 .wc-match-score { display: flex; align-items: center; gap: 6px; }
 .wc-match-score input {
@@ -5190,6 +5200,30 @@ WC_GROUPS.forEach(g => g.teams.forEach(t => {
   WC_TEAM_MAP[t[0]] = { code: t[0], flag: t[1], name: t[2], group: g.id };
 }));
 
+// ── Flag SVG mapping (Windows-compatible: emoji flags don't render on Windows
+//    browsers, so we use SVG flag images from the lipis/flag-icons CDN) ───
+const WC_FLAG_ISO = {
+  MEX:'mx', RSA:'za', KOR:'kr', CZE:'cz',
+  CAN:'ca', BIH:'ba', QAT:'qa', SUI:'ch',
+  BRA:'br', MAR:'ma', HAI:'ht', SCO:'gb-sct',
+  USA:'us', PAR:'py', AUS:'au', TUR:'tr',
+  GER:'de', CUW:'cw', CIV:'ci', ECU:'ec',
+  NED:'nl', JPN:'jp', TUN:'tn', SWE:'se',
+  BEL:'be', EGY:'eg', IRN:'ir', NZL:'nz',
+  ESP:'es', CPV:'cv', KSA:'sa', URU:'uy',
+  FRA:'fr', SEN:'sn', NOR:'no', IRQ:'iq',
+  ARG:'ar', ALG:'dz', AUT:'at', JOR:'jo',
+  POR:'pt', UZB:'uz', COL:'co', COD:'cd',
+  ENG:'gb-eng', CRO:'hr', GHA:'gh', PAN:'pa',
+};
+const WC_FLAG_CDN = 'https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3/';
+function wcFlagImg(code, h) {
+  const iso = WC_FLAG_ISO[code];
+  if (!iso) return '';
+  const height = h || 16;
+  return `<img class="wc-flag-img" src="${WC_FLAG_CDN}${iso}.svg" alt="" loading="lazy" style="height:${height}px" />`;
+}
+
 // ────────────────────────────────────────────────────────────────
 // State & identity
 // ────────────────────────────────────────────────────────────────
@@ -5530,7 +5564,7 @@ function wcRenderGroupsForm() {
           return `
             <div class="wc-team-row ${sel?'selected':''} ${dis?'disabled':''}"
                  data-wcteam="${code}" data-wcgrp="${g.id}">
-              <span class="wc-team-flag">${flag}</span>
+              <span class="wc-team-flag">${wcFlagImg(code, 18)}</span>
               <span class="wc-team-name">${name}</span>
               <span class="wc-team-check">✓</span>
             </div>`;
@@ -5556,7 +5590,7 @@ function wcRenderKOForm(stage) {
       <div class="wc-match-card" data-wcstage="${stage.id}" data-wcidx="${i}">
         <div class="wc-match-row">
           <div class="wc-match-team home">
-            ${home ? `<span>${home.name}</span><span class="wc-team-flag">${home.flag}</span>`
+            ${home ? `<span>${home.name}</span><span class="wc-team-flag">${wcFlagImg(home.code, 16)}</span>`
                    : '<span class="wc-match-team-tbd">منتظر</span>'}
           </div>
           <div class="wc-match-score">
@@ -5565,7 +5599,7 @@ function wcRenderKOForm(stage) {
             <input type="number" min="0" max="20" data-wci="away" value="${d.awayScore ?? ''}" ${resultIn?'disabled':''} />
           </div>
           <div class="wc-match-team away">
-            ${away ? `<span class="wc-team-flag">${away.flag}</span><span>${away.name}</span>`
+            ${away ? `<span class="wc-team-flag">${wcFlagImg(away.code, 16)}</span><span>${away.name}</span>`
                    : '<span class="wc-match-team-tbd">منتظر</span>'}
           </div>
         </div>
@@ -5586,7 +5620,7 @@ function wcRenderStageSummary(stage, myPred, isClosed) {
     const items = WC_GROUPS.map(g => {
       const picks = (myPred.groups || {})[g.id] || [];
       if (!picks.length) return '';
-      return `<span class="wc-summary-pill">${g.id}: ${picks.map(c => WC_TEAM_MAP[c]?.flag || '?').join(' ')}</span>`;
+      return `<span class="wc-summary-pill">${g.id}: ${picks.map(c => wcFlagImg(c, 12) || '?').join(' ')}</span>`;
     }).filter(Boolean).join('');
     return items ? `<div class="wc-summary-row"><div class="wc-summary-label">توقعاتك:</div><div>${items}</div></div>` : '';
   }
@@ -5693,7 +5727,7 @@ function wcRenderAdmin() {
                 return `
                   <div class="wc-team-row ${sel?'selected':''} ${dis?'disabled':''}"
                        data-wcadmteam="${t[0]}" data-wcadmgrpid="${g.id}">
-                    <span class="wc-team-flag">${t[1]}</span>
+                    <span class="wc-team-flag">${wcFlagImg(t[0], 18)}</span>
                     <span class="wc-team-name">${t[2]}</span>
                     <span class="wc-team-check">✓</span>
                   </div>`;
