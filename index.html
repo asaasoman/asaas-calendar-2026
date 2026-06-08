@@ -2238,6 +2238,186 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   .header-actions, .quote-note, .quote-mini, .news-ticker, .countdown, .spotlight { display: none !important; }
   body { background: white; }
 }
+
+/* ─── Hash routing: hide main content when on #predictions view ─── */
+html:not(.view-wc) .show-on-wc { display: none !important; }
+html.view-wc .hide-on-wc { display: none !important; }
+
+/* ─── WC Launcher card on main page ─────────────────────────── */
+.wc-launcher {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  margin: 32px 0 0;
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 45%, #1a3520 100%);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: all .25s ease;
+}
+.wc-launcher:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(49,92,59,.28), 0 4px 14px rgba(58,42,29,.10);
+}
+.wc-launcher:active { transform: translateY(0); }
+.wc-launcher-inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 22px;
+  align-items: center;
+  padding: 22px 26px;
+  position: relative;
+  z-index: 1;
+}
+/* Decorative pattern */
+.wc-launcher::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 12% 30%, rgba(201,166,70,.18) 0%, transparent 28%),
+    radial-gradient(circle at 88% 70%, rgba(255,253,248,.06) 0%, transparent 32%);
+  pointer-events: none;
+}
+.wc-launcher-logo {
+  width: 78px; height: 78px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 44px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.18), inset 0 -2px 6px rgba(0,0,0,.12);
+  flex-shrink: 0;
+  position: relative;
+}
+.wc-launcher-logo img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+.wc-launcher-text { min-width: 0; }
+.wc-launcher-eyebrow {
+  font-size: 11px; font-weight: 700;
+  color: var(--gold-soft); letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.wc-launcher-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 24px; font-weight: 700;
+  color: #FFFDF8;
+  letter-spacing: -.3px;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+.wc-launcher-sub {
+  font-size: 13px; color: rgba(255,253,248,.78);
+  line-height: 1.5;
+}
+.wc-launcher-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--green-dark);
+  font-size: 13px; font-weight: 700;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.wc-launcher:hover .wc-launcher-cta {
+  background: #FFFDF8; color: var(--green-dark);
+  transform: scale(1.03);
+}
+.wc-launcher-cta::after {
+  content: "←"; font-size: 16px; line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .wc-launcher-inner { grid-template-columns: auto 1fr; gap: 14px; padding: 16px 18px; }
+  .wc-launcher-logo { width: 56px; height: 56px; font-size: 32px; }
+  .wc-launcher-title { font-size: 18px; }
+  .wc-launcher-sub { font-size: 12px; }
+  .wc-launcher-cta {
+    grid-column: 1 / -1;
+    justify-content: center;
+    margin-top: 6px;
+    padding: 9px 16px; font-size: 12.5px;
+  }
+}
+
+/* ─── Back button in WC view ────────────────────────────────── */
+.wc-back-bar {
+  margin: 16px 0 0;
+}
+.wc-back-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .15s;
+}
+.wc-back-btn:hover {
+  background: var(--green-tint);
+  border-color: var(--green-light);
+  color: var(--green-dark);
+}
+.wc-back-btn::before { content: "→"; font-size: 14px; }
+
+/* ─── Admin: sections visibility list ───────────────────────── */
+.sect-vis-list {
+  display: flex; flex-direction: column;
+  gap: 8px;
+}
+.sect-vis-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  transition: all .15s;
+}
+.sect-vis-row.on { border-color: var(--green-light); background: var(--green-tint); }
+.sect-vis-info {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.sect-vis-label {
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+}
+.sect-vis-status {
+  font-size: 11.5px; color: var(--text-mute);
+}
+.sect-vis-row.on .sect-vis-status { color: var(--green-dark); }
+/* Toggle switch */
+.sect-toggle {
+  position: relative;
+  width: 46px; height: 26px;
+  background: var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.sect-toggle::after {
+  content: ""; position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  background: var(--card);
+  border-radius: 50%;
+  transition: all .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.18);
+}
+.sect-toggle.on {
+  background: var(--green);
+}
+.sect-toggle.on::after {
+  left: 23px;
+  background: #FFFDF8;
+}
 </style>
 </head>
 <body>
@@ -2272,14 +2452,29 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   </header>
 
   <!-- ========= NEWS TICKER ========= -->
-  <div class="news-ticker">
+  <div class="news-ticker hide-on-wc" id="newsTickerSection">
     <span class="news-dot"></span>
     <span class="news-label">آخر الأخبار</span>
     <div class="news-content" id="newsContent">جارٍ تحميل الأخبار…</div>
   </div>
 
+  <!-- ========= World Cup Launcher (clickable card) ========= -->
+  <a href="#predictions" class="wc-launcher hide-on-wc" id="wcLauncher" aria-label="افتح صفحة تحدّي توقعات كأس العالم">
+    <div class="wc-launcher-inner">
+      <div class="wc-launcher-logo">
+        <img src="/images/world-cup-2026.png" alt="" onerror="this.style.display='none';this.parentElement.innerHTML='⚽';" />
+      </div>
+      <div class="wc-launcher-text">
+        <div class="wc-launcher-eyebrow">FIFA WORLD CUP · 2026</div>
+        <div class="wc-launcher-title">تحدّي توقعات كأس العالم</div>
+        <div class="wc-launcher-sub">توقّع المتأهّلين من المجموعات ونتائج الأدوار الإقصائية · نافِس على أعلى نقاط</div>
+      </div>
+      <span class="wc-launcher-cta">شارك الآن</span>
+    </div>
+  </a>
+
   <!-- ========= TOP CONTROL ROW ========= -->
-  <div class="top-row">
+  <div class="top-row hide-on-wc">
 
     <!-- Spotlight / Let's Remember -->
     <div class="spotlight" id="spotlightCard">
@@ -2333,11 +2528,11 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   </div>
 
   <!-- ========= CALENDAR ========= -->
-  <div class="calendar-wrap" id="calendarWrap"></div>
+  <div class="calendar-wrap hide-on-wc" id="calendarWrap"></div>
 
 
   <!-- ========= مساحتك — Community Wall ========= -->
-  <div class="masahatak-section" id="masahatakSection">
+  <div class="masahatak-section hide-on-wc" id="masahatakSection">
     <div class="masahatak-header">
       <div>
         <div class="masahatak-title">✦ مساحتك</div>
@@ -2378,7 +2573,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 
 
   <!-- ========= Quick Break — استراحة سريعة ========= -->
-  <div class="qb-section" id="qbSection">
+  <div class="qb-section hide-on-wc" id="qbSection">
     <div class="qb-header">
       <div>
         <div class="qb-title">⚡ استراحة سريعة</div>
@@ -2450,7 +2645,11 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   </div>
 
   <!-- ========= World Cup 2026 Predictions — توقعات كأس العالم ========= -->
-  <div class="wc-section" id="wcSection">
+  <div class="show-on-wc">
+    <div class="wc-back-bar">
+      <a href="#" class="wc-back-btn" id="wcBackBtn">العودة للصفحة الرئيسية</a>
+    </div>
+    <div class="wc-section" id="wcSection">
     <div class="wc-header">
       <div class="wc-title-wrap">
         <div class="wc-title">
@@ -2472,8 +2671,9 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
       <div class="wc-empty"><div class="wc-empty-ico">⏳</div>جارٍ التحميل…</div>
     </div>
   </div>
+  </div>
 
-  <div class="footer">
+  <div class="footer hide-on-wc">
     ASAAS &nbsp;·&nbsp; التقويم المؤسسي &nbsp;·&nbsp; 2026
   </div>
 </div>
@@ -2579,6 +2779,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
         <button class="panel-tab" data-tab="news">الأخبار</button>
         <button class="panel-tab" data-tab="quotes">العبارات الملهمة</button>
         <button class="panel-tab" data-tab="spotlight">لنتذكّر</button>
+        <button class="panel-tab" data-tab="sections">إظهار/إخفاء الأقسام</button>
         <button class="panel-tab" data-tab="settings">الإعدادات</button>
       </div>
       <div id="panelContent"></div>
@@ -3900,6 +4101,7 @@ function renderPanel(tab) {
   if (tab === 'news') c.innerHTML = panelNews();
   if (tab === 'quotes') c.innerHTML = panelQuotes();
   if (tab === 'spotlight') c.innerHTML = panelSpotlight();
+  if (tab === 'sections') c.innerHTML = panelSections();
   if (tab === 'settings') c.innerHTML = panelSettings();
   wirePanel(tab);
 }
@@ -5116,6 +5318,111 @@ function initQuickBreak() {
   qbLoad();
 }
 initQuickBreak();
+
+/* ════════════════════════════════════════════════════════════════
+   SECTION VISIBILITY (admin-controlled) + HASH ROUTING
+   ─────────────────────────────────────────────────────────────────
+   - Each main-page section can be toggled on/off by the admin.
+   - State is shared via Firestore (calendar/sections_visibility)
+     so all visitors see the same configuration in real time.
+   - Hash routing: #predictions → show WC view, else → show main view
+   ════════════════════════════════════════════════════════════════ */
+
+const SECTIONS = [
+  { id: 'news',       selector: '#newsTickerSection', label: 'شريط الأخبار',           hint: 'الشريط الأخضر العلوي بآخر الأخبار' },
+  { id: 'spotlight',  selector: '#spotlightCard',     label: 'لنتذكّر (Let\'s Remember)', hint: 'منزلق الصور التذكاري' },
+  { id: 'countdown',  selector: '#countdownCard',     label: 'العد التنازلي',          hint: 'بطاقة الحدث القادم' },
+  { id: 'calendar',   selector: '#calendarWrap',      label: 'التقويم',                hint: 'المخطط الشهري/السنوي' },
+  { id: 'masahatak',  selector: '#masahatakSection',  label: 'مساحتك',                 hint: 'جدار المشاركات المجتمعية' },
+  { id: 'quickbreak', selector: '#qbSection',         label: 'استراحة سريعة',          hint: 'تحديات سريعة وأسئلة' },
+  { id: 'wc',         selector: '#wcLauncher',        label: 'بطاقة كأس العالم',      hint: 'رابط الانتقال لصفحة التوقعات' },
+];
+
+const VIS_DOC = db.collection('calendar').doc('sections_visibility');
+let SECTIONS_VIS = {}; // { id: true/false } — missing keys treated as visible
+
+function applySectionVisibility() {
+  SECTIONS.forEach(s => {
+    const isVisible = SECTIONS_VIS[s.id] !== false; // default visible
+    document.querySelectorAll(s.selector).forEach(el => {
+      el.dataset.hiddenByAdmin = isVisible ? '' : '1';
+      // Don't fight with hash routing's hide-on-wc — only set explicit display:none when hidden
+      if (!isVisible) el.style.display = 'none';
+      else el.style.display = '';
+    });
+  });
+}
+
+function subscribeSectionVisibility() {
+  VIS_DOC.onSnapshot(snap => {
+    SECTIONS_VIS = (snap.exists && snap.data().value) || {};
+    applySectionVisibility();
+    // If admin panel sections tab is currently open, refresh it
+    const activeTab = document.querySelector('.panel-tab.active');
+    if (activeTab && activeTab.getAttribute('data-tab') === 'sections') {
+      const c = document.getElementById('panelContent');
+      if (c) { c.innerHTML = panelSections(); wirePanel('sections'); }
+    }
+  }, err => console.error('[sections] sub error:', err));
+}
+
+async function toggleSectionVisibility(sectionId) {
+  const current = SECTIONS_VIS[sectionId] !== false;
+  SECTIONS_VIS[sectionId] = !current;
+  try {
+    await VIS_DOC.set({ value: SECTIONS_VIS, updatedAt: Date.now() });
+  } catch (e) {
+    console.error('[sections] save error:', e);
+    alert('تعذّر حفظ الإعداد. تأكّد من الاتصال.');
+  }
+}
+window.toggleSectionVisibility = toggleSectionVisibility;
+
+// ── Admin panel tab content ─────────────────────────────────────
+function panelSections() {
+  return `
+    <div class="section-divider">إظهار/إخفاء أقسام الصفحة الرئيسية</div>
+    <div style="background:var(--gold-tint);border:1px solid var(--gold-soft);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--clay);margin-bottom:14px">
+      ⚙ هذه الإعدادات تنطبق على جميع الزوار فوراً.
+    </div>
+    <div class="sect-vis-list">
+      ${SECTIONS.map(s => {
+        const on = SECTIONS_VIS[s.id] !== false;
+        return `
+          <div class="sect-vis-row ${on?'on':''}">
+            <div class="sect-vis-info">
+              <div class="sect-vis-label">${s.label}</div>
+              <div class="sect-vis-status">${on ? '✓ ظاهر للزوار' : '✕ مخفي'}${s.hint ? ' · ' + s.hint : ''}</div>
+            </div>
+            <div class="sect-toggle ${on?'on':''}" onclick="toggleSectionVisibility('${s.id}')" role="switch" aria-checked="${on}"></div>
+          </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+// ── Hash routing (main page ↔ #predictions) ─────────────────────
+function applyRoute() {
+  const isWC = window.location.hash === '#predictions';
+  document.documentElement.classList.toggle('view-wc', isWC);
+  // Scroll to top on view switch
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+window.addEventListener('hashchange', applyRoute);
+
+// Back button (also clears the hash cleanly)
+const __wcBackBtn = document.getElementById('wcBackBtn');
+if (__wcBackBtn) {
+  __wcBackBtn.onclick = (e) => {
+    e.preventDefault();
+    history.pushState('', document.title, window.location.pathname + window.location.search);
+    applyRoute();
+  };
+}
+
+// Initial dispatch + Firestore subscription
+applyRoute();
+subscribeSectionVisibility();
 
 /* ════════════════════════════════════════════════════════════════
    WORLD CUP 2026 PREDICTIONS — تحدّي توقعات كأس العالم (v2)
