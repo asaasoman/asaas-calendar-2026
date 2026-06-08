@@ -2896,6 +2896,472 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+/* ════════════════════════════════════════════════════════════════
+   i18n — Arabic/English language toggle
+   ─────────────────────────────────────────────────────────────────
+   Usage:
+     - HTML: <span data-i18n="key">عربي</span>
+            <input data-i18n-placeholder="key" placeholder="..." />
+            <span data-i18n-html="key">…</span>  (for HTML content with <strong> etc)
+     - JS:   `${t('key')}` inside template strings
+   On lang change: dir/lang attributes update, all data-i18n elements update,
+   and a 'langchange' event fires (subscribers re-render dynamic content).
+   ════════════════════════════════════════════════════════════════ */
+
+const I18N = {
+  ar: {
+    // ── Header / app shell ─────────────────────────────────────
+    'app.title':              'تقويم أساس المؤسسي',
+    'app.subtitle':           'ASAAS · CORPORATE CALENDAR · 2026',
+    'app.footer':             'ASAAS  ·  التقويم المؤسسي  ·  2026',
+    'btn.control':            'التحكم',
+    'btn.close':              'إغلاق',
+    'btn.save':               'حفظ',
+    'btn.cancel':             'إلغاء',
+    'btn.delete':             'حذف',
+    'btn.add':                'إضافة',
+    'btn.edit':               'تعديل',
+    'btn.confirm':            'تأكيد',
+    'lang.label':             'EN',
+    'lang.aria':              'تبديل اللغة إلى الإنجليزية',
+
+    // ── News ticker ────────────────────────────────────────────
+    'news.label':             'آخر الأخبار',
+    'news.loading':           'جارٍ تحميل الأخبار…',
+    'news.empty':             'لا توجد أخبار حالياً',
+
+    // ── Spotlight ──────────────────────────────────────────────
+    'spotlight.label':        "Let's Remember",
+    'spotlight.title':        'لنتذكّر',
+    'spotlight.empty.title':  'لا توجد صور بعد',
+    'spotlight.empty.hint':   'أضف صوراً من لوحة التحكم',
+
+    // ── Countdown ──────────────────────────────────────────────
+    'cd.upcoming':            'الحدث القادم',
+    'cd.title':               'العد التنازلي',
+    'cd.day':                 'يوم',
+    'cd.h':                   'س',
+    'cd.m':                   'د',
+    'cd.s':                   'ث',
+
+    // ── Calendar nav ───────────────────────────────────────────
+    'cal.monthly':            'الشهري',
+    'cal.yearly':             'السنوي',
+    'cal.today':              'اليوم',
+    'cal.prev':               'السابق',
+    'cal.next':               'التالي',
+
+    // ── Masahatak ──────────────────────────────────────────────
+    'mas.title':              '✦ مساحتك',
+    'mas.subtitle':           'شارك مقولة، فائدة، فكرة، أو رأي قصير مع الفريق',
+    'mas.name.placeholder':   'اسمك (اختياري)',
+    'mas.type.placeholder':   'نوع المشاركة — مقولة، فائدة، فكرة، رأي…',
+    'mas.text.placeholder':   'اكتب هنا…',
+    'mas.addImage':           '🖼 أضف صورة (اختياري)',
+    'mas.removeImage':        'إزالة الصورة',
+    'mas.submit':             '✦ شارك',
+    'mas.loading':            'جارٍ التحميل…',
+
+    // ── Quick Break ────────────────────────────────────────────
+    'qb.title':               '⚡ استراحة سريعة',
+    'qb.subtitle':            'تحديات قصيرة — صواب وخطأ، اختيارات، ألغاز، معلومات عامة',
+    'qb.next':                'تحدٍّ جديد',
+    'qb.loading':             'جارٍ التحميل…',
+
+    // ── WC launcher ────────────────────────────────────────────
+    'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
+    'wc.launcher.title':      'تحدّي توقعات كأس العالم',
+    'wc.launcher.sub':        'توقّع المتأهّلين من المجموعات ونتائج الأدوار الإقصائية · نافِس على أعلى نقاط',
+    'wc.launcher.cta':        'شارك الآن',
+    'wc.back':                'العودة للصفحة الرئيسية',
+
+    // ── WC section ─────────────────────────────────────────────
+    'wc.title':               'تحدّي توقعات كأس العالم 2026',
+    'wc.subtitle':            'شارك في التحدّي — توقّع المتأهلين، تابع ترتيبك في القائمة العامة',
+    'wc.tab.predict':         '🎯 توقعاتي',
+    'wc.tab.leaderboard':     '🏆 المتصدّرون',
+    'wc.tab.admin':           '⚙ إدارة النتائج',
+    'wc.loading':             'جارٍ التحميل…',
+    'wc.register.title':      '✦ ابدأ التحدّي — أدخل اسمك',
+    'wc.register.placeholder':'اسمك الكامل أو اللقب',
+    'wc.register.start':      'ابدأ',
+    'wc.register.hint':       'اسمك سيظهر في القائمة العامة للمتصدّرين. يُحفظ محلياً على هذا المتصفح حتى تقدر تعدّل توقعاتك لاحقاً.',
+    'wc.stages.title':        '📅 مراحل التحدّي',
+    'wc.submit':              '💾 حفظ توقعاتي',
+    'wc.submit.saving':       '⏳ جارٍ الحفظ…',
+    'wc.submit.done':         '✓ تم الحفظ بنجاح',
+    'wc.submit.error':        'حدث خطأ أثناء الحفظ. حاول مرة أخرى.',
+    'wc.logout.confirm':      'هل تريد تسجيل الخروج من تحدّي التوقعات؟ سيُحتفظ بتوقعاتك في القائمة.',
+    'wc.logout.title':        'تسجيل خروج',
+    'wc.name.required':       'الرجاء إدخال اسمك',
+    'wc.name.tooShort':       'الاسم قصير جداً',
+    'wc.noOpen':              'لا توجد مراحل مفتوحة حالياً للتوقعات.',
+    // status
+    'wc.status.open':         '🟢 مفتوحة',
+    'wc.status.closed':       '🔒 مغلقة',
+    'wc.status.upcoming':     '⏳ قريباً',
+    // stages
+    'wc.stage.groups':        'دور المجموعات',
+    'wc.stage.r32':           'دور الـ32',
+    'wc.stage.r16':           'دور الـ16',
+    'wc.stage.qf':            'ربع النهائي',
+    'wc.stage.sf':            'نصف النهائي',
+    'wc.stage.final':         'النهائي',
+    // locked
+    'wc.locked.msg':          'سيتم فتح التوقعات قبل بداية الدور',
+    'wc.locked.opens':        'الافتتاح',
+    'wc.locked.closes':       'الإغلاق',
+    // closed
+    'wc.closed.msg':          '🔒 التوقعات مغلقة — لا يمكن التعديل بعد بداية الدور',
+    'wc.closed.points':       'نقاطك في هذا الدور',
+    // open
+    'wc.empty.matchups':      'في انتظار إعلان مواجهات هذا الدور من قِبَل الإدارة.',
+    'wc.groups.prompt':       'دور المجموعات — اختر متأهلَين من كل مجموعة',
+    'wc.groups.hint':         '💡 اختر متأهّلَين من كل مجموعة. كل توقّع صحيح =',
+    'wc.groups.hintSuffix':   'نقاط.',
+    'wc.ko.hint.winner':      'الفائز الصحيح =',
+    'wc.ko.hint.exact':       'النتيجة المضبوطة =',
+    'wc.ko.hint.points':      'نقاط.',
+    'wc.match.tbd':           'منتظر',
+    'wc.match.official':      'النتيجة الرسمية',
+    'wc.group':               'المجموعة',
+    // notice
+    'wc.notice.title':        'تنبيه: موعد إغلاق توقعات دور المجموعات',
+    'wc.notice.body':         'تُغلق إمكانية إرسال أو تعديل توقعات دور المجموعات تلقائياً <strong>عند انطلاق أول مباراة في البطولة</strong> (المكسيك × جنوب أفريقيا). تأكّد من حفظ توقعاتك قبل هذا الموعد — لن يُمكن التعديل بعدها.',
+    'wc.notice.closedTitle':  'تم إغلاق توقعات دور المجموعات',
+    'wc.notice.closedBody':   'انتهى وقت إرسال توقعات دور المجموعات مع انطلاق أول مباراة في البطولة. التوقعات المحفوظة قبل هذا الوقت ثابتة. تابع باقي الأدوار الإقصائية في الأسفل وستفتح توقعاتها قبل بداية كل دور.',
+    'wc.notice.closedAt':     'أُغلق في',
+    // leaderboard
+    'wc.lb.overall':          'الترتيب العام',
+    'wc.lb.empty':            'لا توجد توقعات بعد — كن أول المشاركين!',
+    'wc.lb.rank':             'الترتيب',
+    'wc.lb.name':             'الاسم',
+    'wc.lb.points':           'النقاط',
+    'wc.lb.point':            'نقطة',
+    'wc.lb.champion':         'البطل العام',
+    'wc.lb.champOf':          'بطل توقعات',
+    'wc.lb.count':            'مشارك · يُحدَّث تلقائياً عند إدخال نتائج جديدة',
+    'wc.lb.scoring':          'نظام النقاط:',
+    'wc.lb.scoring.q':        'منتخب متأهّل صح',
+    'wc.lb.scoring.w':        'توقّع الفائز فقط',
+    'wc.lb.scoring.e':        'النتيجة المضبوطة',
+    'wc.lb.scoring.bonus':    'مكافأة',
+    // admin
+    'wc.admin.warn':          '⚠️ <strong>تنبيه:</strong> أي تعديل هنا يُحدّث نقاط جميع المشاركين تلقائياً. تأكّد من الأرقام قبل الإدخال.',
+    'wc.admin.groups':        '🏁 نتائج دور المجموعات (متأهّلَين لكل مجموعة)',
+    'wc.admin.ko':            '— مواجهات ونتائج',
+    'wc.admin.matches':       'مباراة',
+    'wc.admin.selectTeam':    '— اختر منتخب —',
+    'wc.admin.autosave':      'التعديلات تُحفظ تلقائياً في Firestore.',
+    'wc.summary.label':       'توقعاتك:',
+
+    // ── Control modal ──────────────────────────────────────────
+    'ctrl.title':             '⚙ التحكم',
+    'ctrl.section.admin':     'الإدارة',
+    'ctrl.section.data':      'البيانات',
+    'ctrl.section.account':   'الحساب',
+    'ctrl.dashboard':         '⚙ لوحة التحكم',
+    'ctrl.planner':           '🗂 المخطط السنوي',
+    'ctrl.export':            '⬇ تصدير البيانات',
+    'ctrl.import':            '⬆ استيراد البيانات',
+    'ctrl.login':             '🔐 دخول المسؤول',
+    'ctrl.logout':            '🚪 تسجيل خروج',
+    'ctrl.addEvent':          'إضافة فعالية',
+
+    // ── Login modal ────────────────────────────────────────────
+    'login.title':            '🔐 دخول المسؤول',
+    'login.password':         'كلمة المرور',
+    'login.placeholder':      '••••••••',
+    'login.error':            'كلمة المرور غير صحيحة',
+    'login.session':          'يتم حفظ الجلسة محلياً',
+    'login.submit':           'تسجيل الدخول',
+    'login.toggleShow':       'إظهار كلمة المرور',
+    'login.toggleHide':       'إخفاء كلمة المرور',
+
+    // ── Admin panel ────────────────────────────────────────────
+    'panel.title':            '⚙ لوحة التحكم',
+    'panel.tab.categories':   'التصنيفات',
+    'panel.tab.subcategories':'الفعاليات الفرعية',
+    'panel.tab.achievements': 'إنجازات الأنشطة',
+    'panel.tab.news':         'الأخبار',
+    'panel.tab.quotes':       'العبارات الملهمة',
+    'panel.tab.spotlight':    'لنتذكّر',
+    'panel.tab.sections':     'إظهار/إخفاء الأقسام',
+    'panel.tab.settings':     'الإعدادات',
+
+    // ── Sections visibility ────────────────────────────────────
+    'sect.title':             'إظهار/إخفاء أقسام الصفحة الرئيسية',
+    'sect.info':              '⚙ هذه الإعدادات تنطبق على جميع الزوار فوراً.',
+    'sect.visible':           '✓ ظاهر للزوار',
+    'sect.hidden':            '✕ مخفي',
+    'sect.label.news':        'شريط الأخبار',
+    'sect.label.spotlight':   "لنتذكّر (Let's Remember)",
+    'sect.label.countdown':   'العد التنازلي',
+    'sect.label.calendar':    'التقويم',
+    'sect.label.masahatak':   'مساحتك',
+    'sect.label.quickbreak':  'استراحة سريعة',
+    'sect.label.wc':          'بطاقة كأس العالم',
+    'sect.hint.news':         'الشريط الأخضر العلوي بآخر الأخبار',
+    'sect.hint.spotlight':    'منزلق الصور التذكاري',
+    'sect.hint.countdown':    'بطاقة الحدث القادم',
+    'sect.hint.calendar':     'المخطط الشهري/السنوي',
+    'sect.hint.masahatak':    'جدار المشاركات المجتمعية',
+    'sect.hint.quickbreak':   'تحديات سريعة وأسئلة',
+    'sect.hint.wc':           'رابط الانتقال لصفحة التوقعات',
+
+    // ── Quote sticky note ──────────────────────────────────────
+    'quote.label':            'عبارة ملهمة',
+    'quote.minimize':         'تصغير',
+  },
+  en: {
+    // ── Header / app shell ─────────────────────────────────────
+    'app.title':              'ASAAS Corporate Calendar',
+    'app.subtitle':           'ASAAS · CORPORATE CALENDAR · 2026',
+    'app.footer':             'ASAAS  ·  CORPORATE CALENDAR  ·  2026',
+    'btn.control':            'Control',
+    'btn.close':              'Close',
+    'btn.save':               'Save',
+    'btn.cancel':             'Cancel',
+    'btn.delete':             'Delete',
+    'btn.add':                'Add',
+    'btn.edit':               'Edit',
+    'btn.confirm':            'Confirm',
+    'lang.label':             'عربي',
+    'lang.aria':              'Switch to Arabic',
+
+    'news.label':             'Latest News',
+    'news.loading':           'Loading news…',
+    'news.empty':             'No news available',
+
+    'spotlight.label':        "Let's Remember",
+    'spotlight.title':        "Let's Remember",
+    'spotlight.empty.title':  'No images yet',
+    'spotlight.empty.hint':   'Add images from the control panel',
+
+    'cd.upcoming':            'Next Event',
+    'cd.title':               'Countdown',
+    'cd.day':                 'day',
+    'cd.h':                   'h',
+    'cd.m':                   'm',
+    'cd.s':                   's',
+
+    'cal.monthly':            'Monthly',
+    'cal.yearly':             'Yearly',
+    'cal.today':              'Today',
+    'cal.prev':               'Previous',
+    'cal.next':               'Next',
+
+    'mas.title':              '✦ Your Space',
+    'mas.subtitle':           'Share a quote, insight, idea, or quick thought with the team',
+    'mas.name.placeholder':   'Your name (optional)',
+    'mas.type.placeholder':   'Type — quote, insight, idea, opinion…',
+    'mas.text.placeholder':   'Write here…',
+    'mas.addImage':           '🖼 Add an image (optional)',
+    'mas.removeImage':        'Remove image',
+    'mas.submit':             '✦ Share',
+    'mas.loading':            'Loading…',
+
+    'qb.title':               '⚡ Quick Break',
+    'qb.subtitle':            'Short challenges — true/false, multiple choice, puzzles, trivia',
+    'qb.next':                'New Challenge',
+    'qb.loading':             'Loading…',
+
+    'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
+    'wc.launcher.title':      'World Cup Prediction Challenge',
+    'wc.launcher.sub':        'Predict group qualifiers and knockout scores · Compete for top points',
+    'wc.launcher.cta':        'Join Now',
+    'wc.back':                'Back to Home',
+
+    'wc.title':               'FIFA World Cup 2026 Prediction Challenge',
+    'wc.subtitle':            'Join the challenge — predict qualifiers and track your rank on the global leaderboard',
+    'wc.tab.predict':         '🎯 My Predictions',
+    'wc.tab.leaderboard':     '🏆 Leaderboard',
+    'wc.tab.admin':           '⚙ Manage Results',
+    'wc.loading':             'Loading…',
+    'wc.register.title':      '✦ Start the challenge — enter your name',
+    'wc.register.placeholder':'Your full name or nickname',
+    'wc.register.start':      'Start',
+    'wc.register.hint':       'Your name will appear in the public leaderboard. It is saved locally on this browser so you can edit your predictions later.',
+    'wc.stages.title':        '📅 Challenge Stages',
+    'wc.submit':              '💾 Save My Predictions',
+    'wc.submit.saving':       '⏳ Saving…',
+    'wc.submit.done':         '✓ Saved successfully',
+    'wc.submit.error':        'An error occurred while saving. Please try again.',
+    'wc.logout.confirm':      'Do you want to sign out of the prediction challenge? Your saved predictions will remain in the leaderboard.',
+    'wc.logout.title':        'Sign out',
+    'wc.name.required':       'Please enter your name',
+    'wc.name.tooShort':       'Name is too short',
+    'wc.noOpen':              'No stages are currently open for predictions.',
+    'wc.status.open':         '🟢 Open',
+    'wc.status.closed':       '🔒 Closed',
+    'wc.status.upcoming':     '⏳ Coming soon',
+    'wc.stage.groups':        'Group Stage',
+    'wc.stage.r32':           'Round of 32',
+    'wc.stage.r16':           'Round of 16',
+    'wc.stage.qf':            'Quarter-finals',
+    'wc.stage.sf':            'Semi-finals',
+    'wc.stage.final':         'Final',
+    'wc.locked.msg':          'Predictions will open before the round begins',
+    'wc.locked.opens':        'Opens',
+    'wc.locked.closes':       'Closes',
+    'wc.closed.msg':          '🔒 Predictions are closed — no edits allowed once the round has started',
+    'wc.closed.points':       'Your points for this round',
+    'wc.empty.matchups':      'Waiting for admin to enter this round\'s matchups.',
+    'wc.groups.prompt':       'Group stage — pick two qualifiers from each group',
+    'wc.groups.hint':         '💡 Pick two qualifiers from each group. Each correct pick =',
+    'wc.groups.hintSuffix':   'points.',
+    'wc.ko.hint.winner':      'Correct winner =',
+    'wc.ko.hint.exact':       'Exact score =',
+    'wc.ko.hint.points':      'points.',
+    'wc.match.tbd':           'TBD',
+    'wc.match.official':      'Official result',
+    'wc.group':               'Group',
+    'wc.notice.title':        'Notice: Group Stage Closing Time',
+    'wc.notice.body':         'Submitting or editing group-stage predictions will close automatically <strong>at the kickoff of the tournament\'s first match</strong> (Mexico vs South Africa). Make sure to save your predictions before this deadline — no edits will be allowed after.',
+    'wc.notice.closedTitle':  'Group-stage predictions are closed',
+    'wc.notice.closedBody':   'The window for group-stage predictions closed with the kickoff of the tournament\'s first match. Predictions saved before that time are locked in. Knockout rounds below will open before each round starts.',
+    'wc.notice.closedAt':     'Closed at',
+    'wc.lb.overall':          'Overall Ranking',
+    'wc.lb.empty':            'No predictions yet — be the first to join!',
+    'wc.lb.rank':             'Rank',
+    'wc.lb.name':             'Name',
+    'wc.lb.points':           'Points',
+    'wc.lb.point':            'pts',
+    'wc.lb.champion':         'Overall Champion',
+    'wc.lb.champOf':          'Champion of',
+    'wc.lb.count':            'participants · Updated automatically when results are entered',
+    'wc.lb.scoring':          'Scoring:',
+    'wc.lb.scoring.q':        'correct qualifier',
+    'wc.lb.scoring.w':        'correct winner only',
+    'wc.lb.scoring.e':        'exact score',
+    'wc.lb.scoring.bonus':    'bonus',
+    'wc.admin.warn':          '⚠️ <strong>Notice:</strong> any change here updates points for all participants automatically. Verify numbers before entering.',
+    'wc.admin.groups':        '🏁 Group-stage results (two qualifiers per group)',
+    'wc.admin.ko':            '— Matchups and results',
+    'wc.admin.matches':       'matches',
+    'wc.admin.selectTeam':    '— Select a team —',
+    'wc.admin.autosave':      'Changes are saved automatically to Firestore.',
+    'wc.summary.label':       'Your picks:',
+
+    'ctrl.title':             '⚙ Control',
+    'ctrl.section.admin':     'Administration',
+    'ctrl.section.data':      'Data',
+    'ctrl.section.account':   'Account',
+    'ctrl.dashboard':         '⚙ Dashboard',
+    'ctrl.planner':           '🗂 Year Planner',
+    'ctrl.export':            '⬇ Export Data',
+    'ctrl.import':            '⬆ Import Data',
+    'ctrl.login':             '🔐 Admin Login',
+    'ctrl.logout':            '🚪 Sign Out',
+    'ctrl.addEvent':          'Add Event',
+
+    'login.title':            '🔐 Admin Login',
+    'login.password':         'Password',
+    'login.placeholder':      '••••••••',
+    'login.error':            'Incorrect password',
+    'login.session':          'Session saved locally',
+    'login.submit':           'Sign In',
+    'login.toggleShow':       'Show password',
+    'login.toggleHide':       'Hide password',
+
+    'panel.title':            '⚙ Dashboard',
+    'panel.tab.categories':   'Categories',
+    'panel.tab.subcategories':'Sub-categories',
+    'panel.tab.achievements': 'Activity Achievements',
+    'panel.tab.news':         'News',
+    'panel.tab.quotes':       'Inspirational Quotes',
+    'panel.tab.spotlight':    "Let's Remember",
+    'panel.tab.sections':     'Show/Hide Sections',
+    'panel.tab.settings':     'Settings',
+
+    'sect.title':             'Show/Hide main page sections',
+    'sect.info':              '⚙ These settings apply to all visitors immediately.',
+    'sect.visible':           '✓ Visible',
+    'sect.hidden':            '✕ Hidden',
+    'sect.label.news':        'News Ticker',
+    'sect.label.spotlight':   "Let's Remember",
+    'sect.label.countdown':   'Countdown',
+    'sect.label.calendar':    'Calendar',
+    'sect.label.masahatak':   'Your Space',
+    'sect.label.quickbreak':  'Quick Break',
+    'sect.label.wc':          'World Cup Card',
+    'sect.hint.news':         'Top green bar with latest news',
+    'sect.hint.spotlight':    'Memory image slider',
+    'sect.hint.countdown':    'Next event card',
+    'sect.hint.calendar':     'Monthly/yearly planner',
+    'sect.hint.masahatak':    'Community submissions wall',
+    'sect.hint.quickbreak':   'Quick trivia challenges',
+    'sect.hint.wc':           'Link to predictions page',
+
+    'quote.label':            'Inspirational Quote',
+    'quote.minimize':         'Minimize',
+  }
+};
+
+const I18N_LS_KEY = 'asaas_lang';
+let CURRENT_LANG = localStorage.getItem(I18N_LS_KEY) || 'ar';
+
+function t(key) {
+  return (I18N[CURRENT_LANG] && I18N[CURRENT_LANG][key]) || I18N.ar[key] || key;
+}
+
+function applyI18N() {
+  // textContent
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  // innerHTML (for content with <strong> etc)
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.getAttribute('data-i18n-html'));
+  });
+  // placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+  // title attribute
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.getAttribute('data-i18n-title'));
+  });
+  // aria-label
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+  });
+}
+
+function setLang(lang) {
+  if (!I18N[lang]) lang = 'ar';
+  CURRENT_LANG = lang;
+  localStorage.setItem(I18N_LS_KEY, lang);
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  document.documentElement.classList.toggle('lang-en', lang === 'en');
+  document.documentElement.classList.toggle('lang-ar', lang === 'ar');
+  applyI18N();
+  // Notify dynamic renderers
+  window.dispatchEvent(new CustomEvent('langchange', { detail: { lang } }));
+}
+
+window.setLang = setLang;
+
+function toggleLang() {
+  setLang(CURRENT_LANG === 'ar' ? 'en' : 'ar');
+}
+window.toggleLang = toggleLang;
+
+// Initial apply (after DOM ready — script is at end of body, so DOM is ready)
+setLang(CURRENT_LANG);
+
+// Re-render dynamic content when language changes
+window.addEventListener('langchange', () => {
+  try { if (typeof render === 'function') render(); } catch(e){}
+  try { if (typeof wcRender === 'function') wcRender(); } catch(e){}
+  try { if (typeof renderPanel === 'function' && document.getElementById('panelContent')) {
+    const tabBtn = document.querySelector('.panel-tab.active');
+    if (tabBtn) renderPanel(tabBtn.getAttribute('data-tab'));
+  } } catch(e){}
+});
+
+
 // ─────────────────────────────────────────────────────────────────────────────
 // YOUR ACTUAL FIRESTORE STRUCTURE (confirmed from Firebase Console):
 //   calendar (collection)
@@ -6360,471 +6826,6 @@ function initWorldCup() {
   }, 60000);
 }
 initWorldCup();
-
-/* ════════════════════════════════════════════════════════════════
-   i18n — Arabic/English language toggle
-   ─────────────────────────────────────────────────────────────────
-   Usage:
-     - HTML: <span data-i18n="key">عربي</span>
-            <input data-i18n-placeholder="key" placeholder="..." />
-            <span data-i18n-html="key">…</span>  (for HTML content with <strong> etc)
-     - JS:   `${t('key')}` inside template strings
-   On lang change: dir/lang attributes update, all data-i18n elements update,
-   and a 'langchange' event fires (subscribers re-render dynamic content).
-   ════════════════════════════════════════════════════════════════ */
-
-const I18N = {
-  ar: {
-    // ── Header / app shell ─────────────────────────────────────
-    'app.title':              'تقويم أساس المؤسسي',
-    'app.subtitle':           'ASAAS · CORPORATE CALENDAR · 2026',
-    'app.footer':             'ASAAS  ·  التقويم المؤسسي  ·  2026',
-    'btn.control':            'التحكم',
-    'btn.close':              'إغلاق',
-    'btn.save':               'حفظ',
-    'btn.cancel':             'إلغاء',
-    'btn.delete':             'حذف',
-    'btn.add':                'إضافة',
-    'btn.edit':               'تعديل',
-    'btn.confirm':            'تأكيد',
-    'lang.label':             'EN',
-    'lang.aria':              'تبديل اللغة إلى الإنجليزية',
-
-    // ── News ticker ────────────────────────────────────────────
-    'news.label':             'آخر الأخبار',
-    'news.loading':           'جارٍ تحميل الأخبار…',
-    'news.empty':             'لا توجد أخبار حالياً',
-
-    // ── Spotlight ──────────────────────────────────────────────
-    'spotlight.label':        "Let's Remember",
-    'spotlight.title':        'لنتذكّر',
-    'spotlight.empty.title':  'لا توجد صور بعد',
-    'spotlight.empty.hint':   'أضف صوراً من لوحة التحكم',
-
-    // ── Countdown ──────────────────────────────────────────────
-    'cd.upcoming':            'الحدث القادم',
-    'cd.title':               'العد التنازلي',
-    'cd.day':                 'يوم',
-    'cd.h':                   'س',
-    'cd.m':                   'د',
-    'cd.s':                   'ث',
-
-    // ── Calendar nav ───────────────────────────────────────────
-    'cal.monthly':            'الشهري',
-    'cal.yearly':             'السنوي',
-    'cal.today':              'اليوم',
-    'cal.prev':               'السابق',
-    'cal.next':               'التالي',
-
-    // ── Masahatak ──────────────────────────────────────────────
-    'mas.title':              '✦ مساحتك',
-    'mas.subtitle':           'شارك مقولة، فائدة، فكرة، أو رأي قصير مع الفريق',
-    'mas.name.placeholder':   'اسمك (اختياري)',
-    'mas.type.placeholder':   'نوع المشاركة — مقولة، فائدة، فكرة، رأي…',
-    'mas.text.placeholder':   'اكتب هنا…',
-    'mas.addImage':           '🖼 أضف صورة (اختياري)',
-    'mas.removeImage':        'إزالة الصورة',
-    'mas.submit':             '✦ شارك',
-    'mas.loading':            'جارٍ التحميل…',
-
-    // ── Quick Break ────────────────────────────────────────────
-    'qb.title':               '⚡ استراحة سريعة',
-    'qb.subtitle':            'تحديات قصيرة — صواب وخطأ، اختيارات، ألغاز، معلومات عامة',
-    'qb.next':                'تحدٍّ جديد',
-    'qb.loading':             'جارٍ التحميل…',
-
-    // ── WC launcher ────────────────────────────────────────────
-    'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
-    'wc.launcher.title':      'تحدّي توقعات كأس العالم',
-    'wc.launcher.sub':        'توقّع المتأهّلين من المجموعات ونتائج الأدوار الإقصائية · نافِس على أعلى نقاط',
-    'wc.launcher.cta':        'شارك الآن',
-    'wc.back':                'العودة للصفحة الرئيسية',
-
-    // ── WC section ─────────────────────────────────────────────
-    'wc.title':               'تحدّي توقعات كأس العالم 2026',
-    'wc.subtitle':            'شارك في التحدّي — توقّع المتأهلين، تابع ترتيبك في القائمة العامة',
-    'wc.tab.predict':         '🎯 توقعاتي',
-    'wc.tab.leaderboard':     '🏆 المتصدّرون',
-    'wc.tab.admin':           '⚙ إدارة النتائج',
-    'wc.loading':             'جارٍ التحميل…',
-    'wc.register.title':      '✦ ابدأ التحدّي — أدخل اسمك',
-    'wc.register.placeholder':'اسمك الكامل أو اللقب',
-    'wc.register.start':      'ابدأ',
-    'wc.register.hint':       'اسمك سيظهر في القائمة العامة للمتصدّرين. يُحفظ محلياً على هذا المتصفح حتى تقدر تعدّل توقعاتك لاحقاً.',
-    'wc.stages.title':        '📅 مراحل التحدّي',
-    'wc.submit':              '💾 حفظ توقعاتي',
-    'wc.submit.saving':       '⏳ جارٍ الحفظ…',
-    'wc.submit.done':         '✓ تم الحفظ بنجاح',
-    'wc.submit.error':        'حدث خطأ أثناء الحفظ. حاول مرة أخرى.',
-    'wc.logout.confirm':      'هل تريد تسجيل الخروج من تحدّي التوقعات؟ سيُحتفظ بتوقعاتك في القائمة.',
-    'wc.logout.title':        'تسجيل خروج',
-    'wc.name.required':       'الرجاء إدخال اسمك',
-    'wc.name.tooShort':       'الاسم قصير جداً',
-    'wc.noOpen':              'لا توجد مراحل مفتوحة حالياً للتوقعات.',
-    // status
-    'wc.status.open':         '🟢 مفتوحة',
-    'wc.status.closed':       '🔒 مغلقة',
-    'wc.status.upcoming':     '⏳ قريباً',
-    // stages
-    'wc.stage.groups':        'دور المجموعات',
-    'wc.stage.r32':           'دور الـ32',
-    'wc.stage.r16':           'دور الـ16',
-    'wc.stage.qf':            'ربع النهائي',
-    'wc.stage.sf':            'نصف النهائي',
-    'wc.stage.final':         'النهائي',
-    // locked
-    'wc.locked.msg':          'سيتم فتح التوقعات قبل بداية الدور',
-    'wc.locked.opens':        'الافتتاح',
-    'wc.locked.closes':       'الإغلاق',
-    // closed
-    'wc.closed.msg':          '🔒 التوقعات مغلقة — لا يمكن التعديل بعد بداية الدور',
-    'wc.closed.points':       'نقاطك في هذا الدور',
-    // open
-    'wc.empty.matchups':      'في انتظار إعلان مواجهات هذا الدور من قِبَل الإدارة.',
-    'wc.groups.prompt':       'دور المجموعات — اختر متأهلَين من كل مجموعة',
-    'wc.groups.hint':         '💡 اختر متأهّلَين من كل مجموعة. كل توقّع صحيح =',
-    'wc.groups.hintSuffix':   'نقاط.',
-    'wc.ko.hint.winner':      'الفائز الصحيح =',
-    'wc.ko.hint.exact':       'النتيجة المضبوطة =',
-    'wc.ko.hint.points':      'نقاط.',
-    'wc.match.tbd':           'منتظر',
-    'wc.match.official':      'النتيجة الرسمية',
-    'wc.group':               'المجموعة',
-    // notice
-    'wc.notice.title':        'تنبيه: موعد إغلاق توقعات دور المجموعات',
-    'wc.notice.body':         'تُغلق إمكانية إرسال أو تعديل توقعات دور المجموعات تلقائياً <strong>عند انطلاق أول مباراة في البطولة</strong> (المكسيك × جنوب أفريقيا). تأكّد من حفظ توقعاتك قبل هذا الموعد — لن يُمكن التعديل بعدها.',
-    'wc.notice.closedTitle':  'تم إغلاق توقعات دور المجموعات',
-    'wc.notice.closedBody':   'انتهى وقت إرسال توقعات دور المجموعات مع انطلاق أول مباراة في البطولة. التوقعات المحفوظة قبل هذا الوقت ثابتة. تابع باقي الأدوار الإقصائية في الأسفل وستفتح توقعاتها قبل بداية كل دور.',
-    'wc.notice.closedAt':     'أُغلق في',
-    // leaderboard
-    'wc.lb.overall':          'الترتيب العام',
-    'wc.lb.empty':            'لا توجد توقعات بعد — كن أول المشاركين!',
-    'wc.lb.rank':             'الترتيب',
-    'wc.lb.name':             'الاسم',
-    'wc.lb.points':           'النقاط',
-    'wc.lb.point':            'نقطة',
-    'wc.lb.champion':         'البطل العام',
-    'wc.lb.champOf':          'بطل توقعات',
-    'wc.lb.count':            'مشارك · يُحدَّث تلقائياً عند إدخال نتائج جديدة',
-    'wc.lb.scoring':          'نظام النقاط:',
-    'wc.lb.scoring.q':        'منتخب متأهّل صح',
-    'wc.lb.scoring.w':        'توقّع الفائز فقط',
-    'wc.lb.scoring.e':        'النتيجة المضبوطة',
-    'wc.lb.scoring.bonus':    'مكافأة',
-    // admin
-    'wc.admin.warn':          '⚠️ <strong>تنبيه:</strong> أي تعديل هنا يُحدّث نقاط جميع المشاركين تلقائياً. تأكّد من الأرقام قبل الإدخال.',
-    'wc.admin.groups':        '🏁 نتائج دور المجموعات (متأهّلَين لكل مجموعة)',
-    'wc.admin.ko':            '— مواجهات ونتائج',
-    'wc.admin.matches':       'مباراة',
-    'wc.admin.selectTeam':    '— اختر منتخب —',
-    'wc.admin.autosave':      'التعديلات تُحفظ تلقائياً في Firestore.',
-    'wc.summary.label':       'توقعاتك:',
-
-    // ── Control modal ──────────────────────────────────────────
-    'ctrl.title':             '⚙ التحكم',
-    'ctrl.section.admin':     'الإدارة',
-    'ctrl.section.data':      'البيانات',
-    'ctrl.section.account':   'الحساب',
-    'ctrl.dashboard':         '⚙ لوحة التحكم',
-    'ctrl.planner':           '🗂 المخطط السنوي',
-    'ctrl.export':            '⬇ تصدير البيانات',
-    'ctrl.import':            '⬆ استيراد البيانات',
-    'ctrl.login':             '🔐 دخول المسؤول',
-    'ctrl.logout':            '🚪 تسجيل خروج',
-    'ctrl.addEvent':          'إضافة فعالية',
-
-    // ── Login modal ────────────────────────────────────────────
-    'login.title':            '🔐 دخول المسؤول',
-    'login.password':         'كلمة المرور',
-    'login.placeholder':      '••••••••',
-    'login.error':            'كلمة المرور غير صحيحة',
-    'login.session':          'يتم حفظ الجلسة محلياً',
-    'login.submit':           'تسجيل الدخول',
-    'login.toggleShow':       'إظهار كلمة المرور',
-    'login.toggleHide':       'إخفاء كلمة المرور',
-
-    // ── Admin panel ────────────────────────────────────────────
-    'panel.title':            '⚙ لوحة التحكم',
-    'panel.tab.categories':   'التصنيفات',
-    'panel.tab.subcategories':'الفعاليات الفرعية',
-    'panel.tab.achievements': 'إنجازات الأنشطة',
-    'panel.tab.news':         'الأخبار',
-    'panel.tab.quotes':       'العبارات الملهمة',
-    'panel.tab.spotlight':    'لنتذكّر',
-    'panel.tab.sections':     'إظهار/إخفاء الأقسام',
-    'panel.tab.settings':     'الإعدادات',
-
-    // ── Sections visibility ────────────────────────────────────
-    'sect.title':             'إظهار/إخفاء أقسام الصفحة الرئيسية',
-    'sect.info':              '⚙ هذه الإعدادات تنطبق على جميع الزوار فوراً.',
-    'sect.visible':           '✓ ظاهر للزوار',
-    'sect.hidden':            '✕ مخفي',
-    'sect.label.news':        'شريط الأخبار',
-    'sect.label.spotlight':   "لنتذكّر (Let's Remember)",
-    'sect.label.countdown':   'العد التنازلي',
-    'sect.label.calendar':    'التقويم',
-    'sect.label.masahatak':   'مساحتك',
-    'sect.label.quickbreak':  'استراحة سريعة',
-    'sect.label.wc':          'بطاقة كأس العالم',
-    'sect.hint.news':         'الشريط الأخضر العلوي بآخر الأخبار',
-    'sect.hint.spotlight':    'منزلق الصور التذكاري',
-    'sect.hint.countdown':    'بطاقة الحدث القادم',
-    'sect.hint.calendar':     'المخطط الشهري/السنوي',
-    'sect.hint.masahatak':    'جدار المشاركات المجتمعية',
-    'sect.hint.quickbreak':   'تحديات سريعة وأسئلة',
-    'sect.hint.wc':           'رابط الانتقال لصفحة التوقعات',
-
-    // ── Quote sticky note ──────────────────────────────────────
-    'quote.label':            'عبارة ملهمة',
-    'quote.minimize':         'تصغير',
-  },
-  en: {
-    // ── Header / app shell ─────────────────────────────────────
-    'app.title':              'ASAAS Corporate Calendar',
-    'app.subtitle':           'ASAAS · CORPORATE CALENDAR · 2026',
-    'app.footer':             'ASAAS  ·  CORPORATE CALENDAR  ·  2026',
-    'btn.control':            'Control',
-    'btn.close':              'Close',
-    'btn.save':               'Save',
-    'btn.cancel':             'Cancel',
-    'btn.delete':             'Delete',
-    'btn.add':                'Add',
-    'btn.edit':               'Edit',
-    'btn.confirm':            'Confirm',
-    'lang.label':             'عربي',
-    'lang.aria':              'Switch to Arabic',
-
-    'news.label':             'Latest News',
-    'news.loading':           'Loading news…',
-    'news.empty':             'No news available',
-
-    'spotlight.label':        "Let's Remember",
-    'spotlight.title':        "Let's Remember",
-    'spotlight.empty.title':  'No images yet',
-    'spotlight.empty.hint':   'Add images from the control panel',
-
-    'cd.upcoming':            'Next Event',
-    'cd.title':               'Countdown',
-    'cd.day':                 'day',
-    'cd.h':                   'h',
-    'cd.m':                   'm',
-    'cd.s':                   's',
-
-    'cal.monthly':            'Monthly',
-    'cal.yearly':             'Yearly',
-    'cal.today':              'Today',
-    'cal.prev':               'Previous',
-    'cal.next':               'Next',
-
-    'mas.title':              '✦ Your Space',
-    'mas.subtitle':           'Share a quote, insight, idea, or quick thought with the team',
-    'mas.name.placeholder':   'Your name (optional)',
-    'mas.type.placeholder':   'Type — quote, insight, idea, opinion…',
-    'mas.text.placeholder':   'Write here…',
-    'mas.addImage':           '🖼 Add an image (optional)',
-    'mas.removeImage':        'Remove image',
-    'mas.submit':             '✦ Share',
-    'mas.loading':            'Loading…',
-
-    'qb.title':               '⚡ Quick Break',
-    'qb.subtitle':            'Short challenges — true/false, multiple choice, puzzles, trivia',
-    'qb.next':                'New Challenge',
-    'qb.loading':             'Loading…',
-
-    'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
-    'wc.launcher.title':      'World Cup Prediction Challenge',
-    'wc.launcher.sub':        'Predict group qualifiers and knockout scores · Compete for top points',
-    'wc.launcher.cta':        'Join Now',
-    'wc.back':                'Back to Home',
-
-    'wc.title':               'FIFA World Cup 2026 Prediction Challenge',
-    'wc.subtitle':            'Join the challenge — predict qualifiers and track your rank on the global leaderboard',
-    'wc.tab.predict':         '🎯 My Predictions',
-    'wc.tab.leaderboard':     '🏆 Leaderboard',
-    'wc.tab.admin':           '⚙ Manage Results',
-    'wc.loading':             'Loading…',
-    'wc.register.title':      '✦ Start the challenge — enter your name',
-    'wc.register.placeholder':'Your full name or nickname',
-    'wc.register.start':      'Start',
-    'wc.register.hint':       'Your name will appear in the public leaderboard. It is saved locally on this browser so you can edit your predictions later.',
-    'wc.stages.title':        '📅 Challenge Stages',
-    'wc.submit':              '💾 Save My Predictions',
-    'wc.submit.saving':       '⏳ Saving…',
-    'wc.submit.done':         '✓ Saved successfully',
-    'wc.submit.error':        'An error occurred while saving. Please try again.',
-    'wc.logout.confirm':      'Do you want to sign out of the prediction challenge? Your saved predictions will remain in the leaderboard.',
-    'wc.logout.title':        'Sign out',
-    'wc.name.required':       'Please enter your name',
-    'wc.name.tooShort':       'Name is too short',
-    'wc.noOpen':              'No stages are currently open for predictions.',
-    'wc.status.open':         '🟢 Open',
-    'wc.status.closed':       '🔒 Closed',
-    'wc.status.upcoming':     '⏳ Coming soon',
-    'wc.stage.groups':        'Group Stage',
-    'wc.stage.r32':           'Round of 32',
-    'wc.stage.r16':           'Round of 16',
-    'wc.stage.qf':            'Quarter-finals',
-    'wc.stage.sf':            'Semi-finals',
-    'wc.stage.final':         'Final',
-    'wc.locked.msg':          'Predictions will open before the round begins',
-    'wc.locked.opens':        'Opens',
-    'wc.locked.closes':       'Closes',
-    'wc.closed.msg':          '🔒 Predictions are closed — no edits allowed once the round has started',
-    'wc.closed.points':       'Your points for this round',
-    'wc.empty.matchups':      'Waiting for admin to enter this round\'s matchups.',
-    'wc.groups.prompt':       'Group stage — pick two qualifiers from each group',
-    'wc.groups.hint':         '💡 Pick two qualifiers from each group. Each correct pick =',
-    'wc.groups.hintSuffix':   'points.',
-    'wc.ko.hint.winner':      'Correct winner =',
-    'wc.ko.hint.exact':       'Exact score =',
-    'wc.ko.hint.points':      'points.',
-    'wc.match.tbd':           'TBD',
-    'wc.match.official':      'Official result',
-    'wc.group':               'Group',
-    'wc.notice.title':        'Notice: Group Stage Closing Time',
-    'wc.notice.body':         'Submitting or editing group-stage predictions will close automatically <strong>at the kickoff of the tournament\'s first match</strong> (Mexico vs South Africa). Make sure to save your predictions before this deadline — no edits will be allowed after.',
-    'wc.notice.closedTitle':  'Group-stage predictions are closed',
-    'wc.notice.closedBody':   'The window for group-stage predictions closed with the kickoff of the tournament\'s first match. Predictions saved before that time are locked in. Knockout rounds below will open before each round starts.',
-    'wc.notice.closedAt':     'Closed at',
-    'wc.lb.overall':          'Overall Ranking',
-    'wc.lb.empty':            'No predictions yet — be the first to join!',
-    'wc.lb.rank':             'Rank',
-    'wc.lb.name':             'Name',
-    'wc.lb.points':           'Points',
-    'wc.lb.point':            'pts',
-    'wc.lb.champion':         'Overall Champion',
-    'wc.lb.champOf':          'Champion of',
-    'wc.lb.count':            'participants · Updated automatically when results are entered',
-    'wc.lb.scoring':          'Scoring:',
-    'wc.lb.scoring.q':        'correct qualifier',
-    'wc.lb.scoring.w':        'correct winner only',
-    'wc.lb.scoring.e':        'exact score',
-    'wc.lb.scoring.bonus':    'bonus',
-    'wc.admin.warn':          '⚠️ <strong>Notice:</strong> any change here updates points for all participants automatically. Verify numbers before entering.',
-    'wc.admin.groups':        '🏁 Group-stage results (two qualifiers per group)',
-    'wc.admin.ko':            '— Matchups and results',
-    'wc.admin.matches':       'matches',
-    'wc.admin.selectTeam':    '— Select a team —',
-    'wc.admin.autosave':      'Changes are saved automatically to Firestore.',
-    'wc.summary.label':       'Your picks:',
-
-    'ctrl.title':             '⚙ Control',
-    'ctrl.section.admin':     'Administration',
-    'ctrl.section.data':      'Data',
-    'ctrl.section.account':   'Account',
-    'ctrl.dashboard':         '⚙ Dashboard',
-    'ctrl.planner':           '🗂 Year Planner',
-    'ctrl.export':            '⬇ Export Data',
-    'ctrl.import':            '⬆ Import Data',
-    'ctrl.login':             '🔐 Admin Login',
-    'ctrl.logout':            '🚪 Sign Out',
-    'ctrl.addEvent':          'Add Event',
-
-    'login.title':            '🔐 Admin Login',
-    'login.password':         'Password',
-    'login.placeholder':      '••••••••',
-    'login.error':            'Incorrect password',
-    'login.session':          'Session saved locally',
-    'login.submit':           'Sign In',
-    'login.toggleShow':       'Show password',
-    'login.toggleHide':       'Hide password',
-
-    'panel.title':            '⚙ Dashboard',
-    'panel.tab.categories':   'Categories',
-    'panel.tab.subcategories':'Sub-categories',
-    'panel.tab.achievements': 'Activity Achievements',
-    'panel.tab.news':         'News',
-    'panel.tab.quotes':       'Inspirational Quotes',
-    'panel.tab.spotlight':    "Let's Remember",
-    'panel.tab.sections':     'Show/Hide Sections',
-    'panel.tab.settings':     'Settings',
-
-    'sect.title':             'Show/Hide main page sections',
-    'sect.info':              '⚙ These settings apply to all visitors immediately.',
-    'sect.visible':           '✓ Visible',
-    'sect.hidden':            '✕ Hidden',
-    'sect.label.news':        'News Ticker',
-    'sect.label.spotlight':   "Let's Remember",
-    'sect.label.countdown':   'Countdown',
-    'sect.label.calendar':    'Calendar',
-    'sect.label.masahatak':   'Your Space',
-    'sect.label.quickbreak':  'Quick Break',
-    'sect.label.wc':          'World Cup Card',
-    'sect.hint.news':         'Top green bar with latest news',
-    'sect.hint.spotlight':    'Memory image slider',
-    'sect.hint.countdown':    'Next event card',
-    'sect.hint.calendar':     'Monthly/yearly planner',
-    'sect.hint.masahatak':    'Community submissions wall',
-    'sect.hint.quickbreak':   'Quick trivia challenges',
-    'sect.hint.wc':           'Link to predictions page',
-
-    'quote.label':            'Inspirational Quote',
-    'quote.minimize':         'Minimize',
-  }
-};
-
-const I18N_LS_KEY = 'asaas_lang';
-let CURRENT_LANG = localStorage.getItem(I18N_LS_KEY) || 'ar';
-
-function t(key) {
-  return (I18N[CURRENT_LANG] && I18N[CURRENT_LANG][key]) || I18N.ar[key] || key;
-}
-
-function applyI18N() {
-  // textContent
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    el.textContent = t(el.getAttribute('data-i18n'));
-  });
-  // innerHTML (for content with <strong> etc)
-  document.querySelectorAll('[data-i18n-html]').forEach(el => {
-    el.innerHTML = t(el.getAttribute('data-i18n-html'));
-  });
-  // placeholder
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
-  });
-  // title attribute
-  document.querySelectorAll('[data-i18n-title]').forEach(el => {
-    el.title = t(el.getAttribute('data-i18n-title'));
-  });
-  // aria-label
-  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
-    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
-  });
-}
-
-function setLang(lang) {
-  if (!I18N[lang]) lang = 'ar';
-  CURRENT_LANG = lang;
-  localStorage.setItem(I18N_LS_KEY, lang);
-  document.documentElement.setAttribute('lang', lang);
-  document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-  document.documentElement.classList.toggle('lang-en', lang === 'en');
-  document.documentElement.classList.toggle('lang-ar', lang === 'ar');
-  applyI18N();
-  // Notify dynamic renderers
-  window.dispatchEvent(new CustomEvent('langchange', { detail: { lang } }));
-}
-
-window.setLang = setLang;
-
-function toggleLang() {
-  setLang(CURRENT_LANG === 'ar' ? 'en' : 'ar');
-}
-window.toggleLang = toggleLang;
-
-// Initial apply (after DOM ready — script is at end of body, so DOM is ready)
-setLang(CURRENT_LANG);
-
-// Re-render dynamic content when language changes
-window.addEventListener('langchange', () => {
-  try { if (typeof render === 'function') render(); } catch(e){}
-  try { if (typeof wcRender === 'function') wcRender(); } catch(e){}
-  try { if (typeof renderPanel === 'function' && document.getElementById('panelContent')) {
-    const tabBtn = document.querySelector('.panel-tab.active');
-    if (tabBtn) renderPanel(tabBtn.getAttribute('data-tab'));
-  } } catch(e){}
-});
 
 </script>
 </body>
