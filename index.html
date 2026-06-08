@@ -2368,6 +2368,63 @@ html.view-wc .hide-on-wc { display: none !important; }
 }
 .wc-back-btn::before { content: "→"; font-size: 14px; }
 
+/* ─── Group stage deadline notice ───────────────────────────── */
+.wc-notice {
+  display: flex; gap: 14px; align-items: flex-start;
+  margin-bottom: 18px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1.5px solid;
+  position: relative;
+  overflow: hidden;
+}
+.wc-notice.warn {
+  background: linear-gradient(135deg, #FFF7E0 0%, var(--gold-tint) 100%);
+  border-color: var(--gold);
+  color: var(--text);
+}
+.wc-notice.closed {
+  background: linear-gradient(135deg, #F4E8E2 0%, var(--card-2) 100%);
+  border-color: var(--clay-soft);
+  color: var(--text);
+}
+.wc-notice-ico {
+  font-size: 28px; line-height: 1;
+  flex-shrink: 0; margin-top: 2px;
+}
+.wc-notice-body { flex: 1; min-width: 0; }
+.wc-notice-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--text); margin-bottom: 6px;
+  letter-spacing: -.2px;
+}
+.wc-notice.warn .wc-notice-title { color: #8A6500; }
+.wc-notice.closed .wc-notice-title { color: var(--clay); }
+.wc-notice-text {
+  font-size: 13px; line-height: 1.7;
+  color: var(--text-soft);
+}
+.wc-notice-text strong { color: var(--text); font-weight: 700; }
+.wc-notice-deadline {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text);
+}
+@media (max-width: 600px) {
+  .wc-notice { gap: 10px; padding: 12px 14px; }
+  .wc-notice-ico { font-size: 22px; }
+  .wc-notice-title { font-size: 14px; }
+  .wc-notice-text { font-size: 12px; }
+}
+
 /* ─── Admin: sections visibility list ───────────────────────── */
 .sect-vis-list {
   display: flex; flex-direction: column;
@@ -5448,7 +5505,7 @@ const WC_RESULTS_DOC = db.collection('calendar').doc('wc_results');
 const WC_STAGES = [
   { id: 'groups', name: 'دور المجموعات', icon: '📋',
     opensAt: '2026-06-01T00:00:00Z',  // open since June 1
-    closesAt: '2026-06-11T18:00:00Z', // closes before first match (June 11)
+    closesAt: '2026-06-11T19:00:00Z', // EXACTLY at first match kickoff: Mexico vs South Africa, 19:00 UTC = 1pm Mexico City local = 11pm Muscat
     matchCount: 0,                     // groups stage uses group picks, not matches
   },
   { id: 'r32', name: 'دور الـ32', icon: '⚔️',
@@ -5596,6 +5653,59 @@ function wcFmtDateAr(iso) {
   const day = d.getUTCDate(), month = months[d.getUTCMonth()], year = d.getUTCFullYear();
   const hh = String(d.getUTCHours()).padStart(2,'0'), mm = String(d.getUTCMinutes()).padStart(2,'0');
   return `${day} ${month} ${year} · ${hh}:${mm} UTC`;
+}
+
+// Format a deadline showing Muscat local time (UTC+4) — useful for ASAAS Oman audience
+function wcFmtDeadlineMuscat(iso) {
+  const d = new Date(iso);
+  // Add 4 hours to get Muscat time (UTC+4, no DST)
+  const muscat = new Date(d.getTime() + 4 * 3600 * 1000);
+  const weekdays = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو',
+                  'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const wd = weekdays[muscat.getUTCDay()];
+  const day = muscat.getUTCDate();
+  const month = months[muscat.getUTCMonth()];
+  const year = muscat.getUTCFullYear();
+  const hh = String(muscat.getUTCHours()).padStart(2,'0');
+  const mm = String(muscat.getUTCMinutes()).padStart(2,'0');
+  return `${wd} ${day} ${month} ${year} · ${hh}:${mm} بتوقيت مسقط`;
+}
+
+// Build the group-stage deadline notice (before/after closure)
+function wcGroupsNotice() {
+  const groupsStage = WC_STAGES.find(s => s.id === 'groups');
+  if (!groupsStage) return '';
+  const status = wcStageStatus(groupsStage);
+  const muscatTime = wcFmtDeadlineMuscat(groupsStage.closesAt);
+  const utcTime = wcFmtDateAr(groupsStage.closesAt);
+
+  if (status === 'open') {
+    return `
+      <div class="wc-notice warn">
+        <div class="wc-notice-ico">⏰</div>
+        <div class="wc-notice-body">
+          <div class="wc-notice-title">تنبيه: موعد إغلاق توقعات دور المجموعات</div>
+          <div class="wc-notice-text">
+            تُغلق إمكانية إرسال أو تعديل توقعات دور المجموعات تلقائياً <strong>عند انطلاق أول مباراة في البطولة</strong> (المكسيك × جنوب أفريقيا). تأكّد من حفظ توقعاتك قبل هذا الموعد — لن يُمكن التعديل بعدها.
+          </div>
+          <div class="wc-notice-deadline">📅 ${muscatTime} (${utcTime})</div>
+        </div>
+      </div>`;
+  } else if (status === 'closed') {
+    return `
+      <div class="wc-notice closed">
+        <div class="wc-notice-ico">🔒</div>
+        <div class="wc-notice-body">
+          <div class="wc-notice-title">تم إغلاق توقعات دور المجموعات</div>
+          <div class="wc-notice-text">
+            انتهى وقت إرسال توقعات دور المجموعات مع انطلاق أول مباراة في البطولة. التوقعات المحفوظة قبل هذا الوقت ثابتة. تابع باقي الأدوار الإقصائية في الأسفل وستفتح توقعاتها قبل بداية كل دور.
+          </div>
+          <div class="wc-notice-deadline">⏱ أُغلق في: ${muscatTime}</div>
+        </div>
+      </div>`;
+  }
+  return ''; // upcoming — no notice needed
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -5753,6 +5863,7 @@ function wcRender() {
 function wcRenderPredict() {
   if (!wcState.myName) {
     return `
+      ${wcGroupsNotice()}
       <div class="wc-register">
         <div class="wc-register-title">✦ ابدأ التحدّي — أدخل اسمك</div>
         <div class="wc-register-row">
@@ -5778,7 +5889,7 @@ function wcRenderPredict() {
       <button class="wc-submit-btn" id="wcSubmitBtn">💾 حفظ توقعاتي</button>
     </div>` : '';
 
-  return stageCards + submitRow;
+  return wcGroupsNotice() + stageCards + submitRow;
 }
 
 function wcRenderStageOverview() {
