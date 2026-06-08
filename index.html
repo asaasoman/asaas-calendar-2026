@@ -4666,10 +4666,10 @@ function openPanel() {
 }
 
 document.querySelectorAll('.panel-tab').forEach(tab => {
-  t.onclick = () => {
+  tab.onclick = () => {
     document.querySelectorAll('.panel-tab').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    renderPanel(t.getAttribute('data-tab'));
+    tab.classList.add('active');
+    renderPanel(tab.getAttribute('data-tab'));
   };
 });
 
