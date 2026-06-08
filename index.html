@@ -2039,6 +2039,40 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-variant-numeric: tabular-nums;
   font-weight: 700; color: var(--green-dark);
 }
+
+/* Admin-only: delete participant button */
+.wc-lb-del {
+  display: none; /* default hidden; .lb-admin parent reveals it */
+  align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-mute);
+  font-size: 14px;
+  transition: all .15s;
+}
+.wc-lb-del:hover {
+  background: #FBE8E5;
+  color: var(--danger);
+  transform: scale(1.08);
+}
+.wc-leaderboard.lb-admin .wc-lb-header {
+  grid-template-columns: 50px 1fr 90px 40px;
+}
+.wc-leaderboard.lb-admin .wc-lb-row {
+  grid-template-columns: 50px 1fr 90px 40px;
+}
+.wc-leaderboard.lb-admin .wc-lb-del { display: inline-flex; }
+@media (max-width: 600px) {
+  .wc-leaderboard.lb-admin .wc-lb-header,
+  .wc-leaderboard.lb-admin .wc-lb-row {
+    grid-template-columns: 40px 1fr 70px 34px;
+    gap: 6px;
+  }
+  .wc-lb-del { width: 28px; height: 28px; }
+}
 .wc-lb-empty {
   text-align: center; padding: 40px 16px;
   color: var(--text-mute); font-size: 13.5px;
@@ -6250,6 +6284,25 @@ async function wcSaveResults() {
   await WC_RESULTS_DOC.set({ value: wcState.results, updatedAt: Date.now() });
 }
 
+// Admin-only: delete a participant's prediction record entirely
+async function wcDeleteParticipant(participantId) {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  const pred = wcState.predictions.find(p => p.id === participantId);
+  if (!pred) return;
+  const msg = (CURRENT_LANG === 'en')
+    ? `Delete participant "${pred.name}" and all their predictions? This cannot be undone.`
+    : `هل تريد حذف المشارك "${pred.name}" وجميع توقعاته؟ لا يمكن التراجع عن هذا الإجراء.`;
+  if (!confirm(msg)) return;
+  const newArr = wcState.predictions.filter(p => p.id !== participantId);
+  try {
+    await WC_PRED_DOC.set({ value: newArr, updatedAt: Date.now() });
+  } catch (e) {
+    console.error('[WC] delete error:', e);
+    alert(CURRENT_LANG === 'en' ? 'Failed to delete. Please try again.' : 'تعذّر الحذف. حاول مرة أخرى.');
+  }
+}
+window.wcDeleteParticipant = wcDeleteParticipant;
+
 // ────────────────────────────────────────────────────────────────
 // Scoring — per-stage
 // ────────────────────────────────────────────────────────────────
@@ -6572,16 +6625,23 @@ function wcRenderLeaderboard() {
       </div>`;
   }
 
+  const isAdmin = (typeof state !== 'undefined' && state.isAdmin);
+  const delLabel = (CURRENT_LANG === 'en') ? 'Delete participant' : 'حذف المشارك';
+
   const rows = ranked.map((p, i) => {
     const rank = i + 1;
     const isMe = p.id === wcState.myId;
     const cls = rank === 1 ? 'gold' : '';
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    const delBtn = isAdmin
+      ? `<button class="wc-lb-del" onclick="wcDeleteParticipant('${wcEsc(p.id)}')" title="${delLabel}" aria-label="${delLabel}">🗑</button>`
+      : '';
     return `
       <div class="wc-lb-row ${cls} ${isMe?'me':''}">
         <div class="wc-lb-rank">${medal}</div>
         <div class="wc-lb-name">${wcEsc(p.name)}</div>
         <div class="wc-lb-points">${p.score} ${t('wc.lb.point')}</div>
+        ${delBtn}
       </div>`;
   }).join('');
 
@@ -6597,11 +6657,12 @@ function wcRenderLeaderboard() {
     <div style="font-size:12.5px;color:var(--text-mute);margin-bottom:10px">
       ${ranked.length} ${t('wc.lb.count')}
     </div>
-    <div class="wc-leaderboard">
+    <div class="wc-leaderboard ${isAdmin?'lb-admin':''}">
       <div class="wc-lb-header">
         <div>${t('wc.lb.rank')}</div>
         <div>${t('wc.lb.name')}</div>
         <div style="text-align:end">${t('wc.lb.points')}</div>
+        ${isAdmin ? '<div></div>' : ''}
       </div>
       ${rows}
     </div>` + scoringNote;
