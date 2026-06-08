@@ -4508,9 +4508,16 @@ function startQuotes() {
   const el = document.getElementById('quoteText');
   const note = document.getElementById('quoteNote');
   const mini = document.getElementById('quoteMini');
+  // If admin has hidden the quotes section entirely, keep both elements hidden
+  const adminHidden = SECTIONS_VIS && SECTIONS_VIS['quotes'] === false;
+  if (adminHidden) {
+    note.style.display = 'none';
+    if (mini) mini.style.display = 'none';
+    return;
+  }
   if (quoteSessionHidden) {
     note.style.display = 'none';
-    if (mini) mini.classList.add('show');
+    if (mini) { mini.style.display = ''; mini.classList.add('show'); }
     return;
   }
   // Defensive: rebuild from defaults if quotes were wiped somehow
@@ -4521,11 +4528,11 @@ function startQuotes() {
   const enabled = state.quotes.filter(q => q.enabled);
   if (!enabled.length) {
     note.style.display = 'none';
-    if (mini) mini.classList.add('show');
+    if (mini) { mini.style.display = ''; mini.classList.add('show'); }
     return;
   }
   note.style.display = 'block';
-  if (mini) mini.classList.remove('show');
+  if (mini) { mini.style.display = ''; mini.classList.remove('show'); }
   let i = 0;
   const show = () => {
     const q = enabled[i % enabled.length];
@@ -5916,6 +5923,7 @@ const SECTIONS = [
   { id: 'masahatak',  selector: '#masahatakSection',  label: 'مساحتك',                 hint: 'جدار المشاركات المجتمعية' },
   { id: 'quickbreak', selector: '#qbSection',         label: 'استراحة سريعة',          hint: 'تحديات سريعة وأسئلة' },
   { id: 'wc',         selector: '#wcLauncher',        label: 'بطاقة كأس العالم',      hint: 'رابط الانتقال لصفحة التوقعات' },
+  { id: 'quotes',     selector: '#quoteNote, #quoteMini', label: 'العبارات الملهمة',  hint: 'البطاقة العائمة للعبارات الملهمة' },
 ];
 
 const VIS_DOC = db.collection('calendar').doc('sections_visibility');
@@ -5923,6 +5931,11 @@ let SECTIONS_VIS = {}; // { id: true/false } — missing keys treated as visible
 
 function applySectionVisibility() {
   SECTIONS.forEach(s => {
+    // Quotes section is managed by startQuotes() — call it and skip direct DOM manipulation
+    if (s.id === 'quotes') {
+      if (typeof startQuotes === 'function') startQuotes();
+      return;
+    }
     const isVisible = SECTIONS_VIS[s.id] !== false; // default visible
     document.querySelectorAll(s.selector).forEach(el => {
       el.dataset.hiddenByAdmin = isVisible ? '' : '1';
