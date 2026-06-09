@@ -1284,6 +1284,7 @@ html[dir="ltr"] body { font-family: 'Co Headline', 'Tajawal', system-ui, sans-se
 }
 .evt-pill:hover { transform: translateX(-2px); filter: brightness(.96); }
 .evt-pill .time { font-size: 10px; opacity: .75; margin-inline-end: 4px; }
+.evt-pill.is-done { opacity: .7; }
 .evt-more { font-size: 10.5px; color: var(--text-mute); padding: 0 8px; cursor: pointer; }
 
 /* ---------- Year View ---------- */
@@ -1712,6 +1713,29 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-size: 11.5px; color: var(--text-mute);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* ---------- Done toggle button styles ---------- */
+.btn-done-active {
+  background: #e6f4ea;
+  border: 1.5px solid #3a7d44;
+  color: #1e4d29;
+}
+.btn-done-active:hover { background: #d0ecda; border-color: #2d6636; }
+.btn-done-inactive {
+  background: var(--beige);
+  border: 1.5px solid var(--border);
+  color: var(--text-soft);
+}
+.btn-done-inactive:hover { border-color: var(--green); color: var(--green); background: var(--green-tint); }
+
+/* Done badge on calendar event chips */
+.event-chip.is-done { opacity: .72; }
+.event-chip.is-done::after {
+  content: ' ✓';
+  font-size: 10px;
+  font-weight: 700;
+  color: #3a7d44;
 }
 
 /* ---------- Footer ---------- */
@@ -3756,6 +3780,7 @@ async function loadEventsFromFirestore() {
         subcategoryId: d.subcategoryId || null,
         time:          d.time          || '',
         description:   d.description   || '',
+        done:          d.done          || false,
       }));
       console.log('[ASAAS] Loaded', state.events.length, 'events from Firestore.');
     }
@@ -3777,6 +3802,7 @@ async function persistEvents() {
       subcategoryId: ev.subcategoryId ?? null,
       time:          ev.time          ?? '',
       description:   ev.description   ?? '',
+      done:          ev.done          ?? false,
     }));
     await _writeEventsArray(arr);
   } catch (err) {
@@ -4017,11 +4043,11 @@ function makeCell(d, muted) {
   evs.slice(0, maxShow).forEach(e => {
     const color = colorFor(e);
     const pill = document.createElement('div');
-    pill.className = 'evt-pill';
+    pill.className = 'evt-pill' + (e.done ? ' is-done' : '');
     pill.style.background = tintFor(color);
     pill.style.color = color;
     pill.style.borderRightColor = color;
-    pill.innerHTML = e.title;
+    pill.innerHTML = (e.done ? '✓ ' : '') + e.title;
     pill.onclick = (ev) => { ev.stopPropagation(); openEventModal(e); };
     cont.appendChild(pill);
   });
@@ -4160,8 +4186,9 @@ function openEventModal(event, dateStr) {
 }
 
 function renderEventForm(event, dateStr) {
-  const e = event || { title:'', date: dateStr || fmtDate(state.today), time:'', categoryId: state.categories[0].id, subcategoryId: null, description:'' };
+  const e = event || { title:'', date: dateStr || fmtDate(state.today), time:'', categoryId: state.categories[0].id, subcategoryId: null, description:'', done: false };
   const isActivities = e.categoryId === 'cat_activities';
+  const isDone = !!e.done;
   return `
     <div class="form-grid">
       <div class="form-group full">
@@ -4193,6 +4220,15 @@ function renderEventForm(event, dateStr) {
         <label>الوصف (اختياري)</label>
         <textarea class="form-control" id="evDesc" placeholder="تفاصيل إضافية…">${escapeAttr(e.description||'')}</textarea>
       </div>
+      ${state.isAdmin && isActivities && event ? `
+      <div class="form-group full">
+        <label>حالة الإنجاز</label>
+        <button type="button" id="evDoneToggle" class="btn ${isDone ? 'btn-done-active' : 'btn-done-inactive'}" style="justify-content:flex-start;gap:10px;font-size:14px;border-radius:10px;padding:10px 16px">
+          <span id="evDoneIcon">${isDone ? '✅' : '⬜'}</span>
+          <span id="evDoneLabel">${isDone ? 'تم الإنجاز — انقر لإلغاء التحديد' : 'لم يُنجز بعد — انقر للتأكيد'}</span>
+        </button>
+        <input type="hidden" id="evDone" value="${isDone ? '1' : '0'}" />
+      </div>` : ''}
     </div>
     <div class="modal-footer" style="margin:22px -24px -26px;border-radius:0 0 24px 24px">
       <div>${event ? `<button class="btn btn-danger" id="evDelete">🗑 حذف</button>` : ''}</div>
@@ -4206,6 +4242,31 @@ function wireEventForm(event) {
     document.getElementById('evSubWrap').style.display =
       e.target.value === 'cat_activities' ? '' : 'none';
   };
+
+  // Wire the done toggle button if present
+  const doneToggle = document.getElementById('evDoneToggle');
+  if (doneToggle) {
+    doneToggle.onclick = () => {
+      const hiddenField = document.getElementById('evDone');
+      const icon  = document.getElementById('evDoneIcon');
+      const label = document.getElementById('evDoneLabel');
+      const nowDone = hiddenField.value === '1';
+      if (nowDone) {
+        hiddenField.value = '0';
+        icon.textContent  = '⬜';
+        label.textContent = 'لم يُنجز بعد — انقر للتأكيد';
+        doneToggle.className = 'btn btn-done-inactive';
+        doneToggle.style.cssText = 'justify-content:flex-start;gap:10px;font-size:14px;border-radius:10px;padding:10px 16px';
+      } else {
+        hiddenField.value = '1';
+        icon.textContent  = '✅';
+        label.textContent = 'تم الإنجاز — انقر لإلغاء التحديد';
+        doneToggle.className = 'btn btn-done-active';
+        doneToggle.style.cssText = 'justify-content:flex-start;gap:10px;font-size:14px;border-radius:10px;padding:10px 16px';
+      }
+    };
+  }
+
   document.getElementById('evSave').onclick = () => {
     const title = document.getElementById('evTitle').value.trim();
     if (!title) { document.getElementById('evTitle').focus(); return; }
@@ -4215,15 +4276,17 @@ function wireEventForm(event) {
     const subEl = document.getElementById('evSub');
     const subcategoryId = (categoryId === 'cat_activities' && subEl && subEl.value) ? subEl.value : null;
     const description = document.getElementById('evDesc').value;
+    const doneField = document.getElementById('evDone');
+    const done = doneField ? doneField.value === '1' : (event ? !!event.done : false);
 
     let savedEv;
     if (event) {
       // Edit existing event
-      Object.assign(event, { title, date, time, categoryId, subcategoryId, description });
+      Object.assign(event, { title, date, time, categoryId, subcategoryId, description, done });
       savedEv = event;
     } else {
       // New event
-      savedEv = { id: uid(), title, date, time, categoryId, subcategoryId, description };
+      savedEv = { id: uid(), title, date, time, categoryId, subcategoryId, description, done: false };
       state.events.push(savedEv);
     }
     saveEventToFirestore(savedEv);   // ← write to Firestore
@@ -4245,6 +4308,10 @@ function renderEventDetails(e) {
   const d = parseDate(e.date);
   const dateText = `${AR_WEEKDAYS_FULL[d.getDay()]}، ${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
   return `
+    ${e.done && e.categoryId === 'cat_activities' ? `
+    <div style="display:flex;align-items:center;gap:8px;background:#e6f4ea;border:1px solid #b7dfc1;border-radius:10px;padding:9px 14px;margin-bottom:4px;font-size:13px;color:#1e4d29;font-weight:600">
+      ✅ تم الإنجاز
+    </div>` : ''}
     <div class="detail-row">
       <div class="detail-label">التاريخ</div>
       <div class="detail-value">${dateText}</div>
@@ -4717,39 +4784,40 @@ function panelCategories() {
 }
 
 function panelAchievements() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const acts = state.events.filter(e => e.categoryId === 'cat_activities');
-  const past = acts.filter(e => new Date(e.date) < today);
-  const upcoming = acts.filter(e => new Date(e.date) >= today);
-  const pct = acts.length ? Math.round((past.length / acts.length) * 100) : 0;
+  const acts     = state.events.filter(e => e.categoryId === 'cat_activities');
+  const doneActs = acts.filter(e => !!e.done);
+  const pending  = acts.filter(e => !e.done);
+  const pct      = acts.length ? Math.round((doneActs.length / acts.length) * 100) : 0;
 
   // Per-subcategory breakdown
   const bySub = state.subcategories.map(s => {
-    const inSub = acts.filter(e => e.subcategoryId === s.id);
-    const done = inSub.filter(e => new Date(e.date) < today).length;
+    const inSub  = acts.filter(e => e.subcategoryId === s.id);
+    const done   = inSub.filter(e => !!e.done).length;
     const subPct = inSub.length ? Math.round((done / inSub.length) * 100) : 0;
     return { sub: s, total: inSub.length, done, pct: subPct };
   });
 
-  // Recently completed (last 8)
-  const recent = [...past].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
-
+  // Recently marked done (sorted by date desc, last 8)
   const fmtDate = d => new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+  const recent = [...doneActs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
 
   return `
     <div class="section-divider">ملخص إنجازات "أنشطة وفعاليات"</div>
+    <div style="background:var(--gold-tint);border:1px solid var(--gold-soft);border-radius:10px;padding:9px 14px;font-size:12.5px;color:var(--clay);margin-bottom:14px">
+      ✅ الإنجاز يُحدَّد يدوياً من قِبَل المشرف عند فتح الفعالية وتفعيل "تم الإنجاز".
+    </div>
     <div class="ach-stats">
       <div class="ach-stat">
         <div class="ach-stat-num">${acts.length}</div>
         <div class="ach-stat-lbl">إجمالي الفعاليات</div>
       </div>
       <div class="ach-stat done">
-        <div class="ach-stat-num">${past.length}</div>
+        <div class="ach-stat-num">${doneActs.length}</div>
         <div class="ach-stat-lbl">منجزة</div>
       </div>
       <div class="ach-stat upcoming">
-        <div class="ach-stat-num">${upcoming.length}</div>
-        <div class="ach-stat-lbl">قادمة</div>
+        <div class="ach-stat-num">${pending.length}</div>
+        <div class="ach-stat-lbl">لم تُنجز بعد</div>
       </div>
       <div class="ach-stat pct">
         <div class="ach-stat-num">${pct}%</div>
@@ -4775,13 +4843,13 @@ function panelAchievements() {
     </div>
 
     ${recent.length ? `
-      <div class="section-divider" style="margin-top:18px">آخر الإنجازات</div>
+      <div class="section-divider" style="margin-top:18px">الفعاليات المُنجزة</div>
       <div class="ach-recent">
         ${recent.map(e => {
           const sub = state.subcategories.find(s => s.id === e.subcategoryId);
           return `
             <div class="ach-recent-item">
-              <span class="dot" style="background:${sub ? sub.color : '#968172'}"></span>
+              <span style="font-size:15px">✅</span>
               <span class="ach-recent-title">${escapeAttr(e.title)}</span>
               ${sub ? `<span class="ach-recent-tag" style="border-color:${sub.color};color:${sub.color}">${escapeAttr(sub.name)}</span>` : ''}
               <span class="ach-recent-date">${fmtDate(e.date)}</span>
