@@ -4788,12 +4788,14 @@ function panelCategories() {
 }
 
 function panelAchievements() {
+  const fmtDate = d => new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  // ── أنشطة وفعاليات ──
   const acts     = state.events.filter(e => e.categoryId === 'cat_activities');
   const doneActs = acts.filter(e => !!e.done);
   const pending  = acts.filter(e => !e.done);
   const pct      = acts.length ? Math.round((doneActs.length / acts.length) * 100) : 0;
 
-  // Per-subcategory breakdown
   const bySub = state.subcategories.map(s => {
     const inSub  = acts.filter(e => e.subcategoryId === s.id);
     const done   = inSub.filter(e => !!e.done).length;
@@ -4801,15 +4803,38 @@ function panelAchievements() {
     return { sub: s, total: inSub.length, done, pct: subPct };
   });
 
-  // Recently marked done (sorted by date desc, last 8)
-  const fmtDate = d => new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
-  const recent = [...doneActs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+  const recentActs = [...doneActs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+
+  // ── أخرى ──
+  const others      = state.events.filter(e => e.categoryId === 'cat_other');
+  const doneOthers  = others.filter(e => !!e.done);
+  const pendingOth  = others.filter(e => !e.done);
+  const pctOth      = others.length ? Math.round((doneOthers.length / others.length) * 100) : 0;
+  const otherColor  = (state.categories.find(c => c.id === 'cat_other') || {}).color || '#6B5749';
+  const recentOthers = [...doneOthers].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+
+  const achRecentHtml = (items) => items.length ? `
+    <div class="ach-recent">
+      ${items.map(e => {
+        const sub = state.subcategories.find(s => s.id === e.subcategoryId);
+        return \`
+          <div class="ach-recent-item">
+            <span style="font-size:15px">✅</span>
+            <span class="ach-recent-title">\${escapeAttr(e.title)}</span>
+            \${sub ? \`<span class="ach-recent-tag" style="border-color:\${sub.color};color:\${sub.color}">\${escapeAttr(sub.name)}</span>\` : ''}
+            <span class="ach-recent-date">\${fmtDate(e.date)}</span>
+          </div>
+        \`;
+      }).join('')}
+    </div>` : '<div style="text-align:center;padding:20px;color:var(--text-mute);font-size:13px">لم تُنجز أي فعالية بعد.</div>';
 
   return `
-    <div class="section-divider">ملخص إنجازات "أنشطة وفعاليات"</div>
-    <div style="background:var(--gold-tint);border:1px solid var(--gold-soft);border-radius:10px;padding:9px 14px;font-size:12.5px;color:var(--clay);margin-bottom:14px">
+    <div style="background:var(--gold-tint);border:1px solid var(--gold-soft);border-radius:10px;padding:9px 14px;font-size:12.5px;color:var(--clay);margin-bottom:18px">
       ✅ الإنجاز يُحدَّد يدوياً من قِبَل المشرف عند فتح الفعالية وتفعيل "تم الإنجاز".
     </div>
+
+    <!-- ══ أنشطة وفعاليات ══ -->
+    <div class="section-divider">ملخص إنجازات "أنشطة وفعاليات"</div>
     <div class="ach-stats">
       <div class="ach-stat">
         <div class="ach-stat-num">${acts.length}</div>
@@ -4846,22 +4871,35 @@ function panelAchievements() {
       `).join('')}
     </div>
 
-    ${recent.length ? `
-      <div class="section-divider" style="margin-top:18px">الفعاليات المُنجزة</div>
-      <div class="ach-recent">
-        ${recent.map(e => {
-          const sub = state.subcategories.find(s => s.id === e.subcategoryId);
-          return `
-            <div class="ach-recent-item">
-              <span style="font-size:15px">✅</span>
-              <span class="ach-recent-title">${escapeAttr(e.title)}</span>
-              ${sub ? `<span class="ach-recent-tag" style="border-color:${sub.color};color:${sub.color}">${escapeAttr(sub.name)}</span>` : ''}
-              <span class="ach-recent-date">${fmtDate(e.date)}</span>
-            </div>
-          `;
-        }).join('')}
+    ${recentActs.length ? `<div class="section-divider" style="margin-top:18px">الفعاليات المُنجزة</div>` : ''}
+    ${achRecentHtml(recentActs)}
+
+    <!-- ══ أخرى ══ -->
+    <div class="section-divider" style="margin-top:28px">ملخص إنجازات "أخرى"</div>
+    <div class="ach-stats">
+      <div class="ach-stat">
+        <div class="ach-stat-num">${others.length}</div>
+        <div class="ach-stat-lbl">إجمالي الفعاليات</div>
       </div>
-    ` : '<div style="text-align:center;padding:24px;color:var(--text-mute);font-size:13px">لم تُنجز أي فعالية بعد.</div>'}
+      <div class="ach-stat done">
+        <div class="ach-stat-num">${doneOthers.length}</div>
+        <div class="ach-stat-lbl">منجزة</div>
+      </div>
+      <div class="ach-stat upcoming">
+        <div class="ach-stat-num">${pendingOth.length}</div>
+        <div class="ach-stat-lbl">لم تُنجز بعد</div>
+      </div>
+      <div class="ach-stat pct">
+        <div class="ach-stat-num">${pctOth}%</div>
+        <div class="ach-stat-lbl">نسبة الإنجاز</div>
+      </div>
+    </div>
+    <div class="ach-overall">
+      <div class="ach-bar-track"><div class="ach-bar-fill" style="width:${pctOth}%;background:${otherColor}"></div></div>
+    </div>
+
+    ${recentOthers.length ? `<div class="section-divider" style="margin-top:18px">الفعاليات المُنجزة</div>` : ''}
+    ${achRecentHtml(recentOthers)}
   `;
 }
 
