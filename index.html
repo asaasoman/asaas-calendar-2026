@@ -281,7 +281,52 @@
   object-fit: cover;
   display: block;
   border-radius: var(--radius) var(--radius) 0 0;
+  cursor: zoom-in;
+  transition: opacity .15s;
 }
+.masahatak-card-img:hover { opacity: .9; }
+
+/* ── Image Lightbox ── */
+#masLightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,.82);
+  align-items: center;
+  justify-content: center;
+  animation: lbFadeIn .18s ease;
+}
+#masLightbox.open { display: flex; }
+@keyframes lbFadeIn { from { opacity:0 } to { opacity:1 } }
+#masLightbox img {
+  max-width: min(92vw, 900px);
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.6);
+  animation: lbImgIn .2s cubic-bezier(.22,.68,0,1.2);
+}
+@keyframes lbImgIn { from { transform: scale(.88); opacity:0 } to { transform:scale(1); opacity:1 } }
+#masLightboxClose {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+  line-height: 1;
+}
+#masLightboxClose:hover { background: rgba(255,255,255,.28); }
 
 
 /* ===== Quick Break — استراحة سريعة ===== */
@@ -2934,6 +2979,12 @@ html.view-wc .hide-on-wc { display: none !important; }
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
+<!-- ── Image Lightbox ── -->
+<div id="masLightbox" role="dialog" aria-modal="true">
+  <button id="masLightboxClose" aria-label="إغلاق">✕</button>
+  <img id="masLightboxImg" src="" alt="صورة مكبّرة" />
+</div>
+
 <script>
 /* ============================================================
    FIREBASE CONFIGURATION
@@ -5458,7 +5509,7 @@ function renderMasahatak(entries) {
     const typeTag = e.type ? `<span style="font-size:11px;background:var(--gold-tint);color:var(--clay);padding:2px 8px;border-radius:99px;font-weight:600;">${e.type}</span>` : '';
     const delBtn  = state.isAdmin
       ? `<button class="masahatak-card-delete" onclick="mDeleteEntry('${e.id}')" title="حذف">✕</button>` : '';
-    const imgHtml  = e.image  ? `<img class="masahatak-card-img" src="${e.image}" alt="صورة" loading="lazy" />` : '';
+    const imgHtml  = e.image  ? `<img class="masahatak-card-img" src="${e.image}" alt="صورة" loading="lazy" onclick="masOpenLightbox(this.src)" />` : '';
     const textHtml = e.text   ? `<div class="masahatak-card-text">${e.text}</div>` : '';
     return `<div class="masahatak-card" data-mid="${e.id}">
       ${delBtn}
@@ -5477,6 +5528,29 @@ function renderMasahatak(entries) {
     el.style.setProperty('--ini', `'${ini}'`);
   });
 }
+
+// ── Lightbox ──────────────────────────────────────────────────────
+function masOpenLightbox(src) {
+  const lb  = document.getElementById('masLightbox');
+  const img = document.getElementById('masLightboxImg');
+  if (!lb || !img) return;
+  img.src = src;
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function masCloseLightbox() {
+  const lb = document.getElementById('masLightbox');
+  if (!lb) return;
+  lb.classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const lb  = document.getElementById('masLightbox');
+  const btn = document.getElementById('masLightboxClose');
+  if (lb)  lb.addEventListener('click',  e => { if (e.target === lb)  masCloseLightbox(); });
+  if (btn) btn.addEventListener('click', () => masCloseLightbox());
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') masCloseLightbox(); });
+});
 
 // ── Load from Firestore ──────────────────────────────────────────
 async function loadMasahatak() {
