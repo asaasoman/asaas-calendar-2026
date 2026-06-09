@@ -4188,6 +4188,7 @@ function openEventModal(event, dateStr) {
 function renderEventForm(event, dateStr) {
   const e = event || { title:'', date: dateStr || fmtDate(state.today), time:'', categoryId: state.categories[0].id, subcategoryId: null, description:'', done: false };
   const isActivities = e.categoryId === 'cat_activities';
+  const canBeDone = e.categoryId === 'cat_activities' || e.categoryId === 'cat_other';
   const isDone = !!e.done;
   return `
     <div class="form-grid">
@@ -4220,8 +4221,8 @@ function renderEventForm(event, dateStr) {
         <label>الوصف (اختياري)</label>
         <textarea class="form-control" id="evDesc" placeholder="تفاصيل إضافية…">${escapeAttr(e.description||'')}</textarea>
       </div>
-      ${state.isAdmin && isActivities && event ? `
-      <div class="form-group full">
+      ${state.isAdmin && canBeDone && event ? `
+      <div class="form-group full" id="evDoneWrap">
         <label>حالة الإنجاز</label>
         <button type="button" id="evDoneToggle" class="btn ${isDone ? 'btn-done-active' : 'btn-done-inactive'}" style="justify-content:flex-start;gap:10px;font-size:14px;border-radius:10px;padding:10px 16px">
           <span id="evDoneIcon">${isDone ? '✅' : '⬜'}</span>
@@ -4241,6 +4242,9 @@ function wireEventForm(event) {
   document.getElementById('evCat').onchange = (e) => {
     document.getElementById('evSubWrap').style.display =
       e.target.value === 'cat_activities' ? '' : 'none';
+    const doneWrap = document.getElementById('evDoneWrap');
+    if (doneWrap) doneWrap.style.display =
+      (e.target.value === 'cat_activities' || e.target.value === 'cat_other') ? '' : 'none';
   };
 
   // Wire the done toggle button if present
@@ -4308,7 +4312,7 @@ function renderEventDetails(e) {
   const d = parseDate(e.date);
   const dateText = `${AR_WEEKDAYS_FULL[d.getDay()]}، ${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
   return `
-    ${e.done && e.categoryId === 'cat_activities' ? `
+    ${e.done && (e.categoryId === 'cat_activities' || e.categoryId === 'cat_other') ? `
     <div style="display:flex;align-items:center;gap:8px;background:#e6f4ea;border:1px solid #b7dfc1;border-radius:10px;padding:9px 14px;margin-bottom:4px;font-size:13px;color:#1e4d29;font-weight:600">
       ✅ تم الإنجاز
     </div>` : ''}
