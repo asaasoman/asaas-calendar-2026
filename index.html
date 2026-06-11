@@ -2045,8 +2045,15 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   background: linear-gradient(180deg, transparent 0%, var(--card) 30%);
   margin: 20px -22px -26px;
   padding: 14px 22px 18px;
-  display: flex; gap: 10px; justify-content: center;
+  display: flex; flex-direction: column;
+  gap: 10px; align-items: center;
   border-top: 1px solid var(--border-soft);
+}
+.wc-submit-row > .wc-submit-helper {
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+  align-items: center;
 }
 .wc-submit-btn {
   background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
@@ -3135,7 +3142,7 @@ const I18N = {
     'wc.register.start':      'ابدأ',
     'wc.register.hint':       'اسمك سيظهر في القائمة العامة للمتصدّرين. يُحفظ محلياً على هذا المتصفح حتى تقدر تعدّل توقعاتك لاحقاً.',
     'wc.stages.title':        '📅 مراحل التحدّي',
-    'wc.submit':              '💾 حفظ توقعاتي',
+    'wc.submit':              '⚽ شـــووت',
     'wc.submit.saving':       '⏳ جارٍ الحفظ…',
     'wc.submit.done':         '✓ تم الحفظ بنجاح',
     'wc.submit.error':        'حدث خطأ أثناء الحفظ. حاول مرة أخرى.',
@@ -3335,7 +3342,7 @@ const I18N = {
     'wc.register.start':      'Start',
     'wc.register.hint':       'Your name will appear in the public leaderboard. It is saved locally on this browser so you can edit your predictions later.',
     'wc.stages.title':        '📅 Challenge Stages',
-    'wc.submit':              '💾 Save My Predictions',
+    'wc.submit':              '⚽ Shoot!',
     'wc.submit.saving':       '⏳ Saving…',
     'wc.submit.done':         '✓ Saved successfully',
     'wc.submit.error':        'An error occurred while saving. Please try again.',
