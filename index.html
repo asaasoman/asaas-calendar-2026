@@ -2062,7 +2062,46 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(49,92,59,.32);
 }
-.wc-submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+.wc-submit-btn:disabled {
+  opacity: .55; cursor: not-allowed;
+  background: linear-gradient(135deg, var(--text-mute) 0%, var(--text-soft) 100%);
+  box-shadow: none;
+}
+.wc-submit-btn:disabled:hover { transform: none; box-shadow: none; }
+
+/* Helper text above submit button */
+.wc-submit-helper {
+  display: flex; flex-direction: column; gap: 4px;
+  flex: 1; min-width: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.wc-submit-helper.warn {
+  background: linear-gradient(135deg, #FFF7E0 0%, var(--gold-tint) 100%);
+  border: 1px solid var(--gold-soft);
+  color: #8A6500;
+}
+.wc-submit-helper.ok {
+  background: var(--green-tint);
+  border: 1px solid var(--green-light);
+  color: var(--green-dark);
+  font-weight: 600;
+  text-align: center;
+}
+.wc-submit-progress {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.wc-submit-msg {
+  font-size: 11.5px;
+  opacity: .9;
+}
+@media (max-width: 720px) {
+  .wc-submit-row { flex-direction: column; align-items: stretch; }
+  .wc-submit-helper { text-align: center; }
+}
 
 .wc-leaderboard {
   background: var(--card-2);
@@ -3100,6 +3139,10 @@ const I18N = {
     'wc.submit.saving':       '⏳ جارٍ الحفظ…',
     'wc.submit.done':         '✓ تم الحفظ بنجاح',
     'wc.submit.error':        'حدث خطأ أثناء الحفظ. حاول مرة أخرى.',
+    'wc.submit.incomplete':   'أكمل توقعات كل المجموعات أولاً',
+    'wc.submit.progress':     'مجموعات مكتملة',
+    'wc.submit.remaining':    'لا يمكن حفظ التوقعات حتى تكمل اختيار متأهلَين من كل مجموعة. المتبقي:',
+    'wc.submit.allDone':      '✓ كل المجموعات مكتملة — يمكنك الحفظ الآن',
     'wc.logout.confirm':      'هل تريد تسجيل الخروج من تحدّي التوقعات؟ سيُحتفظ بتوقعاتك في القائمة.',
     'wc.logout.title':        'تسجيل خروج',
     'wc.name.required':       'الرجاء إدخال اسمك',
@@ -3296,6 +3339,10 @@ const I18N = {
     'wc.submit.saving':       '⏳ Saving…',
     'wc.submit.done':         '✓ Saved successfully',
     'wc.submit.error':        'An error occurred while saving. Please try again.',
+    'wc.submit.incomplete':   'Complete all group predictions first',
+    'wc.submit.progress':     'groups complete',
+    'wc.submit.remaining':    'You can\'t save until you pick two qualifiers from every group. Remaining:',
+    'wc.submit.allDone':      '✓ All groups complete — you can save now',
     'wc.logout.confirm':      'Do you want to sign out of the prediction challenge? Your saved predictions will remain in the leaderboard.',
     'wc.logout.title':        'Sign out',
     'wc.name.required':       'Please enter your name',
@@ -6621,12 +6668,40 @@ function wcRenderPredict() {
   // Render each stage as a card
   const stageCards = WC_STAGES.map(stage => wcRenderStageCard(stage)).join('');
 
+  // Compute groups completion (only matters when groups stage is open)
+  const groupsStage = WC_STAGES.find(s => s.id === 'groups');
+  const groupsOpen = groupsStage && wcStageStatus(groupsStage) === 'open';
+  const completed = WC_GROUPS.filter(g => (wcState.draft.groups[g.id] || []).length === 2).length;
+  const total = WC_GROUPS.length;
+  const allGroupsDone = completed === total;
+  const remaining = total - completed;
+
   // Submit button (only if any open stage exists)
   const anyOpen = WC_STAGES.some(s => wcStageStatus(s) === 'open');
-  const submitRow = anyOpen ? `
-    <div class="wc-submit-row">
-      <button class="wc-submit-btn" id="wcSubmitBtn">${t('wc.submit')}</button>
-    </div>` : '';
+
+  // Block submit when groups stage is open and not yet complete
+  const blockSubmit = groupsOpen && !allGroupsDone;
+
+  let submitRow = '';
+  if (anyOpen) {
+    let helperText = '';
+    if (blockSubmit) {
+      helperText = `
+        <div class="wc-submit-helper warn">
+          <span class="wc-submit-progress">${completed} / ${total} ${t('wc.submit.progress')}</span>
+          <span class="wc-submit-msg">${t('wc.submit.remaining')} ${remaining}</span>
+        </div>`;
+    } else if (groupsOpen && allGroupsDone) {
+      helperText = `<div class="wc-submit-helper ok">${t('wc.submit.allDone')}</div>`;
+    }
+    submitRow = `
+      <div class="wc-submit-row">
+        ${helperText}
+        <button class="wc-submit-btn" id="wcSubmitBtn" ${blockSubmit ? 'disabled' : ''}>
+          ${blockSubmit ? '🔒 ' + t('wc.submit.incomplete') : t('wc.submit.submit') || t('wc.submit')}
+        </button>
+      </div>`;
+  }
 
   return wcGroupsNotice() + stageCards + submitRow;
 }
@@ -7008,6 +7083,16 @@ function wcWireEvents() {
       // Block submit if no stage is open
       const anyOpen = WC_STAGES.some(s => wcStageStatus(s) === 'open');
       if (!anyOpen) { alert(t('wc.noOpen')); return; }
+      // Block submit if groups stage is open but not all 12 groups filled
+      const groupsStage = WC_STAGES.find(s => s.id === 'groups');
+      const groupsOpen = groupsStage && wcStageStatus(groupsStage) === 'open';
+      if (groupsOpen) {
+        const incomplete = WC_GROUPS.filter(g => (wcState.draft.groups[g.id] || []).length !== 2).length;
+        if (incomplete > 0) {
+          alert(t('wc.submit.remaining') + ' ' + incomplete);
+          return;
+        }
+      }
       submitBtn.disabled = true;
       const orig = submitBtn.innerHTML;
       submitBtn.innerHTML = t('wc.submit.saving');
