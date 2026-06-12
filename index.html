@@ -4455,7 +4455,7 @@ function getCountdownEvent() {
   // Fallback to nearest upcoming — only from allowed categories/subcategories:
   // Fenjan Qahwa, Mindshare, Mindshare Plus, مناسبات دينية ووطنية
   const COUNTDOWN_SUBS = new Set(['sub_fenjan', 'sub_mindshare', 'sub_mindshareplus']);
-  const COUNTDOWN_CATS = new Set(['cat_national']);
+  const COUNTDOWN_CATS = new Set(['cat_religion']);
 
   const now = new Date();
   const upcoming = state.events
@@ -4519,7 +4519,7 @@ document.getElementById('countdownCard').onclick = () => {
   if (!state.isAdmin) return;
   const now = new Date();
   const ALLOWED_SUBS = new Set(['sub_fenjan', 'sub_mindshare', 'sub_mindshareplus']);
-  const ALLOWED_CATS = new Set(['cat_national']);
+  const ALLOWED_CATS = new Set(['cat_religion']);
   const monthEvts = state.events
     .filter(e => {
       const d = parseDate(e.date);
