@@ -2339,6 +2339,71 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   color: var(--text); margin-bottom: 10px;
   letter-spacing: .3px;
 }
+
+/* ─── Admin: Per-stage gating (open/close override) ─────────────── */
+.wc-gates-list {
+  display: flex; flex-direction: column;
+  gap: 8px;
+}
+.wc-gate-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 14px;
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+.wc-gate-stage {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1; min-width: 180px;
+}
+.wc-gate-icon {
+  font-size: 22px; line-height: 1;
+  flex-shrink: 0;
+}
+.wc-gate-text { min-width: 0; }
+.wc-gate-name {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 14px; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.wc-gate-status {
+  font-size: 11.5px; color: var(--text-mute);
+  display: flex; align-items: center; gap: 6px;
+  flex-wrap: wrap;
+}
+.wc-gate-modes {
+  display: flex; gap: 4px;
+  background: var(--bg-2);
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+}
+.wc-gate-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 11px;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-soft);
+  white-space: nowrap;
+  transition: all .15s;
+}
+.wc-gate-btn:hover { background: rgba(0,0,0,.04); color: var(--text); }
+.wc-gate-btn.active { color: #FFFDF8; box-shadow: 0 2px 5px rgba(0,0,0,.12); }
+.wc-gate-btn.auto.active   { background: var(--text-soft); }
+.wc-gate-btn.open.active   { background: var(--green); }
+.wc-gate-btn.closed.active { background: var(--clay); }
+@media (max-width: 600px) {
+  .wc-gate-row { gap: 10px; padding: 10px; }
+  .wc-gate-modes { width: 100%; justify-content: space-between; }
+  .wc-gate-btn { flex: 1; justify-content: center; padding: 6px 6px; font-size: 11.5px; }
+}
+
 .wc-adm-row {
   display: grid;
   grid-template-columns: 1fr 100px 1fr;
@@ -3346,6 +3411,12 @@ const I18N = {
     'wc.lb.scoring.bonus':    'مكافأة',
     // admin
     'wc.admin.warn':          '⚠️ <strong>تنبيه:</strong> أي تعديل هنا يُحدّث نقاط جميع المشاركين تلقائياً. تأكّد من الأرقام قبل الإدخال.',
+    'wc.admin.gates.title':   '🔓 إدارة فتح وإغلاق التوقعات',
+    'wc.admin.gates.intro':   'يمكنك إجبار حالة كل دور (مفتوح/مغلق) بغض النظر عن التوقيت المُجدوَل. اختر "تلقائي" للعودة إلى السلوك الافتراضي.',
+    'wc.gate.auto':           'تلقائي',
+    'wc.gate.forceOpen':      'افتح',
+    'wc.gate.forceClosed':    'أغلق',
+    'wc.gate.current':        'الحالة الحالية:',
     'wc.admin.groups':        '🏁 نتائج دور المجموعات (متأهّلَين لكل مجموعة)',
     'wc.admin.ko':            '— مواجهات ونتائج',
     'wc.admin.matches':       'مباراة',
@@ -3538,6 +3609,12 @@ const I18N = {
     'wc.lb.scoring.e':        'exact score',
     'wc.lb.scoring.bonus':    'bonus',
     'wc.admin.warn':          '⚠️ <strong>Notice:</strong> any change here updates points for all participants automatically. Verify numbers before entering.',
+    'wc.admin.gates.title':   '🔓 Open / Close Predictions',
+    'wc.admin.gates.intro':   'You can force each stage open or closed regardless of its schedule. Choose "Auto" to return to the time-based default.',
+    'wc.gate.auto':           'Auto',
+    'wc.gate.forceOpen':      'Open',
+    'wc.gate.forceClosed':    'Close',
+    'wc.gate.current':        'Current status:',
     'wc.admin.groups':        '🏁 Group-stage results (two qualifiers per group)',
     'wc.admin.ko':            '— Matchups and results',
     'wc.admin.matches':       'matches',
@@ -6545,6 +6622,11 @@ function wcClearIdentity() {
 // Stage status
 // ────────────────────────────────────────────────────────────────
 function wcStageStatus(stage) {
+  // Admin manual override takes precedence over time-based gating
+  const override = (wcState.results.stageOverrides || {})[stage.id];
+  if (override === 'force-open')   return 'open';
+  if (override === 'force-closed') return 'closed';
+  // Default: time-based gating
   const now = wcState.now;
   const opens = new Date(stage.opensAt).getTime();
   const closes = new Date(stage.closesAt).getTime();
@@ -6673,6 +6755,27 @@ async function wcSaveMyPrediction() {
 async function wcSaveResults() {
   await WC_RESULTS_DOC.set({ value: wcState.results, updatedAt: Date.now() });
 }
+
+// Admin-only: manually open/close a stage, or revert to auto (time-based)
+async function wcSetStageOverride(stageId, mode) {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  if (!wcState.results.stageOverrides) wcState.results.stageOverrides = {};
+  if (mode === 'auto') {
+    delete wcState.results.stageOverrides[stageId];
+  } else if (mode === 'force-open' || mode === 'force-closed') {
+    wcState.results.stageOverrides[stageId] = mode;
+  } else {
+    return;
+  }
+  try {
+    await wcSaveResults();
+  } catch (e) {
+    console.error('[WC] override save error:', e);
+    alert(CURRENT_LANG === 'en' ? 'Failed to save. Try again.' : 'تعذّر الحفظ. حاول مرة أخرى.');
+  }
+  wcRender();
+}
+window.wcSetStageOverride = wcSetStageOverride;
 
 // Admin-only: delete a participant's prediction record entirely
 async function wcDeleteParticipant(participantId) {
@@ -7225,9 +7328,47 @@ function wcRenderLeaderboard() {
 // ────────────────────────────────────────────────────────────────
 function wcRenderAdmin() {
   const r = wcState.results;
+  const overrides = r.stageOverrides || {};
   return `
     <div class="wc-admin-warn">
       ${t('wc.admin.warn')}
+    </div>
+
+    <div class="wc-admin-section">
+      <div class="wc-admin-section-title">${t('wc.admin.gates.title')}</div>
+      <div style="font-size:12px;color:var(--text-mute);margin-bottom:14px;line-height:1.6">
+        ${t('wc.admin.gates.intro')}
+      </div>
+      <div class="wc-gates-list">
+        ${WC_STAGES.map(s => {
+          const mode = overrides[s.id] || 'auto';
+          const effective = wcStageStatus(s);
+          return `
+            <div class="wc-gate-row">
+              <div class="wc-gate-stage">
+                <span class="wc-gate-icon">${s.icon}</span>
+                <div class="wc-gate-text">
+                  <div class="wc-gate-name">${t('wc.stage.'+s.id)}</div>
+                  <div class="wc-gate-status">${t('wc.gate.current')} ${wcStatusBadge(effective)}</div>
+                </div>
+              </div>
+              <div class="wc-gate-modes" role="group">
+                <button class="wc-gate-btn auto ${mode==='auto'?'active':''}"
+                        onclick="wcSetStageOverride('${s.id}','auto')">
+                  ⚙ ${t('wc.gate.auto')}
+                </button>
+                <button class="wc-gate-btn open ${mode==='force-open'?'active':''}"
+                        onclick="wcSetStageOverride('${s.id}','force-open')">
+                  🔓 ${t('wc.gate.forceOpen')}
+                </button>
+                <button class="wc-gate-btn closed ${mode==='force-closed'?'active':''}"
+                        onclick="wcSetStageOverride('${s.id}','force-closed')">
+                  🔒 ${t('wc.gate.forceClosed')}
+                </button>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
     </div>
 
     <div class="wc-admin-section">
