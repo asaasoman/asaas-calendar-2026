@@ -1985,6 +1985,61 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   background: var(--green); border-color: var(--green); color: #FFFDF8;
 }
 
+/* ─── Admin: group standings table (drives qualifiers automatically) ─── */
+.wc-gs-group { padding-bottom: 8px; }
+.wc-gs-grid { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)) !important; }
+.wc-gs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.wc-gs-headrow, .wc-gs-row {
+  display: grid;
+  grid-template-columns: 22px 1fr 32px 32px 32px 32px 32px 38px 38px;
+  gap: 4px;
+  align-items: center;
+  min-width: 320px;
+}
+.wc-gs-headrow {
+  font-size: 10px; font-weight: 700; letter-spacing: .3px;
+  color: var(--text-mute); text-transform: uppercase;
+  padding: 0 2px 6px; margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.wc-gs-headrow > div { text-align: center; }
+.wc-gs-row {
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 5px 6px;
+  margin-bottom: 4px;
+  transition: background .15s, border-color .15s;
+}
+.wc-gs-row.qualified { background: var(--green-tint); border-color: var(--green-light); }
+.wc-gs-rank {
+  width: 19px; height: 19px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 10px; font-weight: 700;
+  background: var(--bg-2); color: var(--text-mute);
+  flex-shrink: 0;
+}
+.wc-gs-row.qualified .wc-gs-rank { background: var(--green); color: #FFFDF8; }
+.wc-gs-team {
+  display: flex; align-items: center; gap: 6px;
+  min-width: 0; font-size: 12.5px; color: var(--text);
+}
+.wc-gs-team span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wc-gs-input {
+  width: 100%; text-align: center; padding: 4px 2px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--card); color: var(--text);
+  font-weight: 700; font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.wc-gs-input:focus { border-color: var(--green); outline: none; box-shadow: 0 0 0 2px rgba(49,92,59,.1); }
+.wc-gs-gd, .wc-gs-pts {
+  text-align: center; font-weight: 700; font-size: 12.5px;
+  font-variant-numeric: tabular-nums; color: var(--text);
+}
+.wc-gs-pts { color: var(--green-dark); }
+.wc-gs-hint { font-size: 12px; color: var(--text-mute); line-height: 1.6; margin-bottom: 12px; }
+
 .wc-knockout-stage { margin-bottom: 22px; }
 .wc-stage-title {
   font-family: 'Co Headline', 'Tajawal', sans-serif;
@@ -3417,8 +3472,17 @@ const I18N = {
     'wc.gate.forceOpen':      'افتح',
     'wc.gate.forceClosed':    'أغلق',
     'wc.gate.current':        'الحالة الحالية:',
-    'wc.admin.groups':        '🏁 نتائج دور المجموعات (متأهّلَين لكل مجموعة)',
-    'wc.admin.ko':            '— مواجهات ونتائج',
+    'wc.admin.groups':        '🏁 ترتيب المجموعات (يُحدَّث تلقائياً حسب نتائج المباريات)',
+    'wc.gs.hint':              'أدخل عدد مباريات الفوز والتعادل والخسارة وعدد الأهداف له/عليه لكل منتخب — يُحسَب الترتيب والمتأهلان (أول فريقين) تلقائياً، وتتحدّث نقاط جميع المشاركين فوراً.',
+    'wc.gs.w':                 'فاز',
+    'wc.gs.d':                 'تعادل',
+    'wc.gs.l':                 'خسر',
+    'wc.gs.gf':                'له',
+    'wc.gs.ga':                'عليه',
+    'wc.gs.gd':                'فرق',
+    'wc.gs.pts':               'نقاط',
+    'wc.gs.pending':           '— لم تُلعب مباريات بعد —',
+    'wc.admin.ko':             '— مواجهات ونتائج',
     'wc.admin.matches':       'مباراة',
     'wc.admin.selectTeam':    '— اختر منتخب —',
     'wc.admin.autosave':      'التعديلات تُحفظ تلقائياً في Firestore.',
@@ -3615,7 +3679,16 @@ const I18N = {
     'wc.gate.forceOpen':      'Open',
     'wc.gate.forceClosed':    'Close',
     'wc.gate.current':        'Current status:',
-    'wc.admin.groups':        '🏁 Group-stage results (two qualifiers per group)',
+    'wc.admin.groups':        '🏁 Group standings (updates automatically from match results)',
+    'wc.gs.hint':              'Enter each team\'s wins, draws, losses, and goals for/against — the table and the two qualifiers are calculated automatically, and every participant\'s points update instantly.',
+    'wc.gs.w':                 'W',
+    'wc.gs.d':                 'D',
+    'wc.gs.l':                 'L',
+    'wc.gs.gf':                'GF',
+    'wc.gs.ga':                'GA',
+    'wc.gs.gd':                'GD',
+    'wc.gs.pts':               'Pts',
+    'wc.gs.pending':           '— No matches played yet —',
     'wc.admin.ko':            '— Matchups and results',
     'wc.admin.matches':       'matches',
     'wc.admin.selectTeam':    '— Select a team —',
@@ -6585,7 +6658,7 @@ const wcState = {
   myId: null,
   myName: '',
   predictions: [],
-  results: { groups: {}, knockout: { r32:[], r16:[], qf:[], sf:[], final:[] } },
+  results: { groups: {}, groupStats: {}, knockout: { r32:[], r16:[], qf:[], sf:[], final:[] } },
   tab: 'predict',          // predict | leaderboard | admin
   lbStage: 'overall',      // overall | groups | r32 | r16 | qf | sf | final
   draft: null,
@@ -6716,6 +6789,7 @@ function wcSubscribe() {
     const v = (snap.exists && snap.data().value) ? snap.data().value : null;
     wcState.results = v || { groups: {}, knockout: {} };
     if (!wcState.results.groups) wcState.results.groups = {};
+    if (!wcState.results.groupStats) wcState.results.groupStats = {};
     if (!wcState.results.knockout) wcState.results.knockout = {};
     ['r32','r16','qf','sf','final'].forEach(s => {
       if (!Array.isArray(wcState.results.knockout[s])) wcState.results.knockout[s] = [];
@@ -6754,6 +6828,41 @@ async function wcSaveMyPrediction() {
 
 async function wcSaveResults() {
   await WC_RESULTS_DOC.set({ value: wcState.results, updatedAt: Date.now() });
+}
+
+// ────────────────────────────────────────────────────────────────
+// Group standings — admin enters W/D/L/GF/GA per team; the table,
+// ranking, and the two actual qualifiers are all derived from this.
+// ────────────────────────────────────────────────────────────────
+function wcGroupStandings(groupId) {
+  const g = WC_GROUPS.find(x => x.id === groupId);
+  if (!g) return [];
+  const stats = (wcState.results.groupStats && wcState.results.groupStats[groupId]) || {};
+  const rows = g.teams.map(tm => {
+    const code = tm[0], flag = tm[1], name = tm[2];
+    const s = stats[code] || {};
+    const w = Number(s.w) || 0, d = Number(s.d) || 0, l = Number(s.l) || 0;
+    const gf = Number(s.gf) || 0, ga = Number(s.ga) || 0;
+    return { code, flag, name, w, d, l, gf, ga, played: w + d + l, gd: gf - ga, pts: w * 3 + d };
+  });
+  // Standard table sort: points, then goal difference, then goals for.
+  rows.sort((a, b) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf));
+  return rows;
+}
+
+function wcGroupHasResults(groupId) {
+  return wcGroupStandings(groupId).some(r => r.played > 0);
+}
+
+// Recomputes the actual top-2 qualifiers for a group from its live standings
+// and writes them into wcState.results.groups (which wcScoreGroups reads).
+// Groups with no matches entered yet are left untouched, so they keep
+// awarding 0 points instead of crediting an arbitrary default order.
+function wcSyncGroupQualifiers(groupId) {
+  if (!wcGroupHasResults(groupId)) return;
+  const top2 = wcGroupStandings(groupId).slice(0, 2).map(r => r.code);
+  if (!wcState.results.groups) wcState.results.groups = {};
+  wcState.results.groups[groupId] = top2;
 }
 
 // Admin-only: manually open/close a stage, or revert to auto (time-based)
@@ -7373,28 +7482,9 @@ function wcRenderAdmin() {
 
     <div class="wc-admin-section">
       <div class="wc-admin-section-title">${t('wc.admin.groups')}</div>
-      <div class="wc-groups-grid">
-        ${WC_GROUPS.map(g => {
-          const actual = (r.groups && r.groups[g.id]) || [];
-          return `
-            <div class="wc-group ${actual.length===2?'complete':''}">
-              <div class="wc-group-header">
-                <div class="wc-group-label">المجموعة ${g.id}</div>
-                <div class="wc-group-progress">${actual.length}/2</div>
-              </div>
-              ${g.teams.map(tm => {
-                const sel = actual.includes(tm[0]);
-                const dis = !sel && actual.length >= 2;
-                return `
-                  <div class="wc-team-row ${sel?'selected':''} ${dis?'disabled':''}"
-                       data-wcadmteam="${tm[0]}" data-wcadmgrpid="${g.id}">
-                    <span class="wc-team-flag">${wcFlagImg(tm[0], 18)}</span>
-                    <span class="wc-team-name">${tm[2]}</span>
-                    <span class="wc-team-check">✓</span>
-                  </div>`;
-              }).join('')}
-            </div>`;
-        }).join('')}
+      <div class="wc-gs-hint">${t('wc.gs.hint')}</div>
+      <div class="wc-groups-grid wc-gs-grid">
+        ${WC_GROUPS.map(g => wcRenderGroupStandingsAdmin(g)).join('')}
       </div>
     </div>
 
@@ -7402,6 +7492,47 @@ function wcRenderAdmin() {
 
     <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-mute)">
       ${t('wc.admin.autosave')}
+    </div>`;
+}
+
+function wcRenderGroupStandingsAdmin(g) {
+  const standings = wcGroupStandings(g.id);
+  const hasResults = wcGroupHasResults(g.id);
+  const qualBadge = hasResults
+    ? standings.slice(0, 2).map(r => wcFlagImg(r.code, 14)).join(' ')
+    : t('wc.gs.pending');
+
+  const rows = standings.map((r, i) => {
+    const rank = i + 1;
+    const qualified = hasResults && rank <= 2;
+    return `
+      <div class="wc-gs-row ${qualified ? 'qualified' : ''}">
+        <div class="wc-gs-rank">${qualified ? '✓' : rank}</div>
+        <div class="wc-gs-team">${wcFlagImg(r.code, 16)}<span>${r.name}</span></div>
+        <input class="wc-gs-input" type="number" min="0" max="20" data-wcgsgrp="${g.id}" data-wcgsteam="${r.code}" data-wcgsfield="w"  value="${r.w}" />
+        <input class="wc-gs-input" type="number" min="0" max="20" data-wcgsgrp="${g.id}" data-wcgsteam="${r.code}" data-wcgsfield="d"  value="${r.d}" />
+        <input class="wc-gs-input" type="number" min="0" max="20" data-wcgsgrp="${g.id}" data-wcgsteam="${r.code}" data-wcgsfield="l"  value="${r.l}" />
+        <input class="wc-gs-input" type="number" min="0" max="99" data-wcgsgrp="${g.id}" data-wcgsteam="${r.code}" data-wcgsfield="gf" value="${r.gf}" />
+        <input class="wc-gs-input" type="number" min="0" max="99" data-wcgsgrp="${g.id}" data-wcgsteam="${r.code}" data-wcgsfield="ga" value="${r.ga}" />
+        <div class="wc-gs-gd">${r.gd > 0 ? '+' + r.gd : r.gd}</div>
+        <div class="wc-gs-pts">${r.pts}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="wc-group wc-gs-group ${hasResults ? 'complete' : ''}">
+      <div class="wc-group-header">
+        <div class="wc-group-label">${t('wc.group')} ${g.id}</div>
+        <div class="wc-group-progress">${qualBadge}</div>
+      </div>
+      <div class="wc-gs-scroll">
+        <div class="wc-gs-headrow">
+          <div></div><div></div>
+          <div>${t('wc.gs.w')}</div><div>${t('wc.gs.d')}</div><div>${t('wc.gs.l')}</div>
+          <div>${t('wc.gs.gf')}</div><div>${t('wc.gs.ga')}</div><div>${t('wc.gs.gd')}</div><div>${t('wc.gs.pts')}</div>
+        </div>
+        ${rows}
+      </div>
     </div>`;
 }
 
@@ -7533,19 +7664,20 @@ function wcWireEvents() {
     };
   }
 
-  // Admin: group results
-  document.querySelectorAll('[data-wcadmteam]').forEach(row => {
-    row.onclick = async () => {
-      if (row.classList.contains('disabled')) return;
-      const team = row.getAttribute('data-wcadmteam');
-      const grp  = row.getAttribute('data-wcadmgrpid');
-      if (!wcState.results.groups) wcState.results.groups = {};
-      if (!wcState.results.groups[grp]) wcState.results.groups[grp] = [];
-      const arr = wcState.results.groups[grp];
-      const i = arr.indexOf(team);
-      if (i >= 0) arr.splice(i, 1);
-      else if (arr.length < 2) arr.push(team);
-      try { await wcSaveResults(); } catch(e){ console.error(e); }
+  // Admin: group standings (W/D/L/GF/GA) — qualifiers are derived automatically
+  document.querySelectorAll('[data-wcgsfield]').forEach(inp => {
+    inp.onchange = async () => {
+      const grp = inp.getAttribute('data-wcgsgrp');
+      const team = inp.getAttribute('data-wcgsteam');
+      const field = inp.getAttribute('data-wcgsfield');
+      if (!wcState.results.groupStats) wcState.results.groupStats = {};
+      if (!wcState.results.groupStats[grp]) wcState.results.groupStats[grp] = {};
+      if (!wcState.results.groupStats[grp][team]) wcState.results.groupStats[grp][team] = {};
+      let v = parseInt(inp.value, 10);
+      if (isNaN(v) || v < 0) v = 0;
+      wcState.results.groupStats[grp][team][field] = v;
+      wcSyncGroupQualifiers(grp);
+      try { await wcSaveResults(); } catch (e) { console.error(e); }
       wcRender();
     };
   });
