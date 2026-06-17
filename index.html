@@ -2039,6 +2039,15 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-gs-pts { color: var(--green-dark); }
 .wc-gs-hint { font-size: 12px; color: var(--text-mute); line-height: 1.6; margin-bottom: 12px; }
+.wc-gs-seed-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green); color: #FFFDF8;
+  border: none; border-radius: 8px;
+  padding: 8px 16px; margin-bottom: 14px;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: background .15s, transform .1s;
+}
+.wc-gs-seed-btn:hover { background: var(--green-dark); transform: translateY(-1px); }
 
 .wc-knockout-stage { margin-bottom: 22px; }
 .wc-stage-title {
@@ -3482,6 +3491,7 @@ const I18N = {
     'wc.gs.gd':                'فرق',
     'wc.gs.pts':               'نقاط',
     'wc.gs.pending':           '— لم تُلعب مباريات بعد —',
+    'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 17 يونيو)',
     'wc.admin.ko':             '— مواجهات ونتائج',
     'wc.admin.matches':       'مباراة',
     'wc.admin.selectTeam':    '— اختر منتخب —',
@@ -3689,6 +3699,7 @@ const I18N = {
     'wc.gs.gd':                'GD',
     'wc.gs.pts':               'Pts',
     'wc.gs.pending':           '— No matches played yet —',
+    'wc.gs.loadSeed':          'Load current results (as of June 17)',
     'wc.admin.ko':            '— Matchups and results',
     'wc.admin.matches':       'matches',
     'wc.admin.selectTeam':    '— Select a team —',
@@ -6865,6 +6876,49 @@ function wcSyncGroupQualifiers(groupId) {
   wcState.results.groups[groupId] = top2;
 }
 
+// Snapshot of real group-stage results from kooora.com, matchday 1
+// (as verified on June 17, 2026). Loaded on-demand by the admin via
+// the "Load current results" button — same write path as manual entry,
+// so it triggers the normal live recalculation for every participant.
+const WC_SEED_GROUP_RESULTS_20260617 = {
+  A: { MEX:{w:1,d:0,l:0,gf:2,ga:0}, KOR:{w:1,d:0,l:0,gf:2,ga:1}, CZE:{w:0,d:0,l:1,gf:1,ga:2}, RSA:{w:0,d:0,l:1,gf:0,ga:2} },
+  B: { SUI:{w:0,d:1,l:0,gf:1,ga:1}, CAN:{w:0,d:1,l:0,gf:1,ga:1}, QAT:{w:0,d:1,l:0,gf:1,ga:1}, BIH:{w:0,d:1,l:0,gf:1,ga:1} },
+  C: { SCO:{w:1,d:0,l:0,gf:1,ga:0}, MAR:{w:0,d:1,l:0,gf:1,ga:1}, BRA:{w:0,d:1,l:0,gf:1,ga:1}, HAI:{w:0,d:0,l:1,gf:0,ga:1} },
+  D: { USA:{w:1,d:0,l:0,gf:4,ga:1}, AUS:{w:1,d:0,l:0,gf:2,ga:0}, TUR:{w:0,d:0,l:1,gf:0,ga:2}, PAR:{w:0,d:0,l:1,gf:1,ga:4} },
+  E: { GER:{w:1,d:0,l:0,gf:7,ga:1}, CIV:{w:1,d:0,l:0,gf:1,ga:0}, ECU:{w:0,d:0,l:1,gf:0,ga:1}, CUW:{w:0,d:0,l:1,gf:1,ga:7} },
+  F: { SWE:{w:1,d:0,l:0,gf:5,ga:1}, JPN:{w:0,d:1,l:0,gf:2,ga:2}, NED:{w:0,d:1,l:0,gf:2,ga:2}, TUN:{w:0,d:0,l:1,gf:1,ga:5} },
+  G: { NZL:{w:0,d:1,l:0,gf:2,ga:2}, IRN:{w:0,d:1,l:0,gf:2,ga:2}, BEL:{w:0,d:1,l:0,gf:1,ga:1}, EGY:{w:0,d:1,l:0,gf:1,ga:1} },
+  H: { URU:{w:0,d:1,l:0,gf:1,ga:1}, KSA:{w:0,d:1,l:0,gf:1,ga:1}, ESP:{w:0,d:1,l:0,gf:0,ga:0}, CPV:{w:0,d:1,l:0,gf:0,ga:0} },
+  I: { NOR:{w:1,d:0,l:0,gf:4,ga:1}, FRA:{w:1,d:0,l:0,gf:3,ga:1}, SEN:{w:0,d:0,l:1,gf:1,ga:3}, IRQ:{w:0,d:0,l:1,gf:1,ga:4} },
+  J: { ARG:{w:1,d:0,l:0,gf:3,ga:0}, AUT:{w:1,d:0,l:0,gf:3,ga:1}, JOR:{w:0,d:0,l:1,gf:1,ga:3}, ALG:{w:0,d:0,l:1,gf:0,ga:3} },
+  K: { COL:{w:0,d:0,l:0,gf:0,ga:0}, COD:{w:0,d:0,l:0,gf:0,ga:0}, POR:{w:0,d:0,l:0,gf:0,ga:0}, UZB:{w:0,d:0,l:0,gf:0,ga:0} },
+  L: { ENG:{w:0,d:0,l:0,gf:0,ga:0}, CRO:{w:0,d:0,l:0,gf:0,ga:0}, GHA:{w:0,d:0,l:0,gf:0,ga:0}, PAN:{w:0,d:0,l:0,gf:0,ga:0} },
+};
+
+// Admin-only: one-click load of the verified real results above into the
+// live standings table (overwrites whatever is currently entered).
+async function wcLoadSeedGroupResults() {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  const msg = (CURRENT_LANG === 'en')
+    ? 'Load the verified group-stage results (as of June 17, 2026)? This will overwrite any standings already entered.'
+    : 'تحميل نتائج دور المجموعات الموثَّقة (حتى 17 يونيو 2026)؟ سيتم استبدال أي ترتيب مُدخَل حالياً.';
+  if (!confirm(msg)) return;
+  if (!wcState.results.groupStats) wcState.results.groupStats = {};
+  Object.keys(WC_SEED_GROUP_RESULTS_20260617).forEach(gid => {
+    wcState.results.groupStats[gid] = JSON.parse(JSON.stringify(WC_SEED_GROUP_RESULTS_20260617[gid]));
+    wcSyncGroupQualifiers(gid);
+  });
+  try {
+    await wcSaveResults();
+  } catch (e) {
+    console.error('[WC] seed load error:', e);
+    alert(CURRENT_LANG === 'en' ? 'Failed to save. Try again.' : 'تعذّر الحفظ. حاول مرة أخرى.');
+    return;
+  }
+  wcRender();
+}
+window.wcLoadSeedGroupResults = wcLoadSeedGroupResults;
+
 // Admin-only: manually open/close a stage, or revert to auto (time-based)
 async function wcSetStageOverride(stageId, mode) {
   if (!(typeof state !== 'undefined' && state.isAdmin)) return;
@@ -7483,6 +7537,7 @@ function wcRenderAdmin() {
     <div class="wc-admin-section">
       <div class="wc-admin-section-title">${t('wc.admin.groups')}</div>
       <div class="wc-gs-hint">${t('wc.gs.hint')}</div>
+      <button class="wc-gs-seed-btn" onclick="wcLoadSeedGroupResults()">📥 ${t('wc.gs.loadSeed')}</button>
       <div class="wc-groups-grid wc-gs-grid">
         ${WC_GROUPS.map(g => wcRenderGroupStandingsAdmin(g)).join('')}
       </div>
