@@ -2652,6 +2652,10 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-champ-pts {
   font-size: 13px; color: var(--green-dark); font-weight: 600;
 }
+.wc-champ-card.tie .wc-champ-name {
+  white-space: normal; overflow: visible; text-overflow: initial;
+  font-size: 16px; line-height: 1.5;
+}
 
 @media (max-width: 600px) {
   .wc-stage-card { padding: 12px 13px; }
@@ -3467,7 +3471,9 @@ const I18N = {
     'wc.lb.points':           'النقاط',
     'wc.lb.point':            'نقطة',
     'wc.lb.champion':         'البطل العام',
+    'wc.lb.champions':        'الأبطال المشتركون في الصدارة',
     'wc.lb.champOf':          'بطل توقعات',
+    'wc.lb.champsOf':         'أبطال توقعات',
     'wc.lb.count':            'مشارك · يُحدَّث تلقائياً عند إدخال نتائج جديدة',
     'wc.lb.scoring':          'نظام النقاط:',
     'wc.lb.scoring.q':        'منتخب متأهّل صح',
@@ -3678,7 +3684,9 @@ const I18N = {
     'wc.lb.points':           'Points',
     'wc.lb.point':            'pts',
     'wc.lb.champion':         'Overall Champion',
+    'wc.lb.champions':        'Joint Champions',
     'wc.lb.champOf':          'Champion of',
+    'wc.lb.champsOf':         'Joint Champions of',
     'wc.lb.count':            'participants · Updated automatically when results are entered',
     'wc.lb.scoring':          'Scoring:',
     'wc.lb.scoring.q':        'correct qualifier',
@@ -7439,14 +7447,20 @@ function wcRenderLeaderboard() {
   const top = ranked[0];
   let champCard = '';
   if (top && top.score > 0) {
+    const tiedTop = ranked.filter(p => p.score === top.score);
+    const isTie = tiedTop.length > 1;
     const stageMeta = stages.find(s => s.id === stage);
-    const title = stage === 'overall' ? t('wc.lb.champion') : `${t('wc.lb.champOf')} ${stageMeta.name}`;
+    const title = stage === 'overall'
+      ? (isTie ? t('wc.lb.champions') : t('wc.lb.champion'))
+      : `${isTie ? t('wc.lb.champsOf') : t('wc.lb.champOf')} ${stageMeta.name}`;
+    const sep = (CURRENT_LANG === 'en') ? ', ' : '، ';
+    const namesHtml = isTie ? tiedTop.map(p => wcEsc(p.name)).join(sep) : wcEsc(top.name);
     champCard = `
-      <div class="wc-champ-card">
+      <div class="wc-champ-card ${isTie ? 'tie' : ''}">
         <div class="wc-champ-trophy">🏆</div>
         <div class="wc-champ-text">
           <div class="wc-champ-label">${title}</div>
-          <div class="wc-champ-name">${wcEsc(top.name)}</div>
+          <div class="wc-champ-name">${namesHtml}</div>
           <div class="wc-champ-pts">${top.score} ${t('wc.lb.point')}</div>
         </div>
       </div>`;
