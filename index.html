@@ -3446,6 +3446,7 @@ const I18N = {
     'wc.groups.prompt':       'دور المجموعات — اختر متأهلَين من كل مجموعة',
     'wc.groups.hint':         '💡 اختر متأهّلَين من كل مجموعة. كل توقّع صحيح =',
     'wc.groups.hintSuffix':   'نقاط.',
+    'wc.groups.hint.exactNote': 'وإذا كان الفريق الذي اخترته أولاً هو صاحب المركز الأول فعلياً، والفريق الذي اخترته ثانياً هو صاحب المركز الثاني فعلياً (ترتيب مطابق تماماً)، تحصل على',
     'wc.ko.hint.winner':      'الفائز الصحيح =',
     'wc.ko.hint.exact':       'النتيجة المضبوطة =',
     'wc.ko.hint.points':      'نقاط.',
@@ -3470,6 +3471,7 @@ const I18N = {
     'wc.lb.count':            'مشارك · يُحدَّث تلقائياً عند إدخال نتائج جديدة',
     'wc.lb.scoring':          'نظام النقاط:',
     'wc.lb.scoring.q':        'منتخب متأهّل صح',
+    'wc.lb.scoring.qExact':   'ترتيب الأول والثاني مطابق تماماً',
     'wc.lb.scoring.w':        'توقّع الفائز فقط',
     'wc.lb.scoring.e':        'النتيجة المضبوطة',
     'wc.lb.scoring.bonus':    'مكافأة',
@@ -3491,7 +3493,7 @@ const I18N = {
     'wc.gs.gd':                'فرق',
     'wc.gs.pts':               'نقاط',
     'wc.gs.pending':           '— لم تُلعب مباريات بعد —',
-    'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 17 يونيو)',
+    'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 19 يونيو)',
     'wc.admin.ko':             '— مواجهات ونتائج',
     'wc.admin.matches':       'مباراة',
     'wc.admin.selectTeam':    '— اختر منتخب —',
@@ -3657,6 +3659,7 @@ const I18N = {
     'wc.groups.prompt':       'Group stage — pick two qualifiers from each group',
     'wc.groups.hint':         '💡 Pick two qualifiers from each group. Each correct pick =',
     'wc.groups.hintSuffix':   'points.',
+    'wc.groups.hint.exactNote': 'And if the team you picked first really finishes 1st, and the team you picked second really finishes 2nd (exact order match), you get',
     'wc.ko.hint.winner':      'Correct winner =',
     'wc.ko.hint.exact':       'Exact score =',
     'wc.ko.hint.points':      'points.',
@@ -3679,6 +3682,7 @@ const I18N = {
     'wc.lb.count':            'participants · Updated automatically when results are entered',
     'wc.lb.scoring':          'Scoring:',
     'wc.lb.scoring.q':        'correct qualifier',
+    'wc.lb.scoring.qExact':   'exact 1st & 2nd order',
     'wc.lb.scoring.w':        'correct winner only',
     'wc.lb.scoring.e':        'exact score',
     'wc.lb.scoring.bonus':    'bonus',
@@ -3699,7 +3703,7 @@ const I18N = {
     'wc.gs.gd':                'GD',
     'wc.gs.pts':               'Pts',
     'wc.gs.pending':           '— No matches played yet —',
-    'wc.gs.loadSeed':          'Load current results (as of June 17)',
+    'wc.gs.loadSeed':          'Load current results (as of June 19)',
     'wc.admin.ko':            '— Matchups and results',
     'wc.admin.matches':       'matches',
     'wc.admin.selectTeam':    '— Select a team —',
@@ -6610,9 +6614,10 @@ const WC_STAGES = [
 ];
 
 const WC_SCORING = {
-  groupQualifier:    3,  // per correct qualifier (max 24 × 3 = 72)
-  knockoutWinner:    3,  // correct winner only
-  knockoutExactBonus: 2, // +2 if score is exact (so 5 total for exact match)
+  groupQualifier:     3,  // per correct qualifier (2 correct = 6, max 24 × 3 = 72 base)
+  groupExactOrderBonus: 3, // +3 if both correct AND in the exact 1st/2nd order (so 9 total)
+  knockoutWinner:     3,  // correct winner only
+  knockoutExactBonus: 2,  // +2 if score is exact (so 5 total for exact match)
 };
 
 // ────────────────────────────────────────────────────────────────
@@ -6876,11 +6881,14 @@ function wcSyncGroupQualifiers(groupId) {
   wcState.results.groups[groupId] = top2;
 }
 
-// Snapshot of real group-stage results from kooora.com, matchday 1
-// (as verified on June 17, 2026). Loaded on-demand by the admin via
-// the "Load current results" button — same write path as manual entry,
-// so it triggers the normal live recalculation for every participant.
-const WC_SEED_GROUP_RESULTS_20260617 = {
+// Snapshot of real group-stage results, matchday 1 for all 12 groups
+// (cross-checked against FIFA's official standings as of June 19, 2026).
+// Loaded on-demand by the admin via the "Load current results" button —
+// same write path as manual entry, so it triggers the normal live
+// recalculation for every participant. Groups A–J are unchanged from
+// the June 17 snapshot; K and L had not played yet back then and are
+// now filled in with their real matchday-1 results.
+const WC_SEED_GROUP_RESULTS_20260619 = {
   A: { MEX:{w:1,d:0,l:0,gf:2,ga:0}, KOR:{w:1,d:0,l:0,gf:2,ga:1}, CZE:{w:0,d:0,l:1,gf:1,ga:2}, RSA:{w:0,d:0,l:1,gf:0,ga:2} },
   B: { SUI:{w:0,d:1,l:0,gf:1,ga:1}, CAN:{w:0,d:1,l:0,gf:1,ga:1}, QAT:{w:0,d:1,l:0,gf:1,ga:1}, BIH:{w:0,d:1,l:0,gf:1,ga:1} },
   C: { SCO:{w:1,d:0,l:0,gf:1,ga:0}, MAR:{w:0,d:1,l:0,gf:1,ga:1}, BRA:{w:0,d:1,l:0,gf:1,ga:1}, HAI:{w:0,d:0,l:1,gf:0,ga:1} },
@@ -6891,8 +6899,8 @@ const WC_SEED_GROUP_RESULTS_20260617 = {
   H: { URU:{w:0,d:1,l:0,gf:1,ga:1}, KSA:{w:0,d:1,l:0,gf:1,ga:1}, ESP:{w:0,d:1,l:0,gf:0,ga:0}, CPV:{w:0,d:1,l:0,gf:0,ga:0} },
   I: { NOR:{w:1,d:0,l:0,gf:4,ga:1}, FRA:{w:1,d:0,l:0,gf:3,ga:1}, SEN:{w:0,d:0,l:1,gf:1,ga:3}, IRQ:{w:0,d:0,l:1,gf:1,ga:4} },
   J: { ARG:{w:1,d:0,l:0,gf:3,ga:0}, AUT:{w:1,d:0,l:0,gf:3,ga:1}, JOR:{w:0,d:0,l:1,gf:1,ga:3}, ALG:{w:0,d:0,l:1,gf:0,ga:3} },
-  K: { COL:{w:0,d:0,l:0,gf:0,ga:0}, COD:{w:0,d:0,l:0,gf:0,ga:0}, POR:{w:0,d:0,l:0,gf:0,ga:0}, UZB:{w:0,d:0,l:0,gf:0,ga:0} },
-  L: { ENG:{w:0,d:0,l:0,gf:0,ga:0}, CRO:{w:0,d:0,l:0,gf:0,ga:0}, GHA:{w:0,d:0,l:0,gf:0,ga:0}, PAN:{w:0,d:0,l:0,gf:0,ga:0} },
+  K: { COL:{w:1,d:0,l:0,gf:3,ga:1}, POR:{w:0,d:1,l:0,gf:1,ga:1}, COD:{w:0,d:1,l:0,gf:1,ga:1}, UZB:{w:0,d:0,l:1,gf:1,ga:3} },
+  L: { ENG:{w:1,d:0,l:0,gf:4,ga:2}, GHA:{w:1,d:0,l:0,gf:1,ga:0}, CRO:{w:0,d:0,l:1,gf:2,ga:4}, PAN:{w:0,d:0,l:1,gf:0,ga:1} },
 };
 
 // Admin-only: one-click load of the verified real results above into the
@@ -6900,12 +6908,12 @@ const WC_SEED_GROUP_RESULTS_20260617 = {
 async function wcLoadSeedGroupResults() {
   if (!(typeof state !== 'undefined' && state.isAdmin)) return;
   const msg = (CURRENT_LANG === 'en')
-    ? 'Load the verified group-stage results (as of June 17, 2026)? This will overwrite any standings already entered.'
-    : 'تحميل نتائج دور المجموعات الموثَّقة (حتى 17 يونيو 2026)؟ سيتم استبدال أي ترتيب مُدخَل حالياً.';
+    ? 'Load the verified group-stage results (as of June 19, 2026)? This will overwrite any standings already entered.'
+    : 'تحميل نتائج دور المجموعات الموثَّقة (حتى 19 يونيو 2026)؟ سيتم استبدال أي ترتيب مُدخَل حالياً.';
   if (!confirm(msg)) return;
   if (!wcState.results.groupStats) wcState.results.groupStats = {};
-  Object.keys(WC_SEED_GROUP_RESULTS_20260617).forEach(gid => {
-    wcState.results.groupStats[gid] = JSON.parse(JSON.stringify(WC_SEED_GROUP_RESULTS_20260617[gid]));
+  Object.keys(WC_SEED_GROUP_RESULTS_20260619).forEach(gid => {
+    wcState.results.groupStats[gid] = JSON.parse(JSON.stringify(WC_SEED_GROUP_RESULTS_20260619[gid]));
     wcSyncGroupQualifiers(gid);
   });
   try {
@@ -7096,10 +7104,14 @@ function wcScoreGroups(pred) {
   let pts = 0;
   const actuals = (wcState.results.groups) || {};
   WC_GROUPS.forEach(g => {
-    const a = actuals[g.id] || [];
-    const p = (pred.groups || {})[g.id] || [];
+    const a = actuals[g.id] || []; // a[0] = actual 1st place, a[1] = actual 2nd place
+    const p = (pred.groups || {})[g.id] || []; // p[0]/p[1] = the order the person picked them in
     if (a.length === 2 && p.length === 2) {
-      pts += p.filter(x => a.includes(x)).length * WC_SCORING.groupQualifier;
+      const correctCount = p.filter(x => a.includes(x)).length;
+      pts += correctCount * WC_SCORING.groupQualifier; // 1 correct = 3, 2 correct = 6
+      if (correctCount === 2 && p[0] === a[0] && p[1] === a[1]) {
+        pts += WC_SCORING.groupExactOrderBonus; // both correct AND exact 1st/2nd order = 9 total
+      }
     }
   });
   return pts;
@@ -7346,8 +7358,9 @@ function wcRenderGroupsForm() {
       </div>`;
   }).join('');
   return `<div class="wc-groups-grid">${cards}</div>
-          <div style="margin-top:10px;padding:8px 12px;background:var(--bg-2);border-radius:8px;font-size:11.5px;color:var(--text-mute)">
+          <div style="margin-top:10px;padding:8px 12px;background:var(--bg-2);border-radius:8px;font-size:11.5px;color:var(--text-mute);line-height:1.7">
             ${t('wc.groups.hint')} ${WC_SCORING.groupQualifier} ${t('wc.groups.hintSuffix')}
+            ${t('wc.groups.hint.exactNote')} ${WC_SCORING.groupQualifier * 2 + WC_SCORING.groupExactOrderBonus} ${t('wc.lb.point')}.
           </div>`;
 }
 
@@ -7467,6 +7480,7 @@ function wcRenderLeaderboard() {
     <div style="margin-top:14px;padding:10px 14px;background:var(--bg-2);border-radius:10px;font-size:11.5px;color:var(--text-mute);line-height:1.7">
       <strong style="color:var(--text-soft)">${t('wc.lb.scoring')}</strong>
       ${t('wc.lb.scoring.q')} = ${WC_SCORING.groupQualifier} ${t('wc.lb.point')} ·
+      ${t('wc.lb.scoring.qExact')} = ${WC_SCORING.groupQualifier * 2 + WC_SCORING.groupExactOrderBonus} ${t('wc.lb.point')} (${WC_SCORING.groupQualifier * 2} + ${WC_SCORING.groupExactOrderBonus} ${t('wc.lb.scoring.bonus')}) ·
       ${t('wc.lb.scoring.w')} = ${WC_SCORING.knockoutWinner} ${t('wc.lb.point')} ·
       ${t('wc.lb.scoring.e')} = ${WC_SCORING.knockoutWinner + WC_SCORING.knockoutExactBonus} ${t('wc.lb.point')} (${WC_SCORING.knockoutWinner} + ${WC_SCORING.knockoutExactBonus} ${t('wc.lb.scoring.bonus')})
     </div>`;
