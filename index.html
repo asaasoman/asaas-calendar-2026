@@ -2326,14 +2326,22 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wcv-pick.correct { background: var(--green-tint); border-color: var(--green-light); }
 .wcv-pick.wrong { background: #FBE8E5; border-color: #E5B0A8; }
+.wcv-pick.live-correct { background: var(--gold-tint); border-color: var(--gold-soft); }
+.wcv-pick.live-wrong { background: var(--bg-2); border-color: var(--border); }
 .wcv-pick .wcv-pick-mark {
   margin-inline-start: auto;
   font-size: 11px; font-weight: 700;
 }
 .wcv-pick.correct .wcv-pick-mark { color: var(--green-dark); }
 .wcv-pick.wrong .wcv-pick-mark { color: var(--danger); }
+.wcv-pick.live-correct .wcv-pick-mark { color: var(--clay); }
+.wcv-pick.live-wrong .wcv-pick-mark { color: var(--text-mute); }
 .wcv-pick .wc-flag-img { height: 12px; }
 .wcv-pick-name { color: var(--text); font-weight: 500; }
+.wcv-live-note {
+  font-size: 10px; color: var(--text-mute); font-style: italic;
+  margin-top: 4px; line-height: 1.4;
+}
 
 .wcv-match {
   background: var(--card-2);
@@ -6878,6 +6886,13 @@ function wcGroupHasResults(groupId) {
   return wcGroupStandings(groupId).some(r => r.played > 0);
 }
 
+// True only once every team in the group has played all 3 round-robin
+// matches — i.e. the table is final, not just a live/in-progress snapshot.
+function wcGroupIsFinal(groupId) {
+  const standings = wcGroupStandings(groupId);
+  return standings.length > 0 && standings.every(r => r.played >= 3);
+}
+
 // Recomputes the actual top-2 qualifiers for a group from its live standings
 // and writes them into wcState.results.groups (which wcScoreGroups reads).
 // Groups with no matches entered yet are left untouched, so they keep
@@ -7014,18 +7029,27 @@ function wcViewParticipant(participantId) {
 
   // ── Group stage section ───────────────────────────────────────
   const groupResults = (wcState.results.groups) || {};
+  const notFinalLbl = (CURRENT_LANG === 'en') ? '⏳ Live standing — group not finished yet' : '⏳ ترتيب حالي — دور المجموعة لم يُحسم بعد';
   const groupCards = WC_GROUPS.map(g => {
     const picks = (pred.groups || {})[g.id] || [];
     const actual = groupResults[g.id] || [];
     const hasActual = actual.length === 2;
+    const isFinal = wcGroupIsFinal(g.id);
     const items = picks.length
       ? picks.map(code => {
           const tm = WC_TEAM_MAP[code];
           if (!tm) return '';
           let cls = '', mark = '';
           if (hasActual) {
-            if (actual.includes(code)) { cls = 'correct'; mark = '✓'; }
-            else { cls = 'wrong'; mark = '✗'; }
+            const qualifying = actual.includes(code);
+            if (isFinal) {
+              cls = qualifying ? 'correct' : 'wrong';
+              mark = qualifying ? '✓' : '✗';
+            } else {
+              // Group still in progress — show as provisional, not a final verdict
+              cls = qualifying ? 'live-correct' : 'live-wrong';
+              mark = qualifying ? '▲' : '▽';
+            }
           }
           return `<div class="wcv-pick ${cls}">${wcFlagImg(code, 12)}<span class="wcv-pick-name">${tm.name}</span><span class="wcv-pick-mark">${mark}</span></div>`;
         }).join('')
@@ -7034,6 +7058,7 @@ function wcViewParticipant(participantId) {
       <div class="wcv-group-card">
         <div class="wcv-group-label">${t('wc.group')} ${g.id}<span style="color:var(--text-mute);font-weight:500">${picks.length}/2</span></div>
         ${items}
+        ${hasActual && !isFinal ? `<div class="wcv-live-note">${notFinalLbl}</div>` : ''}
       </div>`;
   }).join('');
 
