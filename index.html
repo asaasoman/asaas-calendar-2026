@@ -5922,8 +5922,8 @@ function renderMasahatak(entries) {
     const likedBy   = Array.isArray(e.likedBy) ? e.likedBy : [];
     const likeCount = likedBy.length;
     const isLiked   = likedBy.includes(mDeviceId());
-    const heartSvg  = `<svg viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.2-4.6-9.8-9.1C0.6 8.6 1.8 5 5.2 4.2c2.1-.5 4 .5 4.9 2.2.9-1.7 2.8-2.7 4.9-2.2 3.4.8 4.6 4.4 3 7.7C19.2 16.4 12 21 12 21z"/></svg>`;
-    const likeBtn   = `<button class="masahatak-card-like${isLiked ? ' liked' : ''}" onclick="mToggleLike('${e.id}', this)" title="${isLiked ? 'إلغاء الإعجاب' : 'إعجاب'}">${heartSvg}<span class="mlike-count">${likeCount > 0 ? mArabicNum(likeCount) : ''}</span></button>`;
+    const likeSvg   = `<svg viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12" fill="none"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>`;
+    const likeBtn   = `<button class="masahatak-card-like${isLiked ? ' liked' : ''}" onclick="mToggleLike('${e.id}', this)" title="${isLiked ? 'إلغاء الإعجاب' : 'إعجاب'}">${likeSvg}<span class="mlike-count">${likeCount > 0 ? mArabicNum(likeCount) : ''}</span></button>`;
     return `<div class="masahatak-card" data-mid="${e.id}">
       ${delBtn}
       ${imgHtml}
