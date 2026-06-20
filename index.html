@@ -186,6 +186,40 @@
 .masahatak-card:hover .masahatak-card-delete { opacity: 1; }
 .masahatak-card-delete:hover { background: #FBE8E5; color: #C9503A; }
 
+/* Like button */
+.masahatak-card-like {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px 7px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: background .15s, color .15s;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+}
+.masahatak-card-like:hover { background: rgba(179,106,60,.08); color: var(--clay); }
+.masahatak-card-like:active { transform: scale(.92); }
+.masahatak-card-like:disabled { opacity: .6; cursor: default; }
+.masahatak-card-like svg {
+  width: 15px; height: 15px; flex-shrink: 0;
+  transition: fill .15s, stroke .15s;
+}
+.masahatak-card-like .mlike-count { min-width: 8px; text-align: center; }
+.masahatak-card-like.liked { color: var(--clay); }
+.masahatak-card-like.liked svg { fill: var(--clay); stroke: var(--clay); }
+.masahatak-card-like.pop svg { animation: mlikePop .35s ease; }
+@keyframes mlikePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4); }
+  65%  { transform: scale(.88); }
+  100% { transform: scale(1); }
+}
+
 /* Empty state */
 .masahatak-empty {
   grid-column: 1 / -1;
@@ -5885,12 +5919,18 @@ function renderMasahatak(entries) {
       ? `<button class="masahatak-card-delete" onclick="mDeleteEntry('${e.id}')" title="حذف">✕</button>` : '';
     const imgHtml  = e.image  ? `<img class="masahatak-card-img" src="${e.image}" alt="صورة" loading="lazy" onclick="masOpenLightbox(this.src)" />` : '';
     const textHtml = e.text   ? `<div class="masahatak-card-text">${e.text}</div>` : '';
+    const likedBy   = Array.isArray(e.likedBy) ? e.likedBy : [];
+    const likeCount = likedBy.length;
+    const isLiked   = likedBy.includes(mDeviceId());
+    const heartSvg  = `<svg viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.2-4.6-9.8-9.1C0.6 8.6 1.8 5 5.2 4.2c2.1-.5 4 .5 4.9 2.2.9-1.7 2.8-2.7 4.9-2.2 3.4.8 4.6 4.4 3 7.7C19.2 16.4 12 21 12 21z"/></svg>`;
+    const likeBtn   = `<button class="masahatak-card-like${isLiked ? ' liked' : ''}" onclick="mToggleLike('${e.id}', this)" title="${isLiked ? 'إلغاء الإعجاب' : 'إعجاب'}">${heartSvg}<span class="mlike-count">${likeCount > 0 ? mArabicNum(likeCount) : ''}</span></button>`;
     return `<div class="masahatak-card" data-mid="${e.id}">
       ${delBtn}
       ${imgHtml}
       ${textHtml}
       <div class="masahatak-card-footer">
         <span class="masahatak-card-author" style="--ini:'${initial}'">${typeTag}&nbsp;${author}</span>
+        ${likeBtn}
         <span class="masahatak-card-date">${mFormatDate(e.ts)}</span>
       </div>
     </div>`;
@@ -5957,6 +5997,51 @@ async function mDeleteEntry(id) {
   const entries = (snap.data().entries || []).filter(e => e.id !== id);
   await MASAHATAK_DOC.set({ entries });
   renderMasahatak(entries);
+}
+
+// ── Anonymous device id (used to track this browser's likes) ─────
+function mDeviceId() {
+  const LS_KEY = 'asaas_device_id';
+  let id = localStorage.getItem(LS_KEY);
+  if (!id) {
+    id = 'd_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    try { localStorage.setItem(LS_KEY, id); } catch (e) {}
+  }
+  return id;
+}
+
+// ── Like / unlike a post ──────────────────────────────────────────
+async function mToggleLike(id, btnEl) {
+  if (btnEl) btnEl.disabled = true;
+  try {
+    const snap = await MASAHATAK_DOC.get();
+    if (!snap.exists) return;
+    const entries = snap.data().entries || [];
+    const idx = entries.findIndex(e => e.id === id);
+    if (idx === -1) return;
+
+    const device  = mDeviceId();
+    const likedBy = Array.isArray(entries[idx].likedBy) ? entries[idx].likedBy.slice() : [];
+    const already = likedBy.includes(device);
+    entries[idx] = {
+      ...entries[idx],
+      likedBy: already ? likedBy.filter(d => d !== device) : [...likedBy, device],
+    };
+
+    await MASAHATAK_DOC.set({ entries });
+    renderMasahatak(entries);
+
+    if (!already) {
+      const newBtn = document.querySelector(`.masahatak-card[data-mid="${id}"] .masahatak-card-like`);
+      if (newBtn) {
+        newBtn.classList.add('pop');
+        setTimeout(() => newBtn.classList.remove('pop'), 350);
+      }
+    }
+  } catch (err) {
+    console.error('[ASAAS] Like error:', err);
+    if (btnEl) btnEl.disabled = false;
+  }
 }
 
 // ── Compress image to base64 (max 800px wide, quality 0.72) ─────
