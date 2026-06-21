@@ -719,6 +719,260 @@
   background: #fbe8e5;
 }
 
+/* ===== لغز اليوم — Daily Puzzle ===== */
+.puzzle-section {
+  margin: 32px 0 0;
+  direction: rtl;
+}
+.puzzle-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.puzzle-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.3px;
+}
+.puzzle-subtitle {
+  font-size: 13px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+
+/* Card */
+.puzzle-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  max-width: 680px;
+  margin: 0 auto;
+  animation: qbCardIn .35s ease both;
+}
+.puzzle-card-top {
+  background: linear-gradient(135deg, var(--clay) 0%, var(--gold) 100%);
+  padding: 22px 26px 20px;
+}
+.puzzle-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,253,248,.22);
+  color: #FFFDF8;
+  border-radius: 99px;
+  padding: 3px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  margin-bottom: 12px;
+}
+.puzzle-question {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFFDF8;
+  line-height: 1.6;
+  text-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+.puzzle-card-body { padding: 22px 24px 24px; }
+.puzzle-card-body .form-group { margin-bottom: 12px; }
+
+.puzzle-form-error {
+  color: var(--danger);
+  font-size: 12.5px;
+  min-height: 16px;
+  margin-bottom: 4px;
+}
+.puzzle-submit-btn {
+  width: 100%;
+  background: var(--green);
+  color: #FFFDF8;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .15s;
+}
+.puzzle-submit-btn:hover { background: var(--green-dark); transform: translateY(-1px); }
+.puzzle-submit-btn:disabled { background: var(--border); color: var(--text-mute); cursor: default; transform: none; }
+
+.puzzle-submitted-msg {
+  background: var(--green-tint);
+  border: 1px solid #b7dfc1;
+  color: #1e4d29;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.puzzle-sub-count {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-mute);
+  margin-top: 14px;
+}
+
+/* Empty / loading state */
+.puzzle-empty, .puzzle-loading {
+  text-align: center;
+  padding: 36px 20px;
+  color: var(--text-mute);
+  font-size: 14px;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.puzzle-empty .empty-ico, .puzzle-loading .empty-ico { font-size: 32px; margin-bottom: 8px; opacity: .6; }
+
+/* Winner banner (public, closed state) */
+.puzzle-winner-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, var(--gold-tint) 0%, var(--card) 100%);
+  border: 1.5px solid var(--gold-soft);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  max-width: 680px;
+  margin: 0 auto 16px;
+  animation: fadeSlide .3s ease;
+}
+.puzzle-winner-banner.none { border-color: var(--border); background: var(--card); }
+.puzzle-winner-trophy { font-size: 34px; flex-shrink: 0; }
+.puzzle-winner-tagline {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--clay);
+}
+.puzzle-winner-name {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.puzzle-recap-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 20px 22px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.puzzle-recap-label {
+  font-size: 11px;
+  color: var(--clay);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.puzzle-recap-label.solution-label { color: #1e4d29; }
+.puzzle-recap-text {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 15.5px;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+.puzzle-recap-text.solution { color: #1e4d29; font-weight: 700; }
+.puzzle-closed-note {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-mute);
+  margin-top: 14px;
+}
+
+@media (max-width: 600px) {
+  .puzzle-question { font-size: 16px; }
+  .puzzle-card-top { padding: 18px 18px 16px; }
+  .puzzle-card-body { padding: 16px 16px 18px; }
+  .puzzle-winner-name { font-size: 18px; }
+}
+
+/* ── Admin panel: puzzle tab ── */
+.puzzle-admin-status {
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.puzzle-admin-status.open { background: var(--green-tint); color: #1e4d29; border: 1px solid #b7dfc1; }
+.puzzle-admin-status.closed { background: var(--gold-tint); color: var(--clay); border: 1px solid var(--gold-soft); }
+
+.puzzle-admin-recap {
+  background: var(--beige);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 6px;
+}
+.puzzle-admin-recap-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.puzzle-admin-recap-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.puzzle-admin-recap-text.solution { color: #1e4d29; font-weight: 600; }
+
+.puzzle-subs-list { display: flex; flex-direction: column; gap: 8px; }
+.puzzle-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+.puzzle-sub-row.winner { border-color: var(--gold); background: var(--gold-tint); }
+.puzzle-sub-rank {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--beige);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  flex-shrink: 0;
+}
+.puzzle-sub-row.winner .puzzle-sub-rank { background: var(--gold); border-color: var(--gold); color: #fff; }
+.puzzle-sub-main { flex: 1; min-width: 0; }
+.puzzle-sub-name { font-weight: 700; font-size: 13.5px; color: var(--text); }
+.puzzle-sub-answer { font-size: 13px; color: var(--text-soft); margin-top: 2px; word-break: break-word; }
+.puzzle-sub-time { font-size: 11px; color: var(--text-mute); margin-top: 3px; }
+.puzzle-winner-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--clay);
+  white-space: nowrap;
+}
+
 </style>
 <!-- Fallback fonts in case Co Headline doesn't load -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -3178,6 +3432,22 @@ html.view-wc .hide-on-wc { display: none !important; }
     </div>
   </div>
 
+  <!-- ========= لغز اليوم — Daily Puzzle ========= -->
+  <div class="puzzle-section hide-on-wc" id="puzzleSection">
+    <div class="puzzle-header">
+      <div>
+        <div class="puzzle-title" data-i18n="puzzle.title">🧩 لغز اليوم</div>
+        <div class="puzzle-subtitle" data-i18n="puzzle.subtitle">ألغاز ذكاء — اكتب اسمك وكن الأسرع في حلّ اللغز</div>
+      </div>
+    </div>
+    <div id="puzzleContent">
+      <div class="puzzle-loading">
+        <div class="empty-ico">🧩</div>
+        <div data-i18n="puzzle.loading">جارٍ التحميل…</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ========= World Cup 2026 Predictions — توقعات كأس العالم ========= -->
   <div class="show-on-wc">
     <div class="wc-back-bar">
@@ -3311,6 +3581,7 @@ html.view-wc .hide-on-wc { display: none !important; }
         <button class="panel-tab" data-tab="news" data-i18n="panel.tab.news">الأخبار</button>
         <button class="panel-tab" data-tab="quotes" data-i18n="panel.tab.quotes">العبارات الملهمة</button>
         <button class="panel-tab" data-tab="spotlight" data-i18n="panel.tab.spotlight">لنتذكّر</button>
+        <button class="panel-tab" data-tab="puzzle" data-i18n="panel.tab.puzzle">لغز اليوم</button>
         <button class="panel-tab" data-tab="sections" data-i18n="panel.tab.sections">إظهار/إخفاء الأقسام</button>
         <button class="panel-tab" data-tab="settings" data-i18n="panel.tab.settings">الإعدادات</button>
       </div>
@@ -3436,6 +3707,11 @@ const I18N = {
     'qb.subtitle':            'تحديات قصيرة — صواب وخطأ، اختيارات، ألغاز، معلومات عامة',
     'qb.next':                'تحدٍّ جديد',
     'qb.loading':             'جارٍ التحميل…',
+
+    // ── Daily Puzzle ───────────────────────────────────────────
+    'puzzle.title':           '🧩 لغز اليوم',
+    'puzzle.subtitle':        'ألغاز ذكاء — اكتب اسمك وكن الأسرع في حلّ اللغز',
+    'puzzle.loading':         'جارٍ التحميل…',
 
     // ── WC launcher ────────────────────────────────────────────
     'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
@@ -3579,6 +3855,7 @@ const I18N = {
     'panel.tab.news':         'الأخبار',
     'panel.tab.quotes':       'العبارات الملهمة',
     'panel.tab.spotlight':    'لنتذكّر',
+    'panel.tab.puzzle':       'لغز اليوم',
     'panel.tab.sections':     'إظهار/إخفاء الأقسام',
     'panel.tab.settings':     'الإعدادات',
 
@@ -3658,6 +3935,11 @@ const I18N = {
     'qb.subtitle':            'Short challenges — true/false, multiple choice, puzzles, trivia',
     'qb.next':                'New Challenge',
     'qb.loading':             'Loading…',
+
+    // ── Daily Puzzle ───────────────────────────────────────────
+    'puzzle.title':           '🧩 Puzzle of the Day',
+    'puzzle.subtitle':        'Daily logic puzzles — enter your name and be the fastest to solve it',
+    'puzzle.loading':         'Loading…',
 
     'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
     'wc.launcher.title':      'World Cup Prediction Challenge',
@@ -3788,6 +4070,7 @@ const I18N = {
     'panel.tab.news':         'News',
     'panel.tab.quotes':       'Inspirational Quotes',
     'panel.tab.spotlight':    "Let's Remember",
+    'panel.tab.puzzle':       'Puzzle of the Day',
     'panel.tab.sections':     'Show/Hide Sections',
     'panel.tab.settings':     'Settings',
 
@@ -4583,6 +4866,7 @@ function makeYearMonth(year, month) {
 }
 
 function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escapeHtml(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 function showTip(e, el) {
   const tip = document.getElementById('tooltip');
@@ -5218,6 +5502,7 @@ function renderPanel(tab) {
   if (tab === 'news') c.innerHTML = panelNews();
   if (tab === 'quotes') c.innerHTML = panelQuotes();
   if (tab === 'spotlight') c.innerHTML = panelSpotlight();
+  if (tab === 'puzzle') c.innerHTML = panelPuzzle();
   if (tab === 'sections') c.innerHTML = panelSections();
   if (tab === 'settings') c.innerHTML = panelSettings();
   wirePanel(tab);
@@ -5496,6 +5781,70 @@ function panelSettings() {
   `;
 }
 
+// ── Admin panel: لغز اليوم — Daily Puzzle ─────────────────────────
+function panelPuzzle() {
+  const data = PUZZLE_DATA;
+  const hasPuzzle = !!(data && data.question);
+  const subs = hasPuzzle ? [...(data.submissions || [])].sort((a, b) => a.ts - b.ts) : [];
+
+  let statusBlock = '';
+  if (hasPuzzle) {
+    statusBlock = data.status === 'closed'
+      ? `<div class="puzzle-admin-status closed">🏆 ${data.winnerName ? `الفائز: <strong>${escapeHtml(data.winnerName)}</strong>` : 'تم إغلاق اللغز بدون اختيار فائز'}</div>`
+      : `<div class="puzzle-admin-status open">🟢 اللغز مفتوح للمشاركة — ${mArabicNum(subs.length)} مشاركة حتى الآن</div>`;
+  }
+
+  const submissionsHtml = !hasPuzzle ? '' : (subs.length === 0
+    ? `<p style="color:var(--text-mute);font-size:13px;padding:6px 0">لا توجد مشاركات بعد.</p>`
+    : `<div class="puzzle-subs-list">
+        ${subs.map((s, i) => {
+          const isWinner = data.winnerSubmissionId === s.id;
+          const time = new Date(s.ts).toLocaleTimeString('ar-OM', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const actionHtml = data.status === 'open'
+            ? `<button class="btn btn-primary btn-sm" onclick="selectPuzzleWinner('${s.id}')">🏆 اعتماد كفائز</button>`
+            : (isWinner ? `<span class="puzzle-winner-tag">🏆 الفائز</span>` : '');
+          return `
+          <div class="puzzle-sub-row ${isWinner ? 'winner' : ''}">
+            <div class="puzzle-sub-rank">${i + 1}</div>
+            <div class="puzzle-sub-main">
+              <div class="puzzle-sub-name">${escapeHtml(s.name)}</div>
+              <div class="puzzle-sub-answer">${escapeHtml(s.answer)}</div>
+              <div class="puzzle-sub-time">🕐 ${time}</div>
+            </div>
+            ${actionHtml}
+          </div>`;
+        }).join('')}
+      </div>`);
+
+  return `
+    <div class="section-divider">${hasPuzzle ? 'اللغز الحالي' : 'لا يوجد لغز نشط حالياً'}</div>
+    ${statusBlock}
+    ${hasPuzzle ? `
+      <div class="puzzle-admin-recap">
+        <div class="puzzle-admin-recap-label">نص اللغز</div>
+        <div class="puzzle-admin-recap-text">${escapeHtml(data.question)}</div>
+        <div class="puzzle-admin-recap-label" style="margin-top:10px">الحل الصحيح</div>
+        <div class="puzzle-admin-recap-text solution">${escapeHtml(data.solution)}</div>
+      </div>
+      <div class="section-divider" style="margin-top:18px">المشاركات — مرتّبة من الأسرع للأبطأ</div>
+      ${submissionsHtml}
+      ${data.status === 'open' ? `<div style="margin-top:10px"><button class="btn btn-danger" id="puzzleCloseNoWinner">إغلاق اللغز بدون اختيار فائز</button></div>` : ''}
+    ` : ''}
+
+    <div class="section-divider" style="margin-top:22px">${hasPuzzle ? '🧩 نشر لغز جديد (سيستبدل اللغز الحالي ويحذف كل المشاركات)' : '🧩 نشر لغز اليوم'}</div>
+    <p style="font-size:12.5px;color:var(--text-mute);margin-bottom:10px">اكتب لغز ذكاء (لغز منطقي) مع حلّه الصحيح. سيظهر نص اللغز فقط للزوار للمشاركة — الحل يبقى عندك حتى تختار الفائز أو تُغلق اللغز، وبعدها يظهر للجميع.</p>
+    <div class="form-group">
+      <label>نص اللغز</label>
+      <textarea class="form-control" id="puzzleAdminQuestion" rows="3" placeholder="مثال: لدي مدن كثيرة، وجبال، وماء، لكن لا منازل فيّ ولا أشجار. ما أنا؟"></textarea>
+    </div>
+    <div class="form-group">
+      <label>الحل الصحيح</label>
+      <textarea class="form-control" id="puzzleAdminSolution" rows="2" placeholder="مثال: الخريطة"></textarea>
+    </div>
+    <button class="btn btn-primary" id="puzzlePublishBtn">🧩 نشر اللغز</button>
+  `;
+}
+
 function wirePanel(tab) {
   if (tab === 'categories') {
     document.querySelectorAll('#catList .list-item').forEach(item => {
@@ -5664,6 +6013,12 @@ function wirePanel(tab) {
         renderPanel(tab); render(); startNews(); startQuotes();
       };
     });
+  }
+  if (tab === 'puzzle') {
+    const publishBtn = document.getElementById('puzzlePublishBtn');
+    if (publishBtn) publishBtn.onclick = () => publishNewPuzzle();
+    const closeBtn = document.getElementById('puzzleCloseNoWinner');
+    if (closeBtn) closeBtn.onclick = () => closePuzzleNoWinner();
   }
 }
 
@@ -6565,6 +6920,7 @@ const SECTIONS = [
   { id: 'calendar',   selector: '#calendarWrap',      label: 'التقويم',                hint: 'المخطط الشهري/السنوي' },
   { id: 'masahatak',  selector: '#masahatakSection',  label: 'مساحتك',                 hint: 'جدار المشاركات المجتمعية' },
   { id: 'quickbreak', selector: '#qbSection',         label: 'استراحة سريعة',          hint: 'تحديات سريعة وأسئلة' },
+  { id: 'puzzle',     selector: '#puzzleSection',     label: 'لغز اليوم',              hint: 'لغز ذكاء يومي بمشاركة الزوار' },
   { id: 'wc',         selector: '#wcLauncher',        label: 'بطاقة كأس العالم',      hint: 'رابط الانتقال لصفحة التوقعات' },
   { id: 'quotes',     selector: '#quoteNote, #quoteMini', label: 'العبارات الملهمة',  hint: 'البطاقة العائمة للعبارات الملهمة' },
 ];
@@ -6659,6 +7015,222 @@ if (__wcBackBtn) {
 // Initial dispatch + Firestore subscription
 applyRoute();
 subscribeSectionVisibility();
+
+/* ════════════════════════════════════════════════════════════════
+   لغز اليوم — Daily Puzzle
+   ─────────────────────────────────────────────────────────────────
+   Firestore path: calendar/daily_puzzle → {
+     roundId, question, solution, status: 'open'|'closed',
+     winnerName, winnerSubmissionId,
+     submissions: [ { id, name, answer, ts, deviceId } ],
+     publishedAt, updatedAt, closedAt
+   }
+   - Admin publishes a question + solution → status 'open', submissions reset.
+   - Visitors submit name + answer (one submission per browser/device per round).
+   - Admin reviews submissions sorted fastest-first and picks the winner,
+     OR closes the puzzle without a winner.
+   - Once closed: winner badge ("بطل اللغز") + solution are shown to everyone.
+   ════════════════════════════════════════════════════════════════ */
+
+const PUZZLE_DOC = db.collection('calendar').doc('daily_puzzle');
+let PUZZLE_DATA = null;
+
+function puzzleHasSubmitted(data) {
+  if (!data) return false;
+  const dev = mDeviceId();
+  return (data.submissions || []).some(s => s.deviceId === dev);
+}
+
+function renderPuzzlePublic(data) {
+  const wrap = document.getElementById('puzzleContent');
+  if (!wrap) return;
+
+  if (!data || !data.question) {
+    wrap.innerHTML = `
+      <div class="puzzle-empty">
+        <div class="empty-ico">🧩</div>
+        <div>لا يوجد لغز نشط حالياً — تابعونا، اللغز القادم في الطريق!</div>
+      </div>`;
+    return;
+  }
+
+  const subCount = (data.submissions || []).length;
+
+  if (data.status === 'closed') {
+    const winnerBlock = data.winnerName
+      ? `<div class="puzzle-winner-banner">
+           <div class="puzzle-winner-trophy">🏆</div>
+           <div>
+             <div class="puzzle-winner-tagline">بطل اللغز</div>
+             <div class="puzzle-winner-name">${escapeHtml(data.winnerName)}</div>
+           </div>
+         </div>`
+      : `<div class="puzzle-winner-banner none">
+           <div class="puzzle-winner-trophy">🤔</div>
+           <div>
+             <div class="puzzle-winner-tagline">لم يتم اختيار فائز هذه المرة</div>
+           </div>
+         </div>`;
+    wrap.innerHTML = `
+      ${winnerBlock}
+      <div class="puzzle-recap-card">
+        <div class="puzzle-recap-label">🧩 اللغز</div>
+        <div class="puzzle-recap-text">${escapeHtml(data.question)}</div>
+        <div class="puzzle-recap-label solution-label">✅ الحل</div>
+        <div class="puzzle-recap-text solution">${escapeHtml(data.solution)}</div>
+      </div>
+      <div class="puzzle-closed-note">اللغز التالي قريباً — تابعوا هذا القسم!</div>
+    `;
+    return;
+  }
+
+  // status === 'open'
+  const already = puzzleHasSubmitted(data);
+  wrap.innerHTML = `
+    <div class="puzzle-card">
+      <div class="puzzle-card-top">
+        <div class="puzzle-type-badge">🧩 لغز ذكاء</div>
+        <div class="puzzle-question">${escapeHtml(data.question)}</div>
+      </div>
+      <div class="puzzle-card-body">
+        ${already
+          ? `<div class="puzzle-submitted-msg">✅ تم إرسال إجابتك! بانتظار اختيار الفائز…</div>`
+          : `
+            <div class="form-group">
+              <input class="form-control" id="puzzleNameInput" placeholder="اسمك" maxlength="40" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <input class="form-control" id="puzzleAnswerInput" placeholder="إجابتك" maxlength="200" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();submitPuzzleAnswer();}" />
+            </div>
+            <div class="puzzle-form-error" id="puzzleFormError"></div>
+            <button class="puzzle-submit-btn" id="puzzleSubmitBtn" onclick="submitPuzzleAnswer()">🚀 إرسال الإجابة</button>
+          `}
+        <div class="puzzle-sub-count">${subCount > 0 ? mArabicNum(subCount) + ' مشاركة حتى الآن — كن الأسرع!' : 'كن أول من يحل اللغز!'}</div>
+      </div>
+    </div>
+  `;
+}
+
+async function submitPuzzleAnswer() {
+  const nameInput = document.getElementById('puzzleNameInput');
+  const ansInput  = document.getElementById('puzzleAnswerInput');
+  const btn       = document.getElementById('puzzleSubmitBtn');
+  const errEl     = document.getElementById('puzzleFormError');
+  if (!nameInput || !ansInput) return;
+  const name   = nameInput.value.trim();
+  const answer = ansInput.value.trim();
+  if (errEl) errEl.textContent = '';
+  if (!name || !answer) {
+    if (errEl) errEl.textContent = 'فضلاً اكتب اسمك وإجابتك.';
+    return;
+  }
+  if (btn) btn.disabled = true;
+  try {
+    const snap = await PUZZLE_DOC.get();
+    if (!snap.exists) throw new Error('no-puzzle');
+    const data = snap.data();
+    if (data.status !== 'open') { PUZZLE_DATA = data; renderPuzzlePublic(data); return; }
+    const dev = mDeviceId();
+    if ((data.submissions || []).some(s => s.deviceId === dev)) {
+      PUZZLE_DATA = data; renderPuzzlePublic(data); return;
+    }
+    const entry = {
+      id: 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+      name, answer, ts: Date.now(), deviceId: dev,
+    };
+    const submissions = [...(data.submissions || []), entry];
+    await PUZZLE_DOC.set({ submissions, updatedAt: Date.now() }, { merge: true });
+    // onSnapshot will re-render with the confirmed state; no need to do it manually here.
+  } catch (err) {
+    console.error('[ASAAS] puzzle submit error:', err);
+    if (errEl) errEl.textContent = 'تعذّر إرسال الإجابة. تحقق من الاتصال وحاول مجدداً.';
+    if (btn) btn.disabled = false;
+  }
+}
+window.submitPuzzleAnswer = submitPuzzleAnswer;
+
+// ── Admin: select a submission as the puzzle hero ────────────────
+async function selectPuzzleWinner(id) {
+  if (!state.isAdmin) return;
+  try {
+    const snap = await PUZZLE_DOC.get();
+    if (!snap.exists) return;
+    const data = snap.data();
+    const sub = (data.submissions || []).find(s => s.id === id);
+    if (!sub) return;
+    if (!confirm(`اعتماد "${sub.name}" بطلاً للغز؟ سيتم إغلاق اللغز وعرض الحل لجميع الزوار.`)) return;
+    await PUZZLE_DOC.set({
+      status: 'closed', winnerName: sub.name, winnerSubmissionId: sub.id, closedAt: Date.now(),
+    }, { merge: true });
+  } catch (err) {
+    console.error('[ASAAS] select puzzle winner error:', err);
+    alert('تعذّر حفظ الفائز. حاول مجدداً.');
+  }
+}
+window.selectPuzzleWinner = selectPuzzleWinner;
+
+// ── Admin: close the puzzle without picking a winner ──────────────
+async function closePuzzleNoWinner() {
+  if (!state.isAdmin) return;
+  if (!confirm('إغلاق اللغز بدون اختيار فائز وعرض الحل لجميع الزوار؟')) return;
+  try {
+    await PUZZLE_DOC.set({
+      status: 'closed', winnerName: null, winnerSubmissionId: null, closedAt: Date.now(),
+    }, { merge: true });
+  } catch (err) {
+    console.error('[ASAAS] close puzzle error:', err);
+    alert('تعذّر إغلاق اللغز.');
+  }
+}
+window.closePuzzleNoWinner = closePuzzleNoWinner;
+
+// ── Admin: publish a new puzzle (resets submissions) ──────────────
+async function publishNewPuzzle() {
+  if (!state.isAdmin) return;
+  const qInput = document.getElementById('puzzleAdminQuestion');
+  const sInput = document.getElementById('puzzleAdminSolution');
+  if (!qInput || !sInput) return;
+  const question = qInput.value.trim();
+  const solution = sInput.value.trim();
+  if (!question || !solution) { alert('فضلاً أدخل نص اللغز والحل الصحيح.'); return; }
+  if (PUZZLE_DATA && PUZZLE_DATA.question) {
+    if (!confirm('سيتم استبدال اللغز الحالي وحذف جميع المشاركات الحالية. متابعة؟')) return;
+  }
+  try {
+    await PUZZLE_DOC.set({
+      roundId: Date.now(),
+      question, solution,
+      status: 'open',
+      winnerName: null,
+      winnerSubmissionId: null,
+      submissions: [],
+      publishedAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  } catch (err) {
+    console.error('[ASAAS] publish puzzle error:', err);
+    alert('تعذّر نشر اللغز. تحقق من الاتصال وحاول مجدداً.');
+  }
+}
+window.publishNewPuzzle = publishNewPuzzle;
+
+// ── Realtime subscription (keeps all visitors + the admin panel in sync) ──
+function subscribePuzzle() {
+  PUZZLE_DOC.onSnapshot(snap => {
+    PUZZLE_DATA = snap.exists ? snap.data() : null;
+    renderPuzzlePublic(PUZZLE_DATA);
+    const activeTab = document.querySelector('.panel-tab.active');
+    if (activeTab && activeTab.getAttribute('data-tab') === 'puzzle') {
+      const c = document.getElementById('panelContent');
+      if (c) { c.innerHTML = panelPuzzle(); wirePanel('puzzle'); }
+    }
+  }, err => {
+    console.error('[ASAAS] puzzle subscription error:', err);
+    const wrap = document.getElementById('puzzleContent');
+    if (wrap) wrap.innerHTML = '<div class="puzzle-empty"><div class="empty-ico">⚠️</div><div>تعذّر تحميل اللغز.</div></div>';
+  });
+}
+subscribePuzzle();
 
 /* ════════════════════════════════════════════════════════════════
    WORLD CUP 2026 PREDICTIONS — تحدّي توقعات كأس العالم (v2)
