@@ -973,6 +973,72 @@
   white-space: nowrap;
 }
 
+/* Connect-the-dots puzzle widget (visitor + admin solution editor) */
+.puzzle-canvas-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 10px;
+}
+.puzzle-canvas-wrap canvas {
+  touch-action: none;
+  cursor: crosshair;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  max-width: 100%;
+  width: 260px;
+  height: 260px;
+  box-shadow: var(--shadow-sm);
+}
+.puzzle-canvas-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.puzzle-line-counter {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--clay);
+  background: var(--gold-tint);
+  border-radius: 99px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+.puzzle-kind-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.puzzle-grid-inputs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.puzzle-sub-drawing-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 4px;
+  cursor: zoom-in;
+  display: block;
+}
+.puzzle-solution-img {
+  max-width: 240px;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: block;
+  margin: 0 auto;
+  background: #fff;
+}
+
 </style>
 <!-- Fallback fonts in case Co Headline doesn't load -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -5782,9 +5848,13 @@ function panelSettings() {
 }
 
 // ── Admin panel: لغز اليوم — Daily Puzzle ─────────────────────────
+let puzzleFormKind = 'text';          // 'publish new puzzle' form: 'text' | 'connectDots'
+let puzzleAdminCanvasWidget = null;   // admin's solution-drawing widget instance
+
 function panelPuzzle() {
   const data = PUZZLE_DATA;
   const hasPuzzle = !!(data && data.question);
+  const kind = hasPuzzle ? (data.kind || 'text') : null;
   const subs = hasPuzzle ? [...(data.submissions || [])].sort((a, b) => a.ts - b.ts) : [];
 
   let statusBlock = '';
@@ -5803,12 +5873,15 @@ function panelPuzzle() {
           const actionHtml = data.status === 'open'
             ? `<button class="btn btn-primary btn-sm" onclick="selectPuzzleWinner('${s.id}')">🏆 اعتماد كفائز</button>`
             : (isWinner ? `<span class="puzzle-winner-tag">🏆 الفائز</span>` : '');
+          const answerHtml = s.drawing
+            ? `<img class="puzzle-sub-drawing-thumb" src="${s.drawing.snapshot}" alt="رسمة المشارك" loading="lazy" onclick="masOpenLightbox(this.src)" title="اضغط للتكبير — ${mArabicNum(s.drawing.lineCount)} خطوط" />`
+            : `<div class="puzzle-sub-answer">${escapeHtml(s.answer || '')}</div>`;
           return `
           <div class="puzzle-sub-row ${isWinner ? 'winner' : ''}">
             <div class="puzzle-sub-rank">${i + 1}</div>
             <div class="puzzle-sub-main">
               <div class="puzzle-sub-name">${escapeHtml(s.name)}</div>
-              <div class="puzzle-sub-answer">${escapeHtml(s.answer)}</div>
+              ${answerHtml}
               <div class="puzzle-sub-time">🕐 ${time}</div>
             </div>
             ${actionHtml}
@@ -5816,23 +5889,18 @@ function panelPuzzle() {
         }).join('')}
       </div>`);
 
-  return `
-    <div class="section-divider">${hasPuzzle ? 'اللغز الحالي' : 'لا يوجد لغز نشط حالياً'}</div>
-    ${statusBlock}
-    ${hasPuzzle ? `
+  const recapHtml = !hasPuzzle ? '' : `
       <div class="puzzle-admin-recap">
-        <div class="puzzle-admin-recap-label">نص اللغز</div>
+        <div class="puzzle-admin-recap-label">${kind === 'connectDots' ? 'تعليمات اللغز' : 'نص اللغز'}</div>
         <div class="puzzle-admin-recap-text">${escapeHtml(data.question)}</div>
-        <div class="puzzle-admin-recap-label" style="margin-top:10px">الحل الصحيح</div>
-        <div class="puzzle-admin-recap-text solution">${escapeHtml(data.solution)}</div>
-      </div>
-      <div class="section-divider" style="margin-top:18px">المشاركات — مرتّبة من الأسرع للأبطأ</div>
-      ${submissionsHtml}
-      ${data.status === 'open' ? `<div style="margin-top:10px"><button class="btn btn-danger" id="puzzleCloseNoWinner">إغلاق اللغز بدون اختيار فائز</button></div>` : ''}
-    ` : ''}
+        <div class="puzzle-admin-recap-label" style="margin-top:10px">${kind === 'connectDots' ? 'رسمة الحل' : 'الحل الصحيح'}</div>
+        ${kind === 'connectDots'
+          ? `<img src="${data.solutionSnapshot}" alt="رسمة الحل" style="max-width:160px;border-radius:10px;border:1px solid var(--border);margin-top:6px;display:block;background:#fff" />
+             ${data.solution ? `<div class="puzzle-admin-recap-text" style="margin-top:8px">${escapeHtml(data.solution)}</div>` : ''}`
+          : `<div class="puzzle-admin-recap-text solution">${escapeHtml(data.solution)}</div>`}
+      </div>`;
 
-    <div class="section-divider" style="margin-top:22px">${hasPuzzle ? '🧩 نشر لغز جديد (سيستبدل اللغز الحالي ويحذف كل المشاركات)' : '🧩 نشر لغز اليوم'}</div>
-    <p style="font-size:12.5px;color:var(--text-mute);margin-bottom:10px">اكتب لغز ذكاء (لغز منطقي) مع حلّه الصحيح. سيظهر نص اللغز فقط للزوار للمشاركة — الحل يبقى عندك حتى تختار الفائز أو تُغلق اللغز، وبعدها يظهر للجميع.</p>
+  const textFormHtml = `
     <div class="form-group">
       <label>نص اللغز</label>
       <textarea class="form-control" id="puzzleAdminQuestion" rows="3" placeholder="مثال: لدي مدن كثيرة، وجبال، وماء، لكن لا منازل فيّ ولا أشجار. ما أنا؟"></textarea>
@@ -5840,6 +5908,59 @@ function panelPuzzle() {
     <div class="form-group">
       <label>الحل الصحيح</label>
       <textarea class="form-control" id="puzzleAdminSolution" rows="2" placeholder="مثال: الخريطة"></textarea>
+    </div>`;
+
+  const dotsFormHtml = `
+    <div class="form-group">
+      <label>تعليمات اللغز (تظهر للزوار)</label>
+      <textarea class="form-control" id="puzzleAdminQuestion" rows="2">صل النقاط بخطوط مستقيمة متصلة دون رفع القلم</textarea>
+    </div>
+    <div class="puzzle-grid-inputs">
+      <div class="form-group" style="max-width:90px">
+        <label>الصفوف</label>
+        <input type="number" class="form-control" id="puzzleGridRows" value="3" min="2" max="6" />
+      </div>
+      <div class="form-group" style="max-width:90px">
+        <label>الأعمدة</label>
+        <input type="number" class="form-control" id="puzzleGridCols" value="3" min="2" max="6" />
+      </div>
+      <div class="form-group" style="max-width:140px">
+        <label>الحد الأقصى للخطوط</label>
+        <input type="number" class="form-control" id="puzzleMaxLines" value="4" min="1" max="12" />
+      </div>
+    </div>
+    <p style="font-size:11.5px;color:var(--text-mute);margin:6px 0 8px">💡 حدّد عدد الصفوف والأعمدة والحد الأقصى للخطوط أولاً، ثم ارسم الحل الصحيح أدناه — تغيير الإعدادات يُعيد رسم الشبكة فاضية. هذه الرسمة هي التي ستظهر للزوار كحلّ بعد إغلاق اللغز.</p>
+    <div class="puzzle-canvas-wrap">
+      <canvas id="puzzleAdminCanvas" width="280" height="280"></canvas>
+    </div>
+    <div class="puzzle-canvas-controls">
+      <button class="btn btn-sm btn-ghost" id="puzzleAdminUndo" type="button">↩ تراجع</button>
+      <button class="btn btn-sm btn-ghost" id="puzzleAdminClear" type="button">🗑 مسح الكل</button>
+      <span class="puzzle-line-counter" id="puzzleAdminLineCount">٠ خطوط</span>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>شرح إضافي للحل (اختياري)</label>
+      <textarea class="form-control" id="puzzleAdminSolution" rows="2" placeholder="مثال: السر أن تُخرج الخطوط خارج حدود الشبكة"></textarea>
+    </div>`;
+
+  return `
+    <div class="section-divider">${hasPuzzle ? 'اللغز الحالي' : 'لا يوجد لغز نشط حالياً'}</div>
+    ${statusBlock}
+    ${recapHtml}
+    ${hasPuzzle ? `
+      <div class="section-divider" style="margin-top:18px">المشاركات — مرتّبة من الأسرع للأبطأ</div>
+      ${submissionsHtml}
+      ${data.status === 'open' ? `<div style="margin-top:10px"><button class="btn btn-danger" id="puzzleCloseNoWinner">إغلاق اللغز بدون اختيار فائز</button></div>` : ''}
+    ` : ''}
+
+    <div class="section-divider" style="margin-top:22px">${hasPuzzle ? '🧩 نشر لغز جديد (سيستبدل اللغز الحالي ويحذف كل المشاركات)' : '🧩 نشر لغز اليوم'}</div>
+    <p style="font-size:12.5px;color:var(--text-mute);margin-bottom:10px">اختر نوع اللغز: لغز نصي عادي، أو لغز تفاعلي يوصل فيه الزائر النقاط بالماوس (مثل لغز "النقاط التسع" الشهير).</p>
+    <div class="puzzle-kind-row">
+      <button type="button" class="qb-filter-btn ${puzzleFormKind === 'text' ? 'active' : ''}" onclick="setPuzzleFormKind('text')">✍️ لغز نصي</button>
+      <button type="button" class="qb-filter-btn ${puzzleFormKind === 'connectDots' ? 'active' : ''}" onclick="setPuzzleFormKind('connectDots')">🔗 لغز وصل نقاط</button>
+    </div>
+    <div id="puzzleFormFields">
+      ${puzzleFormKind === 'connectDots' ? dotsFormHtml : textFormHtml}
     </div>
     <button class="btn btn-primary" id="puzzlePublishBtn">🧩 نشر اللغز</button>
   `;
@@ -6019,8 +6140,47 @@ function wirePanel(tab) {
     if (publishBtn) publishBtn.onclick = () => publishNewPuzzle();
     const closeBtn = document.getElementById('puzzleCloseNoWinner');
     if (closeBtn) closeBtn.onclick = () => closePuzzleNoWinner();
+
+    if (puzzleFormKind === 'connectDots') {
+      const buildAdminCanvas = () => {
+        const canvasEl = document.getElementById('puzzleAdminCanvas');
+        if (!canvasEl) return;
+        if (puzzleAdminCanvasWidget) { puzzleAdminCanvasWidget.destroy(); puzzleAdminCanvasWidget = null; }
+        const rows = Math.max(2, Math.min(6, parseInt(document.getElementById('puzzleGridRows').value, 10) || 3));
+        const cols = Math.max(2, Math.min(6, parseInt(document.getElementById('puzzleGridCols').value, 10) || 3));
+        const maxLines = Math.max(1, parseInt(document.getElementById('puzzleMaxLines').value, 10) || 4);
+        puzzleAdminCanvasWidget = createDotsCanvas(canvasEl, {
+          rows, cols, maxLines,
+          onChange: () => {
+            const c = document.getElementById('puzzleAdminLineCount');
+            if (c) c.textContent = mArabicNum(puzzleAdminCanvasWidget.getLineCount()) + ' / ' + mArabicNum(maxLines) + ' خطوط';
+          },
+        });
+        const counterEl = document.getElementById('puzzleAdminLineCount');
+        if (counterEl) counterEl.textContent = mArabicNum(0) + ' / ' + mArabicNum(maxLines) + ' خطوط';
+      };
+      buildAdminCanvas();
+      ['puzzleGridRows', 'puzzleGridCols', 'puzzleMaxLines'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.onchange = buildAdminCanvas;
+      });
+      const undoBtn = document.getElementById('puzzleAdminUndo');
+      if (undoBtn) undoBtn.onclick = () => { if (puzzleAdminCanvasWidget) puzzleAdminCanvasWidget.undo(); };
+      const clearBtn = document.getElementById('puzzleAdminClear');
+      if (clearBtn) clearBtn.onclick = () => { if (puzzleAdminCanvasWidget) puzzleAdminCanvasWidget.clear(); };
+    } else if (puzzleAdminCanvasWidget) {
+      puzzleAdminCanvasWidget.destroy();
+      puzzleAdminCanvasWidget = null;
+    }
   }
 }
+
+function setPuzzleFormKind(kind) {
+  if (puzzleAdminCanvasWidget) { puzzleAdminCanvasWidget.destroy(); puzzleAdminCanvasWidget = null; }
+  puzzleFormKind = kind;
+  renderPanel('puzzle');
+}
+window.setPuzzleFormKind = setPuzzleFormKind;
 
 /* ---- Image upload helper functions (spotlight) ---- */
 function compressImageFile(file, maxW = 1400, maxH = 1000, quality = 0.82) {
@@ -7020,20 +7180,133 @@ subscribeSectionVisibility();
    لغز اليوم — Daily Puzzle
    ─────────────────────────────────────────────────────────────────
    Firestore path: calendar/daily_puzzle → {
-     roundId, question, solution, status: 'open'|'closed',
-     winnerName, winnerSubmissionId,
-     submissions: [ { id, name, answer, ts, deviceId } ],
+     roundId, kind: 'text'|'connectDots', question, solution,
+     status: 'open'|'closed', winnerName, winnerSubmissionId,
+     // connectDots-only:
+     gridRows, gridCols, maxLines, solutionSnapshot,
+     submissions: [ { id, name, ts, deviceId,
+                       answer: string|null,
+                       drawing: {snapshot, lineCount}|null } ],
      publishedAt, updatedAt, closedAt
    }
-   - Admin publishes a question + solution → status 'open', submissions reset.
-   - Visitors submit name + answer (one submission per browser/device per round).
-   - Admin reviews submissions sorted fastest-first and picks the winner,
-     OR closes the puzzle without a winner.
-   - Once closed: winner badge ("بطل اللغز") + solution are shown to everyone.
+   - Admin publishes either a text riddle (question+solution), or a
+     "connect the dots" puzzle: a grid of dots + a max line count;
+     the admin draws the canonical solution themselves (e.g. the
+     classic "9 dots, 4 lines" trick) which is stored as a snapshot.
+   - Visitors submit a name + either a text answer or their own
+     dot-connecting drawing (one submission per browser/device/round).
+   - Admin reviews submissions sorted fastest-first and picks the
+     winner, OR closes the puzzle without a winner.
+   - Once closed: winner badge ("بطل اللغز") + the solution (text or
+     the admin's solution drawing) are shown to everyone.
    ════════════════════════════════════════════════════════════════ */
 
 const PUZZLE_DOC = db.collection('calendar').doc('daily_puzzle');
 let PUZZLE_DATA = null;
+let puzzleVisitorCanvasWidget = null; // the visitor's in-progress drawing widget
+let puzzleLastRenderKey = null;       // avoids wiping an in-progress draft/drawing on unrelated updates
+
+/* ── Generic "connect the dots" canvas widget (mouse + touch) ──────
+   Lines are drawn freely (not snapped to the dots) because the
+   classic 9-dot puzzle's trick is drawing lines that extend beyond
+   the dots themselves. Used for both the admin's solution drawing
+   and the visitor's attempt. ───────────────────────────────────── */
+function createDotsCanvas(canvas, opts) {
+  opts = opts || {};
+  const rows = opts.rows || 3;
+  const cols = opts.cols || 3;
+  let maxLines = opts.maxLines || null;
+  const onChange = opts.onChange || function () {};
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padX = W * 0.24, padY = H * 0.24;
+  const stepX = cols > 1 ? (W - padX * 2) / (cols - 1) : 0;
+  const stepY = rows > 1 ? (H - padY * 2) / (rows - 1) : 0;
+  const dots = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) dots.push({ x: padX + c * stepX, y: padY + r * stepY });
+  }
+
+  let lines = (opts.initialLines || []).map(l => ({ ...l }));
+  let drawing = false, startPt = null, curPt = null;
+
+  function redraw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFDF8';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#B36A3C';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    lines.forEach(l => { ctx.beginPath(); ctx.moveTo(l.x1, l.y1); ctx.lineTo(l.x2, l.y2); ctx.stroke(); });
+    if (drawing && startPt && curPt) {
+      ctx.globalAlpha = .55;
+      ctx.beginPath(); ctx.moveTo(startPt.x, startPt.y); ctx.lineTo(curPt.x, curPt.y); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = '#3A2A1D';
+    dots.forEach(d => { ctx.beginPath(); ctx.arc(d.x, d.y, 6, 0, Math.PI * 2); ctx.fill(); });
+  }
+
+  function posFromEvent(e) {
+    const rect = canvas.getBoundingClientRect();
+    const t = e.touches && e.touches[0];
+    const clientX = t ? t.clientX : e.clientX;
+    const clientY = t ? t.clientY : e.clientY;
+    return { x: (clientX - rect.left) * (W / rect.width), y: (clientY - rect.top) * (H / rect.height) };
+  }
+
+  function canAddLine() { return maxLines == null || lines.length < maxLines; }
+
+  function onDown(e) {
+    if (!canAddLine()) return;
+    e.preventDefault();
+    drawing = true;
+    startPt = posFromEvent(e);
+    curPt = startPt;
+    redraw();
+  }
+  function onMove(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    curPt = posFromEvent(e);
+    redraw();
+  }
+  function onUp(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const endPt = posFromEvent(e);
+    const dist = Math.hypot(endPt.x - startPt.x, endPt.y - startPt.y);
+    if (dist > 10) lines.push({ x1: startPt.x, y1: startPt.y, x2: endPt.x, y2: endPt.y });
+    drawing = false; startPt = null; curPt = null;
+    redraw();
+    onChange();
+  }
+
+  canvas.addEventListener('mousedown', onDown);
+  canvas.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  canvas.addEventListener('touchstart', onDown, { passive: false });
+  canvas.addEventListener('touchmove', onMove, { passive: false });
+  canvas.addEventListener('touchend', onUp);
+
+  redraw();
+
+  return {
+    undo() { lines.pop(); redraw(); onChange(); },
+    clear() { lines = []; redraw(); onChange(); },
+    getLines() { return lines.map(l => ({ ...l })); },
+    getLineCount() { return lines.length; },
+    getSnapshot(quality) { return canvas.toDataURL('image/jpeg', quality || 0.6); },
+    destroy() {
+      canvas.removeEventListener('mousedown', onDown);
+      canvas.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      canvas.removeEventListener('touchstart', onDown);
+      canvas.removeEventListener('touchmove', onMove);
+      canvas.removeEventListener('touchend', onUp);
+    },
+  };
+}
 
 function puzzleHasSubmitted(data) {
   if (!data) return false;
@@ -7046,15 +7319,35 @@ function renderPuzzlePublic(data) {
   if (!wrap) return;
 
   if (!data || !data.question) {
-    wrap.innerHTML = `
-      <div class="puzzle-empty">
-        <div class="empty-ico">🧩</div>
-        <div>لا يوجد لغز نشط حالياً — تابعونا، اللغز القادم في الطريق!</div>
-      </div>`;
+    if (puzzleLastRenderKey !== 'empty') {
+      if (puzzleVisitorCanvasWidget) { puzzleVisitorCanvasWidget.destroy(); puzzleVisitorCanvasWidget = null; }
+      wrap.innerHTML = `
+        <div class="puzzle-empty">
+          <div class="empty-ico">🧩</div>
+          <div>لا يوجد لغز نشط حالياً — تابعونا، اللغز القادم في الطريق!</div>
+        </div>`;
+      puzzleLastRenderKey = 'empty';
+    }
     return;
   }
 
   const subCount = (data.submissions || []).length;
+  const already  = puzzleHasSubmitted(data);
+  const kind     = data.kind || 'text';
+  const renderKey = [data.roundId, data.status, already ? 1 : 0].join('|');
+
+  if (renderKey === puzzleLastRenderKey) {
+    // Nothing meaningful changed for this visitor — just refresh the live
+    // counter, without rebuilding the form/canvas (would wipe a draft answer
+    // or an in-progress drawing every time someone else submits).
+    const counterEl = wrap.querySelector('.puzzle-sub-count');
+    if (counterEl && data.status === 'open' && !already) {
+      counterEl.textContent = subCount > 0 ? (mArabicNum(subCount) + ' مشاركة حتى الآن — كن الأسرع!') : 'كن أول من يحل اللغز!';
+    }
+    return;
+  }
+  if (puzzleVisitorCanvasWidget) { puzzleVisitorCanvasWidget.destroy(); puzzleVisitorCanvasWidget = null; }
+  puzzleLastRenderKey = renderKey;
 
   if (data.status === 'closed') {
     const winnerBlock = data.winnerName
@@ -7071,13 +7364,17 @@ function renderPuzzlePublic(data) {
              <div class="puzzle-winner-tagline">لم يتم اختيار فائز هذه المرة</div>
            </div>
          </div>`;
+    const solutionHtml = kind === 'connectDots'
+      ? `<img src="${data.solutionSnapshot}" alt="رسمة الحل" class="puzzle-solution-img" />
+         ${data.solution ? `<div class="puzzle-recap-text" style="margin-top:8px">${escapeHtml(data.solution)}</div>` : ''}`
+      : `<div class="puzzle-recap-text solution">${escapeHtml(data.solution)}</div>`;
     wrap.innerHTML = `
       ${winnerBlock}
       <div class="puzzle-recap-card">
         <div class="puzzle-recap-label">🧩 اللغز</div>
         <div class="puzzle-recap-text">${escapeHtml(data.question)}</div>
         <div class="puzzle-recap-label solution-label">✅ الحل</div>
-        <div class="puzzle-recap-text solution">${escapeHtml(data.solution)}</div>
+        ${solutionHtml}
       </div>
       <div class="puzzle-closed-note">اللغز التالي قريباً — تابعوا هذا القسم!</div>
     `;
@@ -7085,7 +7382,65 @@ function renderPuzzlePublic(data) {
   }
 
   // status === 'open'
-  const already = puzzleHasSubmitted(data);
+  if (already) {
+    wrap.innerHTML = `
+      <div class="puzzle-card">
+        <div class="puzzle-card-top">
+          <div class="puzzle-type-badge">${kind === 'connectDots' ? '🔗 لغز وصل نقاط' : '🧩 لغز ذكاء'}</div>
+          <div class="puzzle-question">${escapeHtml(data.question)}</div>
+        </div>
+        <div class="puzzle-card-body">
+          <div class="puzzle-submitted-msg">✅ تم إرسال إجابتك! بانتظار اختيار الفائز…</div>
+          <div class="puzzle-sub-count">${subCount > 0 ? mArabicNum(subCount) + ' مشاركة حتى الآن — كن الأسرع!' : 'كن أول من يحل اللغز!'}</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (kind === 'connectDots') {
+    const rows = data.gridRows || 3, cols = data.gridCols || 3, maxLines = data.maxLines || 4;
+    wrap.innerHTML = `
+      <div class="puzzle-card">
+        <div class="puzzle-card-top">
+          <div class="puzzle-type-badge">🔗 لغز وصل نقاط</div>
+          <div class="puzzle-question">${escapeHtml(data.question)}</div>
+        </div>
+        <div class="puzzle-card-body">
+          <div class="puzzle-canvas-wrap">
+            <canvas id="puzzleVisitorCanvas" width="300" height="300"></canvas>
+          </div>
+          <div class="puzzle-canvas-controls">
+            <button class="btn btn-sm btn-ghost" id="puzzleVisitorUndo" type="button">↩ تراجع</button>
+            <button class="btn btn-sm btn-ghost" id="puzzleVisitorClear" type="button">🗑 مسح الكل</button>
+            <span class="puzzle-line-counter" id="puzzleVisitorLineCount">٠ / ${mArabicNum(maxLines)} خطوط</span>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <input class="form-control" id="puzzleNameInput" placeholder="اسمك" maxlength="40" autocomplete="off" />
+          </div>
+          <div class="puzzle-form-error" id="puzzleFormError"></div>
+          <button class="puzzle-submit-btn" id="puzzleSubmitBtn" onclick="submitPuzzleAnswer()">🚀 إرسال الإجابة</button>
+          <div class="puzzle-sub-count">${subCount > 0 ? mArabicNum(subCount) + ' مشاركة حتى الآن — كن الأسرع!' : 'كن أول من يحل اللغز!'}</div>
+        </div>
+      </div>`;
+
+    const canvasEl = document.getElementById('puzzleVisitorCanvas');
+    if (canvasEl) {
+      puzzleVisitorCanvasWidget = createDotsCanvas(canvasEl, {
+        rows, cols, maxLines,
+        onChange: () => {
+          const c = document.getElementById('puzzleVisitorLineCount');
+          if (c) c.textContent = mArabicNum(puzzleVisitorCanvasWidget.getLineCount()) + ' / ' + mArabicNum(maxLines) + ' خطوط';
+        },
+      });
+    }
+    const undoBtn = document.getElementById('puzzleVisitorUndo');
+    if (undoBtn) undoBtn.onclick = () => { if (puzzleVisitorCanvasWidget) puzzleVisitorCanvasWidget.undo(); };
+    const clearBtn = document.getElementById('puzzleVisitorClear');
+    if (clearBtn) clearBtn.onclick = () => { if (puzzleVisitorCanvasWidget) puzzleVisitorCanvasWidget.clear(); };
+    return;
+  }
+
+  // kind === 'text'
   wrap.innerHTML = `
     <div class="puzzle-card">
       <div class="puzzle-card-top">
@@ -7093,18 +7448,14 @@ function renderPuzzlePublic(data) {
         <div class="puzzle-question">${escapeHtml(data.question)}</div>
       </div>
       <div class="puzzle-card-body">
-        ${already
-          ? `<div class="puzzle-submitted-msg">✅ تم إرسال إجابتك! بانتظار اختيار الفائز…</div>`
-          : `
-            <div class="form-group">
-              <input class="form-control" id="puzzleNameInput" placeholder="اسمك" maxlength="40" autocomplete="off" />
-            </div>
-            <div class="form-group">
-              <input class="form-control" id="puzzleAnswerInput" placeholder="إجابتك" maxlength="200" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();submitPuzzleAnswer();}" />
-            </div>
-            <div class="puzzle-form-error" id="puzzleFormError"></div>
-            <button class="puzzle-submit-btn" id="puzzleSubmitBtn" onclick="submitPuzzleAnswer()">🚀 إرسال الإجابة</button>
-          `}
+        <div class="form-group">
+          <input class="form-control" id="puzzleNameInput" placeholder="اسمك" maxlength="40" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <input class="form-control" id="puzzleAnswerInput" placeholder="إجابتك" maxlength="200" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();submitPuzzleAnswer();}" />
+        </div>
+        <div class="puzzle-form-error" id="puzzleFormError"></div>
+        <button class="puzzle-submit-btn" id="puzzleSubmitBtn" onclick="submitPuzzleAnswer()">🚀 إرسال الإجابة</button>
         <div class="puzzle-sub-count">${subCount > 0 ? mArabicNum(subCount) + ' مشاركة حتى الآن — كن الأسرع!' : 'كن أول من يحل اللغز!'}</div>
       </div>
     </div>
@@ -7113,17 +7464,28 @@ function renderPuzzlePublic(data) {
 
 async function submitPuzzleAnswer() {
   const nameInput = document.getElementById('puzzleNameInput');
-  const ansInput  = document.getElementById('puzzleAnswerInput');
   const btn       = document.getElementById('puzzleSubmitBtn');
   const errEl     = document.getElementById('puzzleFormError');
-  if (!nameInput || !ansInput) return;
-  const name   = nameInput.value.trim();
-  const answer = ansInput.value.trim();
+  if (!nameInput) return;
+  const name = nameInput.value.trim();
   if (errEl) errEl.textContent = '';
-  if (!name || !answer) {
-    if (errEl) errEl.textContent = 'فضلاً اكتب اسمك وإجابتك.';
-    return;
+  if (!name) { if (errEl) errEl.textContent = 'فضلاً اكتب اسمك.'; return; }
+
+  const kind = (PUZZLE_DATA && PUZZLE_DATA.kind) || 'text';
+  let extra;
+  if (kind === 'connectDots') {
+    if (!puzzleVisitorCanvasWidget || puzzleVisitorCanvasWidget.getLineCount() < 1) {
+      if (errEl) errEl.textContent = 'فضلاً ارسم خطوطك على الشبكة قبل الإرسال.';
+      return;
+    }
+    extra = { answer: null, drawing: { snapshot: puzzleVisitorCanvasWidget.getSnapshot(0.6), lineCount: puzzleVisitorCanvasWidget.getLineCount() } };
+  } else {
+    const ansInput = document.getElementById('puzzleAnswerInput');
+    const answer = ansInput ? ansInput.value.trim() : '';
+    if (!answer) { if (errEl) errEl.textContent = 'فضلاً اكتب إجابتك.'; return; }
+    extra = { answer, drawing: null };
   }
+
   if (btn) btn.disabled = true;
   try {
     const snap = await PUZZLE_DOC.get();
@@ -7136,7 +7498,8 @@ async function submitPuzzleAnswer() {
     }
     const entry = {
       id: 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
-      name, answer, ts: Date.now(), deviceId: dev,
+      name, ts: Date.now(), deviceId: dev,
+      ...extra,
     };
     const submissions = [...(data.submissions || []), entry];
     await PUZZLE_DOC.set({ submissions, updatedAt: Date.now() }, { merge: true });
@@ -7189,17 +7552,40 @@ async function publishNewPuzzle() {
   if (!state.isAdmin) return;
   const qInput = document.getElementById('puzzleAdminQuestion');
   const sInput = document.getElementById('puzzleAdminSolution');
-  if (!qInput || !sInput) return;
+  if (!qInput) return;
   const question = qInput.value.trim();
-  const solution = sInput.value.trim();
-  if (!question || !solution) { alert('فضلاً أدخل نص اللغز والحل الصحيح.'); return; }
+  const solution = sInput ? sInput.value.trim() : '';
+
+  let payload;
+  if (puzzleFormKind === 'connectDots') {
+    if (!question) { alert('فضلاً أدخل تعليمات اللغز.'); return; }
+    if (!puzzleAdminCanvasWidget || puzzleAdminCanvasWidget.getLineCount() < 1) {
+      alert('فضلاً ارسم الحل الصحيح على الشبكة قبل النشر.');
+      return;
+    }
+    const rowsEl = document.getElementById('puzzleGridRows');
+    const colsEl = document.getElementById('puzzleGridCols');
+    const maxEl  = document.getElementById('puzzleMaxLines');
+    payload = {
+      kind: 'connectDots',
+      question, solution,
+      gridRows: Math.max(2, Math.min(6, parseInt(rowsEl.value, 10) || 3)),
+      gridCols: Math.max(2, Math.min(6, parseInt(colsEl.value, 10) || 3)),
+      maxLines: Math.max(1, parseInt(maxEl.value, 10) || 4),
+      solutionSnapshot: puzzleAdminCanvasWidget.getSnapshot(0.7),
+    };
+  } else {
+    if (!question || !solution) { alert('فضلاً أدخل نص اللغز والحل الصحيح.'); return; }
+    payload = { kind: 'text', question, solution };
+  }
+
   if (PUZZLE_DATA && PUZZLE_DATA.question) {
     if (!confirm('سيتم استبدال اللغز الحالي وحذف جميع المشاركات الحالية. متابعة؟')) return;
   }
   try {
     await PUZZLE_DOC.set({
+      ...payload,
       roundId: Date.now(),
-      question, solution,
       status: 'open',
       winnerName: null,
       winnerSubmissionId: null,
