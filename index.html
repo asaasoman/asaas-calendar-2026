@@ -7985,97 +7985,155 @@ subscribePuzzle();
    letter — the console will warn you if they don't.
    ════════════════════════════════════════════════════════════════ */
 const CW_LEVELS = [
-  { words: [ // 1
+  { words: [ // 1 — قيمة: الإحساس بالآخرين (Empathy)
     { direction: 'across', row: 0, col: 5, answer: 'كتاب', clue: 'تتعلّم منه وتقرأ صفحاته' },
     { direction: 'down',   row: 0, col: 6, answer: 'تمر',  clue: 'فاكهة الصحراء، يكثر تناولها في رمضان' },
     { direction: 'down',   row: 1, col: 1, answer: 'كلام', clue: 'ما يُقال بالصوت من حروف وجمل' },
     { direction: 'across', row: 2, col: 0, answer: 'سلام', clue: 'تحية وأمان، عكس الحرب' },
     { direction: 'across', row: 4, col: 5, answer: 'نهر',  clue: 'مجرى ماء طويل يصبّ غالباً في البحر' },
     { direction: 'down',   row: 4, col: 6, answer: 'هدية', clue: 'شيء تقدّمه لمن تحب في عيد ميلاده مثلاً' },
+    { direction: 'across', row: 9, col: 0, answer: 'تعاطف', clue: '🌟 قيمة الإحساس بالآخرين (Empathy) — مشاركة مشاعر الآخرين والشعور بها' },
+    { direction: 'down',   row: 9, col: 2, answer: 'امل',   clue: 'تطلّع وتفاؤل بالمستقبل' },
   ]},
-  { words: [ // 2
+  { words: [ // 2 — قيمة: التعاون (Collaboration)
     { direction: 'across', row: 0, col: 0, answer: 'قمر', clue: 'يظهر في السماء ليلاً ويكتمل بدراً' },
     { direction: 'down',   row: 0, col: 1, answer: 'مطر', clue: 'يسقط من السحاب، يُنبت الزرع' },
     { direction: 'across', row: 0, col: 4, answer: 'شمس', clue: 'نجم النهار الذي يدفئ الأرض' },
     { direction: 'down',   row: 0, col: 5, answer: 'ملك', clue: 'حاكم يرث العرش، يُلقَّب بصاحب الجلالة' },
+    { direction: 'across', row: 0, col: 8, answer: 'قلم', clue: 'يُستخدم للكتابة' },
+    { direction: 'down',   row: 0, col: 9, answer: 'لبن', clue: 'مشروب أبيض يُستخرج من الحليب' },
+    { direction: 'across', row: 4, col: 0, answer: 'تعاون', clue: '🌟 قيمة التعاون (Collaboration) — العمل مع الآخرين يداً بيد لتحقيق هدف مشترك' },
+    { direction: 'down',   row: 4, col: 2, answer: 'اخت',   clue: 'ابنة الوالدين، أنثى تشاركك أصلك' },
   ]},
-  { words: [ // 3
+  { words: [ // 3 — قيمة: الالتزام (Commitment)
     { direction: 'across', row: 0, col: 0, answer: 'بحر', clue: 'مياه مالحة واسعة، أوسع من النهر' },
     { direction: 'down',   row: 0, col: 1, answer: 'حلم', clue: 'ما يراه النائم في نومه' },
     { direction: 'across', row: 0, col: 4, answer: 'نهر', clue: 'مجرى ماء طويل يصبّ غالباً في البحر' },
     { direction: 'down',   row: 0, col: 5, answer: 'هرم', clue: 'بناء مصري قديم بشكل مثلث' },
+    { direction: 'across', row: 0, col: 8, answer: 'فجر', clue: 'بداية ضوء النهار قبل الشروق' },
+    { direction: 'down',   row: 0, col: 9, answer: 'جلد', clue: 'الطبقة الخارجية لجسم الإنسان أو الحيوان' },
+    { direction: 'across', row: 4, col: 0, answer: 'التزام', clue: '🌟 قيمة الالتزام (Commitment) — الوفاء بالوعد والمسؤولية تجاه العمل' },
+    { direction: 'down',   row: 4, col: 4, answer: 'اذن',    clue: 'عضو السمع في جسم الإنسان' },
   ]},
-  { words: [ // 4
+  { words: [ // 4 — قيمة: المبادرة (Initiative)
     { direction: 'across', row: 0, col: 0, answer: 'قلب', clue: 'عضو يضخّ الدم في الجسم' },
     { direction: 'down',   row: 0, col: 1, answer: 'لون', clue: 'أحمر، أزرق، أصفر... من أمثلته' },
     { direction: 'across', row: 0, col: 4, answer: 'كتب', clue: 'جمع كلمة "كتاب"' },
     { direction: 'down',   row: 0, col: 5, answer: 'تمر', clue: 'فاكهة الصحراء، يكثر تناولها في رمضان' },
+    { direction: 'across', row: 0, col: 8, answer: 'درس', clue: 'حصة تعليمية في المدرسة' },
+    { direction: 'down',   row: 0, col: 9, answer: 'رمل', clue: 'حبيبات الصحراء والشاطئ' },
+    { direction: 'across', row: 4, col: 0, answer: 'مبادرة', clue: '🌟 قيمة المبادرة (Initiative) — اتخاذ الخطوة الأولى دون انتظار توجيه' },
+    { direction: 'down',   row: 4, col: 2, answer: 'اسد',    clue: 'ملك الغابة، حيوان مفترس قوي' },
   ]},
-  { words: [ // 5
+  { words: [ // 5 — قيمة: الإبداع (Ingenuity)
     { direction: 'across', row: 0, col: 0, answer: 'درس', clue: 'حصة تعليمية في المدرسة' },
     { direction: 'down',   row: 0, col: 1, answer: 'رمل', clue: 'حبيبات الصحراء والشاطئ' },
     { direction: 'across', row: 0, col: 4, answer: 'علم', clue: 'قطعة قماش ترفرف، رمز الوطن' },
     { direction: 'down',   row: 0, col: 5, answer: 'لحم', clue: 'يؤكل مطبوخاً، يُستخرج من الحيوان' },
+    { direction: 'across', row: 0, col: 8, answer: 'وجه', clue: 'الجزء الأمامي من الرأس' },
+    { direction: 'down',   row: 0, col: 9, answer: 'جبل', clue: 'مرتفع شاهق من الصخور والتراب' },
+    { direction: 'across', row: 4, col: 0, answer: 'إبداع', clue: '🌟 قيمة الإبداع (Ingenuity) — إيجاد حلول وأفكار جديدة وغير تقليدية' },
+    { direction: 'down',   row: 4, col: 3, answer: 'امر',   clue: 'طلب أو تعليمة، أو شأن من الشؤون' },
   ]},
-  { words: [ // 6
+  { words: [ // 6 — قيمة: الإحساس بالآخرين (Empathy)
     { direction: 'across', row: 0, col: 0, answer: 'وجه', clue: 'الجزء الأمامي من الرأس' },
     { direction: 'down',   row: 0, col: 1, answer: 'جبل', clue: 'مرتفع شاهق من الصخور والتراب' },
     { direction: 'across', row: 0, col: 4, answer: 'زهر', clue: 'نبات جميل ذو رائحة عطرة' },
     { direction: 'down',   row: 0, col: 5, answer: 'هرب', clue: 'فرّ خوفاً أو تجنّباً لشيء' },
+    { direction: 'across', row: 0, col: 8, answer: 'شجر', clue: 'نبات كبير له جذع وأوراق' },
+    { direction: 'down',   row: 0, col: 9, answer: 'جمل', clue: 'حيوان الصحراء ذو السنام' },
+    { direction: 'across', row: 4, col: 0, answer: 'تعاطف', clue: '🌟 قيمة الإحساس بالآخرين (Empathy) — مشاركة مشاعر الآخرين والشعور بها' },
+    { direction: 'down',   row: 4, col: 2, answer: 'ارض',   clue: 'الكرة التي نعيش عليها، أو سطح نمشي فوقه' },
   ]},
-  { words: [ // 7
+  { words: [ // 7 — قيمة: التعاون (Collaboration)
     { direction: 'across', row: 0, col: 0, answer: 'شجر', clue: 'نبات كبير له جذع وأوراق' },
     { direction: 'down',   row: 0, col: 1, answer: 'جمل', clue: 'حيوان الصحراء ذو السنام' },
     { direction: 'across', row: 0, col: 4, answer: 'صبر', clue: 'تحمّل الصعاب دون شكوى' },
     { direction: 'down',   row: 0, col: 5, answer: 'بطل', clue: 'شخص شجاع يقوم بأعمال عظيمة' },
+    { direction: 'across', row: 0, col: 8, answer: 'حقل', clue: 'أرض زراعية واسعة' },
+    { direction: 'down',   row: 0, col: 9, answer: 'قلم', clue: 'يُستخدم للكتابة' },
+    { direction: 'across', row: 4, col: 0, answer: 'تعاون', clue: '🌟 قيمة التعاون (Collaboration) — العمل مع الآخرين يداً بيد لتحقيق هدف مشترك' },
+    { direction: 'down',   row: 4, col: 2, answer: 'امل',   clue: 'تطلّع وتفاؤل بالمستقبل' },
   ]},
-  { words: [ // 8
+  { words: [ // 8 — قيمة: الالتزام (Commitment)
     { direction: 'across', row: 0, col: 0, answer: 'فجر', clue: 'بداية ضوء النهار قبل الشروق' },
     { direction: 'down',   row: 0, col: 1, answer: 'جلد', clue: 'الطبقة الخارجية لجسم الإنسان أو الحيوان' },
     { direction: 'across', row: 0, col: 4, answer: 'عمل', clue: 'وظيفة أو نشاط يقوم به الإنسان' },
     { direction: 'down',   row: 0, col: 5, answer: 'ملح', clue: 'يُضاف للطعام لتذوقيه، مستخرج من البحر' },
+    { direction: 'across', row: 0, col: 8, answer: 'عسل', clue: 'سائل حلو يصنعه النحل' },
+    { direction: 'down',   row: 0, col: 9, answer: 'سمك', clue: 'حيوان يعيش في الماء' },
+    { direction: 'across', row: 4, col: 0, answer: 'التزام', clue: '🌟 قيمة الالتزام (Commitment) — الوفاء بالوعد والمسؤولية تجاه العمل' },
+    { direction: 'down',   row: 4, col: 4, answer: 'امل',    clue: 'تطلّع وتفاؤل بالمستقبل' },
   ]},
-  { words: [ // 9
+  { words: [ // 9 — قيمة: المبادرة (Initiative)
     { direction: 'across', row: 0, col: 0, answer: 'حقل', clue: 'أرض زراعية واسعة' },
     { direction: 'down',   row: 0, col: 1, answer: 'قلم', clue: 'يُستخدم للكتابة' },
     { direction: 'across', row: 0, col: 4, answer: 'سفر', clue: 'الانتقال من مكان إلى آخر، رحلة' },
     { direction: 'down',   row: 0, col: 5, answer: 'فرح', clue: 'شعور بالسعادة والبهجة' },
+    { direction: 'across', row: 0, col: 8, answer: 'ملك', clue: 'حاكم يرث العرش، يُلقَّب بصاحب الجلالة' },
+    { direction: 'down',   row: 0, col: 9, answer: 'لبن', clue: 'مشروب أبيض يُستخرج من الحليب' },
+    { direction: 'across', row: 4, col: 0, answer: 'مبادرة', clue: '🌟 قيمة المبادرة (Initiative) — اتخاذ الخطوة الأولى دون انتظار توجيه' },
+    { direction: 'down',   row: 4, col: 2, answer: 'ارض',    clue: 'الكرة التي نعيش عليها، أو سطح نمشي فوقه' },
   ]},
-  { words: [ // 10
+  { words: [ // 10 — قيمة: الإبداع (Ingenuity)
     { direction: 'across', row: 0, col: 0, answer: 'عسل', clue: 'سائل حلو يصنعه النحل' },
     { direction: 'down',   row: 0, col: 1, answer: 'سمك', clue: 'حيوان يعيش في الماء' },
     { direction: 'across', row: 0, col: 4, answer: 'ملك', clue: 'حاكم يرث العرش، يُلقَّب بصاحب الجلالة' },
     { direction: 'down',   row: 0, col: 5, answer: 'لبن', clue: 'مشروب أبيض يُستخرج من الحليب' },
+    { direction: 'across', row: 0, col: 8, answer: 'غيم', clue: 'سحاب يحجب الشمس' },
+    { direction: 'down',   row: 0, col: 9, answer: 'يوم', clue: 'وحدة زمنية، 24 ساعة' },
+    { direction: 'across', row: 4, col: 0, answer: 'إبداع', clue: '🌟 قيمة الإبداع (Ingenuity) — إيجاد حلول وأفكار جديدة وغير تقليدية' },
+    { direction: 'down',   row: 4, col: 3, answer: 'اذن',   clue: 'عضو السمع في جسم الإنسان' },
   ]},
-  { words: [ // 11
+  { words: [ // 11 — قيمة: الإحساس بالآخرين (Empathy)
     { direction: 'across', row: 0, col: 0, answer: 'جبل', clue: 'مرتفع شاهق من الصخور والتراب' },
     { direction: 'down',   row: 0, col: 1, answer: 'بحر', clue: 'مياه مالحة واسعة، أوسع من النهر' },
     { direction: 'across', row: 0, col: 4, answer: 'ولد', clue: 'طفل ذكر' },
     { direction: 'down',   row: 0, col: 5, answer: 'لعب', clue: 'نشاط ترفيهي للأطفال والكبار' },
+    { direction: 'across', row: 0, col: 8, answer: 'بنت', clue: 'طفلة، عكس الولد' },
+    { direction: 'down',   row: 0, col: 9, answer: 'نجم', clue: 'كوكب يضيء في السماء ليلاً' },
+    { direction: 'across', row: 4, col: 0, answer: 'تعاطف', clue: '🌟 قيمة الإحساس بالآخرين (Empathy) — مشاركة مشاعر الآخرين والشعور بها' },
+    { direction: 'down',   row: 4, col: 2, answer: 'اسم',   clue: 'ما يُنادى به الشخص أو الشيء' },
   ]},
-  { words: [ // 12
+  { words: [ // 12 — قيمة: التعاون (Collaboration)
     { direction: 'across', row: 0, col: 0, answer: 'بنت', clue: 'طفلة، عكس الولد' },
     { direction: 'down',   row: 0, col: 1, answer: 'نجم', clue: 'كوكب يضيء في السماء ليلاً' },
     { direction: 'across', row: 0, col: 4, answer: 'غيم', clue: 'سحاب يحجب الشمس' },
     { direction: 'down',   row: 0, col: 5, answer: 'يوم', clue: 'وحدة زمنية، 24 ساعة' },
+    { direction: 'across', row: 0, col: 8, answer: 'كرم', clue: 'صفة حسنة، عكس البخل' },
+    { direction: 'down',   row: 0, col: 9, answer: 'رزق', clue: 'ما يُقسم للإنسان من خير ومال' },
+    { direction: 'across', row: 4, col: 0, answer: 'تعاون', clue: '🌟 قيمة التعاون (Collaboration) — العمل مع الآخرين يداً بيد لتحقيق هدف مشترك' },
+    { direction: 'down',   row: 4, col: 2, answer: 'اذن',   clue: 'عضو السمع في جسم الإنسان' },
   ]},
-  { words: [ // 13
+  { words: [ // 13 — قيمة: الالتزام (Commitment)
     { direction: 'across', row: 0, col: 0, answer: 'ريح', clue: 'هواء متحرك بقوة' },
     { direction: 'down',   row: 0, col: 1, answer: 'يوم', clue: 'وحدة زمنية، 24 ساعة' },
     { direction: 'across', row: 0, col: 4, answer: 'كرم', clue: 'صفة حسنة، عكس البخل' },
     { direction: 'down',   row: 0, col: 5, answer: 'رزق', clue: 'ما يُقسم للإنسان من خير ومال' },
+    { direction: 'across', row: 0, col: 8, answer: 'فهم', clue: 'استيعاب المعنى وإدراكه' },
+    { direction: 'down',   row: 0, col: 9, answer: 'هرم', clue: 'بناء مصري قديم بشكل مثلث' },
+    { direction: 'across', row: 4, col: 0, answer: 'التزام', clue: '🌟 قيمة الالتزام (Commitment) — الوفاء بالوعد والمسؤولية تجاه العمل' },
+    { direction: 'down',   row: 4, col: 4, answer: 'اسد',    clue: 'ملك الغابة، حيوان مفترس قوي' },
   ]},
-  { words: [ // 14
+  { words: [ // 14 — قيمة: المبادرة (Initiative)
     { direction: 'across', row: 0, col: 0, answer: 'فهم', clue: 'استيعاب المعنى وإدراكه' },
     { direction: 'down',   row: 0, col: 1, answer: 'هرم', clue: 'بناء مصري قديم بشكل مثلث' },
     { direction: 'across', row: 0, col: 4, answer: 'سهل', clue: 'أرض منبسطة، أو ضد الصعب' },
     { direction: 'down',   row: 0, col: 5, answer: 'هدف', clue: 'الغاية التي يسعى الإنسان لتحقيقها' },
+    { direction: 'across', row: 0, col: 8, answer: 'جمع', clue: 'ضمّ الأشياء معاً' },
+    { direction: 'down',   row: 0, col: 9, answer: 'مرح', clue: 'فرح ولعب وضحك' },
+    { direction: 'across', row: 4, col: 0, answer: 'مبادرة', clue: '🌟 قيمة المبادرة (Initiative) — اتخاذ الخطوة الأولى دون انتظار توجيه' },
+    { direction: 'down',   row: 4, col: 2, answer: 'امل',    clue: 'تطلّع وتفاؤل بالمستقبل' },
   ]},
-  { words: [ // 15
+  { words: [ // 15 — قيمة: الإبداع (Ingenuity)
     { direction: 'across', row: 0, col: 0, answer: 'جمع', clue: 'ضمّ الأشياء معاً' },
     { direction: 'down',   row: 0, col: 1, answer: 'مرح', clue: 'فرح ولعب وضحك' },
     { direction: 'across', row: 0, col: 4, answer: 'نجم', clue: 'كوكب يضيء في السماء ليلاً' },
     { direction: 'down',   row: 0, col: 5, answer: 'جرح', clue: 'إصابة في الجسم تسبب نزيفاً' },
+    { direction: 'across', row: 0, col: 8, answer: 'علم', clue: 'قطعة قماش ترفرف، رمز الوطن' },
+    { direction: 'down',   row: 0, col: 9, answer: 'لحم', clue: 'يؤكل مطبوخاً، يُستخرج من الحيوان' },
+    { direction: 'across', row: 4, col: 0, answer: 'إبداع', clue: '🌟 قيمة الإبداع (Ingenuity) — إيجاد حلول وأفكار جديدة وغير تقليدية' },
+    { direction: 'down',   row: 4, col: 3, answer: 'ارض',   clue: 'الكرة التي نعيش عليها، أو سطح نمشي فوقه' },
   ]},
 ];
 
