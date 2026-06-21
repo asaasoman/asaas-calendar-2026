@@ -1181,6 +1181,52 @@
 .cw-clue-list li.active { background: var(--gold-tint); color: var(--text); }
 .cw-clue-num { font-weight: 800; color: var(--clay); min-width: 18px; text-align: center; flex-shrink: 0; }
 
+.cw-register {
+  background: var(--beige);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  max-width: 560px;
+  margin-bottom: 20px;
+}
+.cw-register-hint { font-size: 13px; color: var(--text-soft); margin: 0 0 12px; }
+.cw-register-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.cw-register-row .form-control { flex: 1; min-width: 160px; }
+
+.cw-player-bar {
+  font-size: 12.5px; color: var(--text-soft);
+  margin-bottom: 14px;
+}
+.cw-player-bar a { color: var(--clay); text-decoration: underline; cursor: pointer; }
+.cw-player-bar strong { color: var(--text); }
+
+.cw-lb-card {
+  margin-top: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 22px;
+  max-width: 900px;
+}
+.cw-lb-title { font-family: 'Co Headline', 'Tajawal', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); }
+.cw-lb-sub { font-size: 12.5px; color: var(--text-mute); margin: 2px 0 16px; }
+.cw-lb-list { display: flex; flex-direction: column; gap: 6px; }
+.cw-lb-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 14px; border-radius: var(--radius-sm);
+  background: var(--beige);
+}
+.cw-lb-row.gold { background: var(--gold-tint); }
+.cw-lb-row.me { background: var(--green-tint); }
+.cw-lb-rank {
+  font-family: 'Co Headline', 'Tajawal', sans-serif; font-weight: 700; font-size: 14px;
+  color: var(--text-soft); width: 28px; text-align: center; flex-shrink: 0;
+}
+.cw-lb-name { flex: 1; min-width: 0; font-weight: 600; color: var(--text); font-size: 13.5px; }
+.cw-lb-wins { font-weight: 700; color: var(--clay); font-size: 13.5px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.cw-lb-empty { text-align: center; padding: 20px; color: var(--text-mute); font-size: 13px; }
+
 
 </style>
 <!-- Fallback fonts in case Co Headline doesn't load -->
@@ -3660,35 +3706,53 @@ html.view-wc .hide-on-wc { display: none !important; }
   <div class="cw-section hide-on-wc" id="crosswordSection">
     <div class="cw-header">
       <div class="cw-title" data-i18n="cw.title">🧩 الكلمات المتقاطعة</div>
-      <div class="cw-subtitle" data-i18n="cw.subtitle">حلّ اللغز وتدرّب على المفردات العربية</div>
+      <div class="cw-subtitle" data-i18n="cw.subtitle">١٥ لغزاً مختلفاً — أكمل لغزاً وانتقل تلقائياً للتالي</div>
       <div class="cw-howto" data-i18n="cw.howto">اضغط على أي خلية وابدأ الكتابة، أو اضغط على أحد الأدلّة بالجانب لينتقل المؤشر إليه مباشرة. استخدم مفاتيح الأسهم للتنقّل بين الخلايا.</div>
     </div>
 
-    <div class="cw-status" id="cwStatus">
-      <span class="cw-stamp" id="cwStamp">النتيجة</span>
-      <span id="cwStatusText"></span>
+    <div class="cw-register" id="cwRegister">
+      <p class="cw-register-hint" data-i18n="cw.register.hint">سجّل اسمك لتظهر في لوحة الترتيب وتتبّع عدد مرات فوزك.</p>
+      <div class="cw-register-row">
+        <input class="form-control" id="cwNameInput" data-i18n-placeholder="cw.register.placeholder" placeholder="اسمك" maxlength="40" autocomplete="off" />
+        <button class="btn btn-primary" id="cwStartBtn" type="button" data-i18n="cw.register.start">🚀 ابدأ اللعب</button>
+      </div>
     </div>
 
-    <div class="cw-layout">
-      <div class="cw-grid-panel">
-        <div class="cw-grid-wrap">
-          <div class="cw-grid" id="cwGrid" dir="rtl"></div>
-        </div>
-        <div class="cw-controls">
-          <button class="btn btn-primary" id="cwCheckBtn" type="button" data-i18n="cw.check">✓ تحقّق من الإجابات</button>
-          <button class="btn btn-ghost" id="cwResetBtn" type="button" data-i18n="cw.reset">↺ إعادة المحاولة</button>
-        </div>
+    <div id="cwPlayArea" style="display:none">
+      <div class="cw-player-bar" id="cwPlayerBar"></div>
+
+      <div class="cw-status" id="cwStatus">
+        <span class="cw-stamp" id="cwStamp">النتيجة</span>
+        <span id="cwStatusText"></span>
       </div>
-      <aside class="cw-clues-panel">
-        <div class="cw-clue-group">
-          <h3><span class="cw-dir-ico">→</span><span data-i18n="cw.across">أفقياً</span></h3>
-          <ol class="cw-clue-list" id="cwAcrossClues"></ol>
+
+      <div class="cw-layout">
+        <div class="cw-grid-panel">
+          <div class="cw-grid-wrap">
+            <div class="cw-grid" id="cwGrid" dir="rtl"></div>
+          </div>
+          <div class="cw-controls">
+            <button class="btn btn-primary" id="cwCheckBtn" type="button" data-i18n="cw.check">✓ تحقّق من الإجابات</button>
+            <button class="btn btn-ghost" id="cwResetBtn" type="button" data-i18n="cw.reset">↺ إعادة المحاولة</button>
+          </div>
         </div>
-        <div class="cw-clue-group">
-          <h3><span class="cw-dir-ico">↓</span><span data-i18n="cw.down">عمودياً</span></h3>
-          <ol class="cw-clue-list" id="cwDownClues"></ol>
-        </div>
-      </aside>
+        <aside class="cw-clues-panel">
+          <div class="cw-clue-group">
+            <h3><span class="cw-dir-ico">→</span><span data-i18n="cw.across">أفقياً</span></h3>
+            <ol class="cw-clue-list" id="cwAcrossClues"></ol>
+          </div>
+          <div class="cw-clue-group">
+            <h3><span class="cw-dir-ico">↓</span><span data-i18n="cw.down">عمودياً</span></h3>
+            <ol class="cw-clue-list" id="cwDownClues"></ol>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="cw-lb-card">
+      <div class="cw-lb-title" data-i18n="cw.lb.title">🏆 ترتيب اللاعبين</div>
+      <div class="cw-lb-sub" data-i18n="cw.lb.sub">عدد مرات الفوز بحلّ اللغز كاملاً</div>
+      <div class="cw-lb-list" id="cwLeaderboardList"></div>
     </div>
   </div>
 
@@ -3959,12 +4023,17 @@ const I18N = {
 
     // ── Crossword ──────────────────────────────────────────────
     'cw.title':               '🧩 الكلمات المتقاطعة',
-    'cw.subtitle':            'حلّ اللغز وتدرّب على المفردات العربية',
+    'cw.subtitle':            '١٥ لغزاً مختلفاً — أكمل لغزاً وانتقل تلقائياً للتالي',
     'cw.howto':               'اضغط على أي خلية وابدأ الكتابة، أو اضغط على أحد الأدلّة بالجانب لينتقل المؤشر إليه مباشرة. استخدم مفاتيح الأسهم للتنقّل بين الخلايا.',
     'cw.check':               '✓ تحقّق من الإجابات',
     'cw.reset':               '↺ إعادة المحاولة',
     'cw.across':              'أفقياً',
     'cw.down':                'عمودياً',
+    'cw.register.hint':       'سجّل اسمك لتظهر في لوحة الترتيب وتتبّع عدد مرات فوزك.',
+    'cw.register.placeholder':'اسمك',
+    'cw.register.start':      '🚀 ابدأ اللعب',
+    'cw.lb.title':            '🏆 ترتيب اللاعبين',
+    'cw.lb.sub':              'عدد مرات الفوز بحلّ اللغز كاملاً',
 
     // ── WC launcher ────────────────────────────────────────────
     'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
@@ -4196,12 +4265,17 @@ const I18N = {
 
     // ── Crossword ──────────────────────────────────────────────
     'cw.title':               '🧩 Crossword',
-    'cw.subtitle':            'Solve the puzzle and practice Arabic vocabulary',
+    'cw.subtitle':            '15 different puzzles — finish one and move on automatically',
     'cw.howto':               'Click any cell and start typing, or click a clue on the side to jump straight to it. Use the arrow keys to move between cells.',
     'cw.check':               '✓ Check Answers',
     'cw.reset':               '↺ Reset',
     'cw.across':              'Across',
     'cw.down':                'Down',
+    'cw.register.hint':       'Register your name to appear on the leaderboard and track how many times you\'ve won.',
+    'cw.register.placeholder':'Your name',
+    'cw.register.start':      '🚀 Start playing',
+    'cw.lb.title':            '🏆 Player rankings',
+    'cw.lb.sub':              'Number of times each player has fully solved a puzzle',
 
     'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
     'wc.launcher.title':      'World Cup Prediction Challenge',
@@ -7892,10 +7966,14 @@ function subscribePuzzle() {
 subscribePuzzle();
 
 /* ════════════════════════════════════════════════════════════════
-   الكلمات المتقاطعة — Crossword (client-side only, like Quick Break —
-   no Firestore needed; everyone gets the same puzzle).
+   الكلمات المتقاطعة — Crossword
    ─────────────────────────────────────────────────────────────────
-   Edit ONLY the CW_DATA object below to change the puzzle. Each word:
+   15 puzzles in CW_LEVELS below — finishing one (100% correct) moves
+   the player to the next automatically, looping back to #1 after #15.
+   A small Firestore doc (calendar/crossword_scores) tracks each
+   registered player's name + number of wins, shown on the leaderboard.
+
+   To edit/add puzzles, edit CW_LEVELS only. Each word:
      direction : 'across' | 'down'
      row, col  : 0-based starting position of the word's first letter
                  (row grows down; col grows right→left since the page
@@ -7906,16 +7984,108 @@ subscribePuzzle();
    automatically. If two words cross, they must agree on the shared
    letter — the console will warn you if they don't.
    ════════════════════════════════════════════════════════════════ */
-const CW_DATA = {
-  words: [
+const CW_LEVELS = [
+  { words: [ // 1
     { direction: 'across', row: 0, col: 5, answer: 'كتاب', clue: 'تتعلّم منه وتقرأ صفحاته' },
     { direction: 'down',   row: 0, col: 6, answer: 'تمر',  clue: 'فاكهة الصحراء، يكثر تناولها في رمضان' },
     { direction: 'down',   row: 1, col: 1, answer: 'كلام', clue: 'ما يُقال بالصوت من حروف وجمل' },
     { direction: 'across', row: 2, col: 0, answer: 'سلام', clue: 'تحية وأمان، عكس الحرب' },
     { direction: 'across', row: 4, col: 5, answer: 'نهر',  clue: 'مجرى ماء طويل يصبّ غالباً في البحر' },
     { direction: 'down',   row: 4, col: 6, answer: 'هدية', clue: 'شيء تقدّمه لمن تحب في عيد ميلاده مثلاً' },
-  ],
-};
+  ]},
+  { words: [ // 2
+    { direction: 'across', row: 0, col: 0, answer: 'قمر', clue: 'يظهر في السماء ليلاً ويكتمل بدراً' },
+    { direction: 'down',   row: 0, col: 1, answer: 'مطر', clue: 'يسقط من السحاب، يُنبت الزرع' },
+    { direction: 'across', row: 0, col: 4, answer: 'شمس', clue: 'نجم النهار الذي يدفئ الأرض' },
+    { direction: 'down',   row: 0, col: 5, answer: 'ملك', clue: 'حاكم يرث العرش، يُلقَّب بصاحب الجلالة' },
+  ]},
+  { words: [ // 3
+    { direction: 'across', row: 0, col: 0, answer: 'بحر', clue: 'مياه مالحة واسعة، أوسع من النهر' },
+    { direction: 'down',   row: 0, col: 1, answer: 'حلم', clue: 'ما يراه النائم في نومه' },
+    { direction: 'across', row: 0, col: 4, answer: 'نهر', clue: 'مجرى ماء طويل يصبّ غالباً في البحر' },
+    { direction: 'down',   row: 0, col: 5, answer: 'هرم', clue: 'بناء مصري قديم بشكل مثلث' },
+  ]},
+  { words: [ // 4
+    { direction: 'across', row: 0, col: 0, answer: 'قلب', clue: 'عضو يضخّ الدم في الجسم' },
+    { direction: 'down',   row: 0, col: 1, answer: 'لون', clue: 'أحمر، أزرق، أصفر... من أمثلته' },
+    { direction: 'across', row: 0, col: 4, answer: 'كتب', clue: 'جمع كلمة "كتاب"' },
+    { direction: 'down',   row: 0, col: 5, answer: 'تمر', clue: 'فاكهة الصحراء، يكثر تناولها في رمضان' },
+  ]},
+  { words: [ // 5
+    { direction: 'across', row: 0, col: 0, answer: 'درس', clue: 'حصة تعليمية في المدرسة' },
+    { direction: 'down',   row: 0, col: 1, answer: 'رمل', clue: 'حبيبات الصحراء والشاطئ' },
+    { direction: 'across', row: 0, col: 4, answer: 'علم', clue: 'قطعة قماش ترفرف، رمز الوطن' },
+    { direction: 'down',   row: 0, col: 5, answer: 'لحم', clue: 'يؤكل مطبوخاً، يُستخرج من الحيوان' },
+  ]},
+  { words: [ // 6
+    { direction: 'across', row: 0, col: 0, answer: 'وجه', clue: 'الجزء الأمامي من الرأس' },
+    { direction: 'down',   row: 0, col: 1, answer: 'جبل', clue: 'مرتفع شاهق من الصخور والتراب' },
+    { direction: 'across', row: 0, col: 4, answer: 'زهر', clue: 'نبات جميل ذو رائحة عطرة' },
+    { direction: 'down',   row: 0, col: 5, answer: 'هرب', clue: 'فرّ خوفاً أو تجنّباً لشيء' },
+  ]},
+  { words: [ // 7
+    { direction: 'across', row: 0, col: 0, answer: 'شجر', clue: 'نبات كبير له جذع وأوراق' },
+    { direction: 'down',   row: 0, col: 1, answer: 'جمل', clue: 'حيوان الصحراء ذو السنام' },
+    { direction: 'across', row: 0, col: 4, answer: 'صبر', clue: 'تحمّل الصعاب دون شكوى' },
+    { direction: 'down',   row: 0, col: 5, answer: 'بطل', clue: 'شخص شجاع يقوم بأعمال عظيمة' },
+  ]},
+  { words: [ // 8
+    { direction: 'across', row: 0, col: 0, answer: 'فجر', clue: 'بداية ضوء النهار قبل الشروق' },
+    { direction: 'down',   row: 0, col: 1, answer: 'جلد', clue: 'الطبقة الخارجية لجسم الإنسان أو الحيوان' },
+    { direction: 'across', row: 0, col: 4, answer: 'عمل', clue: 'وظيفة أو نشاط يقوم به الإنسان' },
+    { direction: 'down',   row: 0, col: 5, answer: 'ملح', clue: 'يُضاف للطعام لتذوقيه، مستخرج من البحر' },
+  ]},
+  { words: [ // 9
+    { direction: 'across', row: 0, col: 0, answer: 'حقل', clue: 'أرض زراعية واسعة' },
+    { direction: 'down',   row: 0, col: 1, answer: 'قلم', clue: 'يُستخدم للكتابة' },
+    { direction: 'across', row: 0, col: 4, answer: 'سفر', clue: 'الانتقال من مكان إلى آخر، رحلة' },
+    { direction: 'down',   row: 0, col: 5, answer: 'فرح', clue: 'شعور بالسعادة والبهجة' },
+  ]},
+  { words: [ // 10
+    { direction: 'across', row: 0, col: 0, answer: 'عسل', clue: 'سائل حلو يصنعه النحل' },
+    { direction: 'down',   row: 0, col: 1, answer: 'سمك', clue: 'حيوان يعيش في الماء' },
+    { direction: 'across', row: 0, col: 4, answer: 'ملك', clue: 'حاكم يرث العرش، يُلقَّب بصاحب الجلالة' },
+    { direction: 'down',   row: 0, col: 5, answer: 'لبن', clue: 'مشروب أبيض يُستخرج من الحليب' },
+  ]},
+  { words: [ // 11
+    { direction: 'across', row: 0, col: 0, answer: 'جبل', clue: 'مرتفع شاهق من الصخور والتراب' },
+    { direction: 'down',   row: 0, col: 1, answer: 'بحر', clue: 'مياه مالحة واسعة، أوسع من النهر' },
+    { direction: 'across', row: 0, col: 4, answer: 'ولد', clue: 'طفل ذكر' },
+    { direction: 'down',   row: 0, col: 5, answer: 'لعب', clue: 'نشاط ترفيهي للأطفال والكبار' },
+  ]},
+  { words: [ // 12
+    { direction: 'across', row: 0, col: 0, answer: 'بنت', clue: 'طفلة، عكس الولد' },
+    { direction: 'down',   row: 0, col: 1, answer: 'نجم', clue: 'كوكب يضيء في السماء ليلاً' },
+    { direction: 'across', row: 0, col: 4, answer: 'غيم', clue: 'سحاب يحجب الشمس' },
+    { direction: 'down',   row: 0, col: 5, answer: 'يوم', clue: 'وحدة زمنية، 24 ساعة' },
+  ]},
+  { words: [ // 13
+    { direction: 'across', row: 0, col: 0, answer: 'ريح', clue: 'هواء متحرك بقوة' },
+    { direction: 'down',   row: 0, col: 1, answer: 'يوم', clue: 'وحدة زمنية، 24 ساعة' },
+    { direction: 'across', row: 0, col: 4, answer: 'كرم', clue: 'صفة حسنة، عكس البخل' },
+    { direction: 'down',   row: 0, col: 5, answer: 'رزق', clue: 'ما يُقسم للإنسان من خير ومال' },
+  ]},
+  { words: [ // 14
+    { direction: 'across', row: 0, col: 0, answer: 'فهم', clue: 'استيعاب المعنى وإدراكه' },
+    { direction: 'down',   row: 0, col: 1, answer: 'هرم', clue: 'بناء مصري قديم بشكل مثلث' },
+    { direction: 'across', row: 0, col: 4, answer: 'سهل', clue: 'أرض منبسطة، أو ضد الصعب' },
+    { direction: 'down',   row: 0, col: 5, answer: 'هدف', clue: 'الغاية التي يسعى الإنسان لتحقيقها' },
+  ]},
+  { words: [ // 15
+    { direction: 'across', row: 0, col: 0, answer: 'جمع', clue: 'ضمّ الأشياء معاً' },
+    { direction: 'down',   row: 0, col: 1, answer: 'مرح', clue: 'فرح ولعب وضحك' },
+    { direction: 'across', row: 0, col: 4, answer: 'نجم', clue: 'كوكب يضيء في السماء ليلاً' },
+    { direction: 'down',   row: 0, col: 5, answer: 'جرح', clue: 'إصابة في الجسم تسبب نزيفاً' },
+  ]},
+];
+
+const CW_SCORE_DOC = db.collection('calendar').doc('crossword_scores');
+let CW_SCORES_DATA = null;
+let cwPlayerId = localStorage.getItem('asaas_cw_player_id') || null;
+let cwPlayerName = localStorage.getItem('asaas_cw_player_name') || '';
+let cwModel = null;
+let cwLevelIndex = 0;
+let cwAdvanceTimer = null;
 
 function cwBuildModel(words) {
   const cells = new Map(); // "r,c" -> { row, col, letter, words:[idx,...] }
@@ -8102,10 +8272,11 @@ function cwNormalize(s) {
   return (s || '').replace(/[\u064B-\u065F\u0670]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').trim();
 }
 
-function cwCheckAnswers(model) {
+function cwCheckAnswers() {
+  if (!cwModel) return;
   let correct = 0;
-  const total = model.cells.size;
-  model.cells.forEach(cell => {
+  const total = cwModel.cells.size;
+  cwModel.cells.forEach(cell => {
     const inputEl = document.querySelector(`#crosswordSection .cw-input[data-row="${cell.row}"][data-col="${cell.col}"]`);
     if (!inputEl) return;
     inputEl.classList.remove('correct', 'wrong');
@@ -8119,10 +8290,14 @@ function cwCheckAnswers(model) {
   const stampEl  = document.getElementById('cwStamp');
   if (!statusEl || !textEl || !stampEl) return;
   statusEl.classList.add('show');
+
   if (correct === total) {
     statusEl.classList.add('success');
     stampEl.textContent = '✓ تم الحل';
-    textEl.textContent = 'رائع! حللت اللغز كاملاً بإجابات صحيحة.';
+    textEl.textContent = 'رائع! حللت اللغز كاملاً — الانتقال للّغز التالي…';
+    cwRegisterWin();
+    clearTimeout(cwAdvanceTimer);
+    cwAdvanceTimer = setTimeout(() => { cwLoadLevel((cwLevelIndex + 1) % CW_LEVELS.length); }, 1700);
   } else {
     statusEl.classList.remove('success');
     stampEl.textContent = 'النتيجة';
@@ -8130,24 +8305,163 @@ function cwCheckAnswers(model) {
   }
 }
 
-function cwResetPuzzle(model) {
+function cwResetPuzzle() {
+  if (!cwModel) return;
   document.querySelectorAll('#crosswordSection .cw-input').forEach(inp => { inp.value = ''; inp.classList.remove('correct', 'wrong'); });
   const statusEl = document.getElementById('cwStatus');
   if (statusEl) statusEl.classList.remove('show', 'success');
   cwActiveWordIdx = null;
-  cwHighlightActiveWord(model);
+  cwHighlightActiveWord(cwModel);
   cwMarkActiveClue();
 }
 
+function cwLoadLevel(index) {
+  cwLevelIndex = index;
+  cwModel = cwBuildModel(CW_LEVELS[index].words);
+  cwActiveWordIdx = null;
+  cwRenderGrid(cwModel);
+  cwRenderClues(cwModel);
+  cwWireInteractions(cwModel);
+  const statusEl = document.getElementById('cwStatus');
+  if (statusEl) statusEl.classList.remove('show', 'success');
+}
+
+function cwGetMyWins() {
+  if (!CW_SCORES_DATA) return 0;
+  const me = (CW_SCORES_DATA.players || []).find(p => p.id === cwPlayerId);
+  return me ? (me.wins || 0) : 0;
+}
+
+function cwLoadLevelForPlayer() {
+  cwLoadLevel(cwGetMyWins() % CW_LEVELS.length);
+}
+
+function cwRenderPlayerBar() {
+  const bar = document.getElementById('cwPlayerBar');
+  if (!bar || !cwPlayerId) return;
+  const wins = cwGetMyWins();
+  bar.innerHTML = `${(CURRENT_LANG === 'en') ? 'You:' : 'أنت:'} <strong>${escapeHtml(cwPlayerName)}</strong> · ${(CURRENT_LANG === 'en') ? 'won' : 'فزت'} <strong>${mArabicNum(wins)}</strong> ${(CURRENT_LANG === 'en') ? 'times' : 'مرة'} 🏆 ·
+    <a href="#" id="cwChangeNameLink">${(CURRENT_LANG === 'en') ? 'change name' : 'تغيير الاسم'}</a>`;
+  const link = document.getElementById('cwChangeNameLink');
+  if (link) link.onclick = (e) => { e.preventDefault(); cwChangeName(); };
+}
+
+function cwChangeName() {
+  const msg = (CURRENT_LANG === 'en')
+    ? 'Changing your name starts a fresh win record on the leaderboard. Continue?'
+    : 'تغيير الاسم سيبدأ لك سجلّ فوز جديد في لوحة الترتيب. متابعة؟';
+  if (!confirm(msg)) return;
+  localStorage.removeItem('asaas_cw_player_id');
+  localStorage.removeItem('asaas_cw_player_name');
+  cwPlayerId = null; cwPlayerName = ''; cwModel = null;
+  cwInitPlayer();
+}
+
+function cwInitPlayer() {
+  const registerEl = document.getElementById('cwRegister');
+  const playAreaEl = document.getElementById('cwPlayArea');
+  if (!registerEl || !playAreaEl) return;
+  if (!cwPlayerId) {
+    registerEl.style.display = '';
+    playAreaEl.style.display = 'none';
+  } else {
+    registerEl.style.display = 'none';
+    playAreaEl.style.display = '';
+    cwRenderPlayerBar();
+  }
+}
+
+async function cwStartPlaying() {
+  const input = document.getElementById('cwNameInput');
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) { input.focus(); return; }
+  cwPlayerId = 'cwp_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  cwPlayerName = name;
+  localStorage.setItem('asaas_cw_player_id', cwPlayerId);
+  localStorage.setItem('asaas_cw_player_name', cwPlayerName);
+  cwInitPlayer();
+  cwLoadLevel(0); // a brand-new player always starts at puzzle #1
+  try {
+    const snap = await CW_SCORE_DOC.get();
+    const data = snap.exists ? snap.data() : { players: [] };
+    const players = data.players || [];
+    players.push({ id: cwPlayerId, name: cwPlayerName, wins: 0, deviceId: mDeviceId(), lastWinAt: null });
+    await CW_SCORE_DOC.set({ players, updatedAt: Date.now() });
+  } catch (err) {
+    console.error('[ASAAS] crossword register error:', err);
+  }
+}
+
+async function cwRegisterWin() {
+  if (!cwPlayerId) return;
+  try {
+    const snap = await CW_SCORE_DOC.get();
+    const data = snap.exists ? snap.data() : { players: [] };
+    const players = data.players || [];
+    let me = players.find(p => p.id === cwPlayerId);
+    if (!me) {
+      me = { id: cwPlayerId, name: cwPlayerName, wins: 0, deviceId: mDeviceId(), lastWinAt: null };
+      players.push(me);
+    }
+    me.wins = (me.wins || 0) + 1;
+    me.lastWinAt = Date.now();
+    me.name = cwPlayerName;
+    await CW_SCORE_DOC.set({ players, updatedAt: Date.now() });
+  } catch (err) {
+    console.error('[ASAAS] crossword win register error:', err);
+  }
+}
+
+function cwRenderLeaderboard() {
+  const wrap = document.getElementById('cwLeaderboardList');
+  if (!wrap) return;
+  const players = (CW_SCORES_DATA && CW_SCORES_DATA.players) || [];
+  if (!players.length) {
+    wrap.innerHTML = `<div class="cw-lb-empty">${(CURRENT_LANG === 'en') ? 'No players yet — be the first to register!' : 'لا يوجد لاعبون بعد — كن أول من يسجّل اسمه!'}</div>`;
+    return;
+  }
+  const ranked = [...players].sort((a, b) => (b.wins || 0) - (a.wins || 0) || (a.lastWinAt || 0) - (b.lastWinAt || 0));
+  wrap.innerHTML = ranked.map((p, i) => {
+    const rank = i + 1;
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : ('#' + mArabicNum(rank));
+    const isMe = p.id === cwPlayerId;
+    const cls = (rank === 1 ? 'gold ' : '') + (isMe ? 'me' : '');
+    const meTag = isMe ? (CURRENT_LANG === 'en' ? ' (you)' : ' (أنت)') : '';
+    return `<div class="cw-lb-row ${cls}">
+      <div class="cw-lb-rank">${medal}</div>
+      <div class="cw-lb-name">${escapeHtml(p.name)}${meTag}</div>
+      <div class="cw-lb-wins">${mArabicNum(p.wins || 0)} 🏆</div>
+    </div>`;
+  }).join('');
+}
+
+function subscribeCwScores() {
+  CW_SCORE_DOC.onSnapshot(snap => {
+    CW_SCORES_DATA = snap.exists ? snap.data() : { players: [] };
+    cwRenderLeaderboard();
+    cwRenderPlayerBar();
+    if (cwPlayerId && !cwModel) cwLoadLevelForPlayer(); // first time we know the real win count
+  }, err => {
+    console.error('[ASAAS] crossword scores subscription error:', err);
+    const wrap = document.getElementById('cwLeaderboardList');
+    if (wrap) wrap.innerHTML = `<div class="cw-lb-empty">تعذّر تحميل لوحة الترتيب.</div>`;
+  });
+}
+
 function initCrossword() {
-  const model = cwBuildModel(CW_DATA.words);
-  cwRenderGrid(model);
-  cwRenderClues(model);
-  cwWireInteractions(model);
+  const startBtn = document.getElementById('cwStartBtn');
+  const nameInput = document.getElementById('cwNameInput');
+  if (startBtn) startBtn.onclick = () => cwStartPlaying();
+  if (nameInput) nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); cwStartPlaying(); } });
+
   const checkBtn = document.getElementById('cwCheckBtn');
   const resetBtn = document.getElementById('cwResetBtn');
-  if (checkBtn) checkBtn.onclick = () => cwCheckAnswers(model);
-  if (resetBtn) resetBtn.onclick = () => cwResetPuzzle(model);
+  if (checkBtn) checkBtn.onclick = () => cwCheckAnswers();
+  if (resetBtn) resetBtn.onclick = () => cwResetPuzzle();
+
+  cwInitPlayer();
+  subscribeCwScores();
 }
 initCrossword();
 
