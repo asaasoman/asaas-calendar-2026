@@ -8288,11 +8288,11 @@ function wcScoreGroups(pred) {
   const actuals = (wcState.results.groups) || {};
   WC_GROUPS.forEach(g => {
     const a = actuals[g.id] || []; // a[0] = actual 1st place, a[1] = actual 2nd place
-    const p = (pred.groups || {})[g.id] || []; // p[0]/p[1] = the order the person picked them in
-    if (a.length === 2 && p.length === 2) {
+    const p = (pred.groups || {})[g.id] || []; // could be 0, 1 (incomplete), or 2 picks
+    if (a.length === 2 && p.length > 0) {
       const correctCount = p.filter(x => a.includes(x)).length;
-      pts += correctCount * WC_SCORING.groupQualifier; // 1 correct = 3, 2 correct = 6
-      if (correctCount === 2 && p[0] === a[0] && p[1] === a[1]) {
+      pts += correctCount * WC_SCORING.groupQualifier; // each correct qualifier = 3 points, even with a single/partial pick
+      if (p.length === 2 && correctCount === 2 && p[0] === a[0] && p[1] === a[1]) {
         pts += WC_SCORING.groupExactOrderBonus; // both correct AND exact 1st/2nd order = 9 total
       }
     }
