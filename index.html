@@ -1039,6 +1039,30 @@
   background: #fff;
 }
 
+/* Ready-made puzzle library (admin panel) */
+.puzzle-lib-list {
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding-right: 2px;
+}
+.puzzle-lib-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+.puzzle-lib-main { flex: 1; min-width: 0; }
+.puzzle-lib-q { font-size: 13.5px; color: var(--text); font-weight: 600; line-height: 1.5; }
+.puzzle-lib-a { font-size: 12.5px; color: #1e4d29; margin-top: 4px; line-height: 1.5; }
+.puzzle-lib-a b { color: #1e4d29; }
+
 </style>
 <!-- Fallback fonts in case Co Headline doesn't load -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -5900,7 +5924,23 @@ function panelPuzzle() {
           : `<div class="puzzle-admin-recap-text solution">${escapeHtml(data.solution)}</div>`}
       </div>`;
 
+  const libraryHtml = `
+    <div class="puzzle-lib-list">
+      ${PUZZLE_LIBRARY.map((item, idx) => `
+        <div class="puzzle-lib-row">
+          <div class="puzzle-lib-main">
+            <div class="puzzle-lib-q">${idx + 1}. ${escapeHtml(item.q)}</div>
+            <div class="puzzle-lib-a"><b>الجواب:</b> ${escapeHtml(item.a)}</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="publishLibraryPuzzle(${idx})">📤 نشر</button>
+        </div>
+      `).join('')}
+    </div>`;
+
   const textFormHtml = `
+    <div class="section-divider" style="margin-top:4px">📚 اختر لغزاً جاهزاً من المكتبة (مع جوابه الصحيح)</div>
+    ${libraryHtml}
+    <div class="section-divider" style="margin-top:14px">✍️ أو أنشئ لغزك الخاص</div>
     <div class="form-group">
       <label>نص اللغز</label>
       <textarea class="form-control" id="puzzleAdminQuestion" rows="3" placeholder="مثال: لدي مدن كثيرة، وجبال، وماء، لكن لا منازل فيّ ولا أشجار. ما أنا؟"></textarea>
@@ -5950,7 +5990,10 @@ function panelPuzzle() {
     ${hasPuzzle ? `
       <div class="section-divider" style="margin-top:18px">المشاركات — مرتّبة من الأسرع للأبطأ</div>
       ${submissionsHtml}
-      ${data.status === 'open' ? `<div style="margin-top:10px"><button class="btn btn-danger" id="puzzleCloseNoWinner">إغلاق اللغز بدون اختيار فائز</button></div>` : ''}
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        ${data.status === 'open' ? `<button class="btn btn-danger" id="puzzleCloseNoWinner">إغلاق اللغز بدون اختيار فائز</button>` : ''}
+        <button class="btn btn-danger" id="puzzleDeleteBtn">🗑 حذف اللغز نهائياً${data.winnerName ? ' (مع الفائز)' : ''}</button>
+      </div>
     ` : ''}
 
     <div class="section-divider" style="margin-top:22px">${hasPuzzle ? '🧩 نشر لغز جديد (سيستبدل اللغز الحالي ويحذف كل المشاركات)' : '🧩 نشر لغز اليوم'}</div>
@@ -6140,6 +6183,8 @@ function wirePanel(tab) {
     if (publishBtn) publishBtn.onclick = () => publishNewPuzzle();
     const closeBtn = document.getElementById('puzzleCloseNoWinner');
     if (closeBtn) closeBtn.onclick = () => closePuzzleNoWinner();
+    const deleteBtn = document.getElementById('puzzleDeleteBtn');
+    if (deleteBtn) deleteBtn.onclick = () => deletePuzzleCompletely();
 
     if (puzzleFormKind === 'connectDots') {
       const buildAdminCanvas = () => {
@@ -7547,6 +7592,33 @@ async function closePuzzleNoWinner() {
 }
 window.closePuzzleNoWinner = closePuzzleNoWinner;
 
+// ── Admin: delete the current puzzle entirely (winner included) ──
+async function deletePuzzleCompletely() {
+  if (!state.isAdmin) return;
+  if (!confirm('حذف اللغز الحالي نهائياً، بما فيه الفائز إن تم اختياره؟ سيعود القسم لحالة "لا يوجد لغز نشط حالياً" حتى تنشر لغزاً جديداً.')) return;
+  try {
+    await PUZZLE_DOC.delete();
+  } catch (err) {
+    console.error('[ASAAS] delete puzzle error:', err);
+    alert('تعذّر حذف اللغز. حاول مجدداً.');
+  }
+}
+window.deletePuzzleCompletely = deletePuzzleCompletely;
+
+// ── Shared: write a fresh puzzle round to Firestore ───────────────
+async function publishPuzzleDoc(payload) {
+  await PUZZLE_DOC.set({
+    ...payload,
+    roundId: Date.now(),
+    status: 'open',
+    winnerName: null,
+    winnerSubmissionId: null,
+    submissions: [],
+    publishedAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+}
+
 // ── Admin: publish a new puzzle (resets submissions) ──────────────
 async function publishNewPuzzle() {
   if (!state.isAdmin) return;
@@ -7583,22 +7655,50 @@ async function publishNewPuzzle() {
     if (!confirm('سيتم استبدال اللغز الحالي وحذف جميع المشاركات الحالية. متابعة؟')) return;
   }
   try {
-    await PUZZLE_DOC.set({
-      ...payload,
-      roundId: Date.now(),
-      status: 'open',
-      winnerName: null,
-      winnerSubmissionId: null,
-      submissions: [],
-      publishedAt: Date.now(),
-      updatedAt: Date.now(),
-    });
+    await publishPuzzleDoc(payload);
   } catch (err) {
     console.error('[ASAAS] publish puzzle error:', err);
     alert('تعذّر نشر اللغز. تحقق من الاتصال وحاول مجدداً.');
   }
 }
 window.publishNewPuzzle = publishNewPuzzle;
+
+/* ── Ready-made puzzle library ──────────────────────────────────────
+   A bank of classic "ذكاء" riddles/logic puzzles with their correct
+   answers, so the admin can publish a puzzle in one click without
+   having to write a new one each time. ────────────────────────────── */
+const PUZZLE_LIBRARY = [
+  { q: 'ما الشيء الذي كلما أخذت منه كبر؟', a: 'الحفرة — كل ما حفرت فيها وأخذت من ترابها، كبرت وازداد عمقها واتساعها.' },
+  { q: 'له أسنان كثيرة ولا يعض أحداً، فما هو؟', a: 'المشط.' },
+  { q: 'بيت صغير لا أبواب فيه ولا نوافذ، يخرج منه كائن حي بعد أن يكسر جداره من الداخل، فما هو؟', a: 'البيضة (يخرج منها الكتكوت بعد كسرها).' },
+  { q: 'لديك ثلاثة صناديق مغلقة: الأول مكتوب عليه «تفاح»، والثاني «برتقال»، والثالث «تفاح وبرتقال». تعرف بشكل مؤكّد أن جميع اللافتات الثلاث خاطئة تماماً ولا تطابق محتوى صندوقها فعلاً. إذا سُمح لك بسحب فاكهة واحدة فقط من صندوق واحد فقط دون النظر إلى الداخل، من أي صندوق تسحب لتعرف محتوى الصناديق الثلاثة جميعها بالتأكيد؟', a: 'من الصندوق المكتوب عليه «تفاح وبرتقال». بما أن لافتته خاطئة، فهو يحتوي فاكهة واحدة فقط (تفاح أو برتقال)، والفاكهة التي تسحبها تكشف محتواه الحقيقي، ومنها تستنتج محتوى الصندوقين الآخرين بالاستبعاد المنطقي لبقية اللافتات الخاطئة.' },
+  { q: 'أب وابنه تعرّضا لحادث سيارة، توفي الأب في الحادث، ونُقل الابن إلى غرفة العمليات. نظر الجرّاح إلى الطفل وقال: "لا يمكنني إجراء هذه العملية، لأن هذا الطفل ابني!" كيف يمكن تفسير ذلك؟', a: 'الجرّاحة هي والدة الطفل.' },
+  { q: 'أي شهر من شهور السنة فيه 28 يوماً؟', a: 'كل الشهور — جميعها تحتوي على 28 يوماً على الأقل، وبعضها يزيد عليها.' },
+  { q: 'متى تكون الساعة الثامنة + 8 ساعات = الساعة الرابعة؟', a: 'عند حساب الوقت على ساعة ذات 12 رقماً (8 + 8 = 16، و16 − 12 = 4).' },
+  { q: 'لديك 8 كرات متماثلة الشكل والحجم، واحدة منها أثقل قليلاً من البقية، ولديك ميزان بكفّتين بدون أوزان معيارية. ما أقل عدد مرّات وزن تحتاجه لتحديد الكرة الأثقل بالتأكيد؟', a: 'مرّتان فقط — بتقسيم الكرات إلى ثلاث مجموعات (3 و3 و2) ومقارنتها بذكاء، يمكن تحديد الكرة الأثقل بمرّتي وزن كحدّ أقصى.' },
+  { q: 'رجل يعيش في الطابق العاشر من عمارة. كل صباح ينزل بالمصعد إلى الأسفل ويخرج بلا مشكلة. وعند رجوعه مساءً، يستقل المصعد إلى الطابق السابع فقط ثم يصعد بقية الطريق سيراً على السلم — إلا في الأيام التي يكون فيها المطر، حيث يستخدم المصعد للطابق العاشر مباشرة. لماذا؟', a: 'لأنه رجل قصير القامة ولا تطوله يده إلى زر الطابق العاشر، إلا في يوم المطر حيث يستخدم مظلّته للضغط على الزر.' },
+  { q: 'ما هو الشيء الذي يزداد كل يوم ولا يمكن لأحد أن يوقفه أو يرجعه إلى الخلف؟', a: 'العمر (الزمن).' },
+  { q: 'شيء تراه أمامك دائماً، ولا يمكنك أبداً الوصول إليه أو لمسه، فما هو؟', a: 'الأفق (خط الأفق).' },
+];
+
+// ── Admin: publish a puzzle straight from the ready-made library ──
+async function publishLibraryPuzzle(idx) {
+  if (!state.isAdmin) return;
+  const item = PUZZLE_LIBRARY[idx];
+  if (!item) return;
+  if (PUZZLE_DATA && PUZZLE_DATA.question) {
+    if (!confirm('سيتم استبدال اللغز الحالي وحذف جميع المشاركات الحالية ونشر هذا اللغز:\n\n«' + item.q + '»\n\nمتابعة؟')) return;
+  } else {
+    if (!confirm('نشر هذا اللغز للزوار الآن؟\n\n«' + item.q + '»')) return;
+  }
+  try {
+    await publishPuzzleDoc({ kind: 'text', question: item.q, solution: item.a });
+  } catch (err) {
+    console.error('[ASAAS] publish library puzzle error:', err);
+    alert('تعذّر نشر اللغز. تحقق من الاتصال وحاول مجدداً.');
+  }
+}
+window.publishLibraryPuzzle = publishLibraryPuzzle;
 
 // ── Realtime subscription (keeps all visitors + the admin panel in sync) ──
 function subscribePuzzle() {
