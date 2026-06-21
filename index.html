@@ -2561,7 +2561,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-lb-header {
   background: var(--bg-2);
   display: grid;
-  grid-template-columns: 50px 1fr 90px;
+  grid-template-columns: 50px 1fr 90px 44px;
   gap: 10px;
   padding: 10px 14px;
   font-size: 11.5px; font-weight: 700;
@@ -2571,7 +2571,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-lb-row {
   display: grid;
-  grid-template-columns: 50px 1fr 90px;
+  grid-template-columns: 50px 1fr 90px 44px;
   gap: 10px;
   padding: 11px 14px;
   align-items: center;
@@ -2597,9 +2597,9 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-weight: 700; color: var(--green-dark);
 }
 
-/* Admin-only: view + delete buttons in leaderboard */
+/* View button: available to every participant. Delete: admin-only. */
 .wc-lb-actions {
-  display: none; /* default hidden; .lb-admin parent reveals it */
+  display: flex;
   align-items: center; gap: 4px;
   justify-content: flex-end;
 }
@@ -2630,7 +2630,6 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-leaderboard.lb-admin .wc-lb-row {
   grid-template-columns: 50px 1fr 90px 80px;
 }
-.wc-leaderboard.lb-admin .wc-lb-actions { display: flex; }
 @media (max-width: 600px) {
   .wc-leaderboard.lb-admin .wc-lb-header,
   .wc-leaderboard.lb-admin .wc-lb-row {
@@ -2877,7 +2876,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   .wc-groups-grid { grid-template-columns: 1fr; }
   .wc-title { font-size: 19px; }
   .wc-match-score input { width: 34px; }
-  .wc-lb-header, .wc-lb-row { grid-template-columns: 40px 1fr 80px; padding: 9px 10px; }
+  .wc-lb-header, .wc-lb-row { grid-template-columns: 40px 1fr 80px 38px; padding: 9px 10px; }
   .wc-submit-row { margin: 16px -14px -20px; padding: 12px 14px 14px; }
   .wc-adm-row { grid-template-columns: 1fr; gap: 6px; }
   .wc-adm-row select { width: 100%; }
@@ -8142,9 +8141,8 @@ async function wcDeleteParticipant(participantId) {
 }
 window.wcDeleteParticipant = wcDeleteParticipant;
 
-// Admin-only: view a participant's full predictions in a modal
+// View any participant's full predictions in a modal — available to everyone
 function wcViewParticipant(participantId) {
-  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
   const pred = wcState.predictions.find(p => p.id === participantId);
   if (!pred) return;
 
@@ -8652,12 +8650,10 @@ function wcRenderLeaderboard() {
     const isMe = p.id === wcState.myId;
     const cls = rank === 1 ? 'gold' : '';
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-    const actions = isAdmin
-      ? `<div class="wc-lb-actions">
+    const actions = `<div class="wc-lb-actions">
            <button class="wc-lb-btn view" onclick="wcViewParticipant('${wcEsc(p.id)}')" title="${viewLabel}" aria-label="${viewLabel}">👁</button>
-           <button class="wc-lb-btn del" onclick="wcDeleteParticipant('${wcEsc(p.id)}')" title="${delLabel}" aria-label="${delLabel}">🗑</button>
-         </div>`
-      : '';
+           ${isAdmin ? `<button class="wc-lb-btn del" onclick="wcDeleteParticipant('${wcEsc(p.id)}')" title="${delLabel}" aria-label="${delLabel}">🗑</button>` : ''}
+         </div>`;
     return `
       <div class="wc-lb-row ${cls} ${isMe?'me':''}">
         <div class="wc-lb-rank">${medal}</div>
@@ -8685,7 +8681,7 @@ function wcRenderLeaderboard() {
         <div>${t('wc.lb.rank')}</div>
         <div>${t('wc.lb.name')}</div>
         <div style="text-align:end">${t('wc.lb.points')}</div>
-        ${isAdmin ? '<div></div>' : ''}
+        <div></div>
       </div>
       ${rows}
     </div>` + scoringNote;
