@@ -1150,8 +1150,11 @@
 .cw-input:focus { outline: none; }
 .cw-input.correct { background: var(--green-tint); color: #1e4d29; }
 .cw-input.wrong { background: #FBEEE7; color: var(--clay); }
+.cw-input.correct.hint-filled { background: var(--gold-tint); color: #6b5417; }
 
 .cw-controls { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.cw-hint-note { font-size: 12px; color: var(--text-mute); margin-top: 8px; text-align: center; }
+#cwHintBtn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
 .cw-clues-panel {
   flex: 1 1 280px;
@@ -3734,9 +3737,11 @@ html.view-wc .hide-on-wc { display: none !important; }
             <div class="cw-grid" id="cwGrid" dir="rtl"></div>
           </div>
           <div class="cw-controls">
+            <button class="btn btn-gold" id="cwHintBtn" type="button"></button>
             <button class="btn btn-primary" id="cwCheckBtn" type="button" data-i18n="cw.check">✓ تحقّق من الإجابات</button>
             <button class="btn btn-ghost" id="cwResetBtn" type="button" data-i18n="cw.reset">↺ إعادة المحاولة</button>
           </div>
+          <div class="cw-hint-note" id="cwHintNote"></div>
         </div>
         <aside class="cw-clues-panel">
           <div class="cw-clue-group">
@@ -4035,6 +4040,10 @@ const I18N = {
     'cw.register.hint':       'العب الآن! سيُطلب اسمك فقط عند فوزك الأول لإضافتك إلى لوحة الترتيب.',
     'cw.lb.title':            '🏆 ترتيب اللاعبين',
     'cw.lb.sub':              'عدد مرات الفوز بحلّ اللغز كاملاً',
+    'cw.hint':                'مساعدة',
+    'cw.hint.note':           '🔆 لديك 3 مساعدات فقط على مدى الألغاز الـ15 جميعها — كل مساعدة تكشف حل كلمة واحدة كاملة.',
+    'cw.hint.none':           'لقد استخدمت كل مساعداتك الثلاث. حظاً أوفر في الحل بنفسك! 💪',
+    'cw.hint.solved':         'كل الكلمات محلولة بالفعل — اضغط "تحقّق من الإجابات" 🎉',
 
     // ── WC launcher ────────────────────────────────────────────
     'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
@@ -4275,6 +4284,10 @@ const I18N = {
     'cw.register.hint':       'Play now! Your name will only be asked for the first time you win, to add you to the leaderboard.',
     'cw.lb.title':            '🏆 Player rankings',
     'cw.lb.sub':              'Number of times each player has fully solved a puzzle',
+    'cw.hint':                'Hint',
+    'cw.hint.note':           '🔆 You get just 3 hints total across all 15 puzzles — each hint reveals one full word.',
+    'cw.hint.none':           "You've used all 3 of your hints. Good luck solving the rest yourself! 💪",
+    'cw.hint.solved':         'Every word is already solved — click "Check Answers" 🎉',
 
     'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
     'wc.launcher.title':      'World Cup Prediction Challenge',
@@ -8331,6 +8344,86 @@ function cwNormalize(s) {
   return (s || '').replace(/[\u064B-\u065F\u0670]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').trim();
 }
 
+/* ── Hint / "مساعدة" ────────────────────────────────────────────
+   A limited helper: solves one full clue/word at a time. Capped at
+   CW_HINT_LIMIT uses total — shared across all 15 puzzles for the
+   lifetime of this browser (tracked in localStorage, like the win
+   counter above), not per-puzzle. ─────────────────────────────── */
+const CW_HINT_LIMIT = 3;
+const CW_HINT_LS_KEY = 'asaas_cw_hints_used';
+
+function cwGetHintsUsed() { return parseInt(localStorage.getItem(CW_HINT_LS_KEY) || '0', 10); }
+function cwHintsRemaining() { return Math.max(0, CW_HINT_LIMIT - cwGetHintsUsed()); }
+
+function cwWordCells(word) {
+  return Array.from(word.answer).map((ch, i) => ({
+    r: word.direction === 'down'   ? word.row + i : word.row,
+    c: word.direction === 'across' ? word.col + i : word.col,
+    letter: ch,
+  }));
+}
+
+function cwWordIsSolved(word) {
+  return cwWordCells(word).every(({ r, c, letter }) => {
+    const el = document.querySelector(`#crosswordSection .cw-input[data-row="${r}"][data-col="${c}"]`);
+    return !!(el && el.value && cwNormalize(el.value) === cwNormalize(letter));
+  });
+}
+
+function cwPickHintWord(model) {
+  // Prefer finishing whatever word the player currently has selected.
+  if (cwActiveWordIdx != null) {
+    const active = model.words[cwActiveWordIdx];
+    if (active && !cwWordIsSolved(active)) return active;
+  }
+  // Otherwise, the first unsolved clue in reading order (across, then down).
+  const ordered = model.words.slice().sort((a, b) =>
+    (a.number - b.number) || (a.direction === b.direction ? 0 : (a.direction === 'across' ? -1 : 1))
+  );
+  return ordered.find(w => !cwWordIsSolved(w)) || null;
+}
+
+function cwUseHint() {
+  if (!cwModel) return;
+
+  if (cwHintsRemaining() <= 0) {
+    alert(t('cw.hint.none'));
+    return;
+  }
+
+  const word = cwPickHintWord(cwModel);
+  if (!word) {
+    alert(t('cw.hint.solved'));
+    return;
+  }
+
+  cwWordCells(word).forEach(({ r, c, letter }) => {
+    const el = document.querySelector(`#crosswordSection .cw-input[data-row="${r}"][data-col="${c}"]`);
+    if (el) {
+      el.value = letter;
+      el.classList.remove('wrong');
+      el.classList.add('correct', 'hint-filled');
+    }
+  });
+
+  localStorage.setItem(CW_HINT_LS_KEY, String(cwGetHintsUsed() + 1));
+  cwFocusWord(cwModel, word._idx);
+  cwRenderHintButton();
+}
+
+function cwRenderHintButton() {
+  const btn  = document.getElementById('cwHintBtn');
+  const note = document.getElementById('cwHintNote');
+  if (!btn) return;
+  const remaining = cwHintsRemaining();
+  const count = (CURRENT_LANG === 'en') ? remaining : mArabicNum(remaining);
+  btn.innerHTML = `💡 ${t('cw.hint')} (${count})`;
+  btn.disabled = remaining <= 0;
+  if (note) note.textContent = t('cw.hint.note');
+}
+window.addEventListener('langchange', () => { try { cwRenderHintButton(); } catch (e) {} });
+
+
 function cwCheckAnswers() {
   if (!cwModel) return;
   let correct = 0;
@@ -8372,7 +8465,7 @@ function cwCheckAnswers() {
 
 function cwResetPuzzle() {
   if (!cwModel) return;
-  document.querySelectorAll('#crosswordSection .cw-input').forEach(inp => { inp.value = ''; inp.classList.remove('correct', 'wrong'); });
+  document.querySelectorAll('#crosswordSection .cw-input').forEach(inp => { inp.value = ''; inp.classList.remove('correct', 'wrong', 'hint-filled'); });
   const statusEl = document.getElementById('cwStatus');
   if (statusEl) statusEl.classList.remove('show', 'success');
   cwActiveWordIdx = null;
@@ -8594,8 +8687,11 @@ function subscribeCwScores() {
 function initCrossword() {
   const checkBtn = document.getElementById('cwCheckBtn');
   const resetBtn = document.getElementById('cwResetBtn');
+  const hintBtn  = document.getElementById('cwHintBtn');
   if (checkBtn) checkBtn.onclick = () => cwCheckAnswers();
   if (resetBtn) resetBtn.onclick = () => cwResetPuzzle();
+  if (hintBtn)  hintBtn.onclick  = () => cwUseHint();
+  cwRenderHintButton();
 
   cwInitPlayer();
   if (!cwPlayerName) {
