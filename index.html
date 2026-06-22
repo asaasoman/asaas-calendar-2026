@@ -4140,7 +4140,7 @@ const I18N = {
     'wc.gs.gd':                'فرق',
     'wc.gs.pts':               'نقاط',
     'wc.gs.pending':           '— لم تُلعب مباريات بعد —',
-    'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 21 يونيو)',
+    'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 22 يونيو)',
     'wc.admin.ko':             '— مواجهات ونتائج',
     'wc.admin.matches':       'مباراة',
     'wc.admin.selectTeam':    '— اختر منتخب —',
@@ -4370,7 +4370,7 @@ const I18N = {
     'wc.gs.gd':                'GD',
     'wc.gs.pts':               'Pts',
     'wc.gs.pending':           '— No matches played yet —',
-    'wc.gs.loadSeed':          'Load current results (as of June 21)',
+    'wc.gs.loadSeed':          'Load current results (as of June 22)',
     'wc.admin.ko':            '— Matchups and results',
     'wc.admin.matches':       'matches',
     'wc.admin.selectTeam':    '— Select a team —',
@@ -8951,15 +8951,19 @@ function wcSyncGroupQualifiers(groupId) {
 // New Zealand–Egypt) are today's fixtures and not yet confirmed
 // final, so they're deliberately left as-is to avoid seeding
 // unconfirmed scores. Re-run this loader once those finish.
-const WC_SEED_GROUP_RESULTS_20260621 = {
+const WC_SEED_GROUP_RESULTS_20260622 = {
   A: { MEX:{w:2,d:0,l:0,gf:3,ga:0}, KOR:{w:1,d:0,l:1,gf:2,ga:2}, CZE:{w:0,d:1,l:1,gf:2,ga:3}, RSA:{w:0,d:1,l:1,gf:1,ga:3} },
   B: { CAN:{w:1,d:1,l:0,gf:7,ga:1}, SUI:{w:1,d:1,l:0,gf:5,ga:2}, BIH:{w:0,d:1,l:1,gf:2,ga:5}, QAT:{w:0,d:1,l:1,gf:1,ga:7} },
   C: { BRA:{w:1,d:1,l:0,gf:4,ga:1}, MAR:{w:1,d:1,l:0,gf:2,ga:1}, SCO:{w:1,d:0,l:1,gf:1,ga:1}, HAI:{w:0,d:0,l:2,gf:0,ga:4} },
   D: { USA:{w:2,d:0,l:0,gf:6,ga:1}, AUS:{w:1,d:0,l:1,gf:2,ga:2}, PAR:{w:1,d:0,l:1,gf:2,ga:4}, TUR:{w:0,d:0,l:2,gf:0,ga:3} },
   E: { GER:{w:2,d:0,l:0,gf:9,ga:2}, CIV:{w:1,d:0,l:1,gf:2,ga:2}, ECU:{w:0,d:1,l:1,gf:0,ga:1}, CUW:{w:0,d:1,l:1,gf:1,ga:7} },
   F: { NED:{w:1,d:1,l:0,gf:7,ga:3}, JPN:{w:1,d:1,l:0,gf:6,ga:2}, SWE:{w:1,d:0,l:1,gf:6,ga:6}, TUN:{w:0,d:0,l:2,gf:1,ga:9} },
-  G: { NZL:{w:0,d:1,l:0,gf:2,ga:2}, IRN:{w:0,d:1,l:0,gf:2,ga:2}, BEL:{w:0,d:1,l:0,gf:1,ga:1}, EGY:{w:0,d:1,l:0,gf:1,ga:1} },
-  H: { URU:{w:0,d:1,l:0,gf:1,ga:1}, KSA:{w:0,d:1,l:0,gf:1,ga:1}, ESP:{w:0,d:1,l:0,gf:0,ga:0}, CPV:{w:0,d:1,l:0,gf:0,ga:0} },
+  // Group G — updated with the Jun 21 matchday-2 results: Belgium 0-0 Iran, Egypt 3-1 New Zealand
+  G: { EGY:{w:1,d:1,l:0,gf:4,ga:2}, IRN:{w:0,d:2,l:0,gf:2,ga:2}, BEL:{w:0,d:2,l:0,gf:1,ga:1}, NZL:{w:0,d:1,l:1,gf:3,ga:5} },
+  // Group H — updated with the Jun 21 matchday-2 results: Spain 4-0 Saudi Arabia, Uruguay 2-2 Cabo Verde
+  H: { ESP:{w:1,d:1,l:0,gf:4,ga:0}, URU:{w:0,d:2,l:0,gf:3,ga:3}, CPV:{w:0,d:2,l:0,gf:2,ga:2}, KSA:{w:0,d:1,l:1,gf:1,ga:5} },
+  // Groups I & J: matchday-2 (France-Iraq/Norway-Senegal, Argentina-Austria/Jordan-Algeria) is scheduled
+  // for later today, June 22 — not yet played as of this update, so only matchday-1 is reflected.
   I: { NOR:{w:1,d:0,l:0,gf:4,ga:1}, FRA:{w:1,d:0,l:0,gf:3,ga:1}, SEN:{w:0,d:0,l:1,gf:1,ga:3}, IRQ:{w:0,d:0,l:1,gf:1,ga:4} },
   J: { ARG:{w:1,d:0,l:0,gf:3,ga:0}, AUT:{w:1,d:0,l:0,gf:3,ga:1}, JOR:{w:0,d:0,l:1,gf:1,ga:3}, ALG:{w:0,d:0,l:1,gf:0,ga:3} },
   K: { COL:{w:1,d:0,l:0,gf:3,ga:1}, POR:{w:0,d:1,l:0,gf:1,ga:1}, COD:{w:0,d:1,l:0,gf:1,ga:1}, UZB:{w:0,d:0,l:1,gf:1,ga:3} },
@@ -8971,12 +8975,12 @@ const WC_SEED_GROUP_RESULTS_20260621 = {
 async function wcLoadSeedGroupResults() {
   if (!(typeof state !== 'undefined' && state.isAdmin)) return;
   const msg = (CURRENT_LANG === 'en')
-    ? 'Load the verified group-stage results (as of June 21, 2026)? This will overwrite any standings already entered.'
-    : 'تحميل نتائج دور المجموعات الموثَّقة (حتى 21 يونيو 2026)؟ سيتم استبدال أي ترتيب مُدخَل حالياً.';
+    ? 'Load the verified group-stage results (as of June 22, 2026 — before today\'s Group I/J matches)? This will overwrite any standings already entered.'
+    : 'تحميل نتائج دور المجموعات الموثَّقة (حتى 22 يونيو 2026 — قبل مباريات اليوم لمجموعتي I وJ)؟ سيتم استبدال أي ترتيب مُدخَل حالياً.';
   if (!confirm(msg)) return;
   if (!wcState.results.groupStats) wcState.results.groupStats = {};
-  Object.keys(WC_SEED_GROUP_RESULTS_20260621).forEach(gid => {
-    wcState.results.groupStats[gid] = JSON.parse(JSON.stringify(WC_SEED_GROUP_RESULTS_20260621[gid]));
+  Object.keys(WC_SEED_GROUP_RESULTS_20260622).forEach(gid => {
+    wcState.results.groupStats[gid] = JSON.parse(JSON.stringify(WC_SEED_GROUP_RESULTS_20260622[gid]));
     wcSyncGroupQualifiers(gid);
   });
   try {
