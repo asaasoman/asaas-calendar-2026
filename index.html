@@ -1403,6 +1403,8 @@ html[dir="ltr"] body { font-family: 'Co Headline', 'Tajawal', system-ui, sans-se
 .btn-danger:hover { background: #F5DDD9; border-color: var(--danger); }
 .btn-ghost { background: transparent; border-color: transparent; }
 .btn-sm { padding: 6px 12px; font-size: 12.5px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn:disabled:hover { transform: none; box-shadow: none; border-color: var(--border); }
 
 .control-menu-wrap { position: relative; }
 .admin-dot {
@@ -3735,6 +3737,7 @@ html.view-wc .hide-on-wc { display: none !important; }
           </div>
           <div class="cw-controls">
             <button class="btn btn-primary" id="cwCheckBtn" type="button" data-i18n="cw.check">✓ تحقّق من الإجابات</button>
+            <button class="btn btn-ghost" id="cwHintBtn" type="button">💡 مساعدة</button>
             <button class="btn btn-ghost" id="cwResetBtn" type="button" data-i18n="cw.reset">↺ إعادة المحاولة</button>
           </div>
         </div>
@@ -8380,6 +8383,88 @@ function cwResetPuzzle() {
   cwMarkActiveClue();
 }
 
+// ────────────────────────────────────────────────────────────────
+// Help / hint button — reveals one full clue's answer. Capped at
+// CW_MAX_HINTS uses *total*, shared across all 15 puzzles (not reset
+// per level/puzzle), tracked locally per device/browser.
+// ────────────────────────────────────────────────────────────────
+const CW_MAX_HINTS = 3;
+const CW_LS_HINTS_USED = 'asaas_cw_hints_used';
+
+function cwGetHintsUsed() { return parseInt(localStorage.getItem(CW_LS_HINTS_USED) || '0', 10); }
+function cwGetHintsLeft() { return Math.max(0, CW_MAX_HINTS - cwGetHintsUsed()); }
+
+function cwIsWordSolved(model, idx) {
+  const w = model.words[idx];
+  const letters = Array.from(w.answer);
+  for (let i = 0; i < letters.length; i++) {
+    const r = w.direction === 'down'   ? w.row + i : w.row;
+    const c = w.direction === 'across' ? w.col + i : w.col;
+    const inputEl = document.querySelector(`#crosswordSection .cw-input[data-row="${r}"][data-col="${c}"]`);
+    if (!inputEl || cwNormalize(inputEl.value) !== cwNormalize(letters[i])) return false;
+  }
+  return true;
+}
+
+// Picks the first not-yet-solved clue in reading order (lowest clue number).
+function cwFindFirstUnsolvedWord(model) {
+  const sorted = model.words.slice().sort((a, b) => a.number - b.number);
+  for (const w of sorted) {
+    if (!cwIsWordSolved(model, w._idx)) return w._idx;
+  }
+  return null;
+}
+
+function cwRenderHintButton() {
+  const btn = document.getElementById('cwHintBtn');
+  if (!btn) return;
+  const left = cwGetHintsLeft();
+  btn.textContent = (CURRENT_LANG === 'en')
+    ? `💡 Hint (${left} left)`
+    : `💡 مساعدة (متبقّي ${mArabicNum(left)})`;
+  btn.disabled = left <= 0;
+  btn.title = (CURRENT_LANG === 'en')
+    ? 'Reveals one full clue\'s answer. Limited to 3 uses total across all 15 puzzles.'
+    : 'يكشف إجابة سؤال واحد كاملة. محدود بـ 3 استخدامات فقط في كل الألغاز الـ15.';
+}
+
+function cwUseHint() {
+  if (!cwModel) return;
+  if (cwGetHintsLeft() <= 0) return; // button is disabled in this state, but guard anyway
+
+  // Solve the currently selected clue if there is one and it isn't already
+  // solved; otherwise fall back to the first unsolved clue in the puzzle.
+  let idx = cwActiveWordIdx;
+  if (idx == null || cwIsWordSolved(cwModel, idx)) {
+    idx = cwFindFirstUnsolvedWord(cwModel);
+  }
+  if (idx == null) {
+    alert((CURRENT_LANG === 'en') ? 'This puzzle is already fully solved!' : 'اللغز محلول بالكامل!');
+    return;
+  }
+
+  const w = cwModel.words[idx];
+  const letters = Array.from(w.answer);
+  letters.forEach((ch, i) => {
+    const r = w.direction === 'down'   ? w.row + i : w.row;
+    const c = w.direction === 'across' ? w.col + i : w.col;
+    const inputEl = document.querySelector(`#crosswordSection .cw-input[data-row="${r}"][data-col="${c}"]`);
+    if (inputEl) {
+      inputEl.value = ch;
+      inputEl.classList.remove('wrong');
+      inputEl.classList.add('correct');
+    }
+  });
+
+  localStorage.setItem(CW_LS_HINTS_USED, String(cwGetHintsUsed() + 1));
+
+  cwActiveWordIdx = idx;
+  cwHighlightActiveWord(cwModel);
+  cwMarkActiveClue();
+  cwRenderHintButton();
+}
+window.addEventListener('langchange', () => { try { cwRenderHintButton(); } catch (e) {} });
+
 function cwLoadLevel(index) {
   cwLevelIndex = index;
   cwModel = cwBuildModel(CW_LEVELS[index].words);
@@ -8390,6 +8475,7 @@ function cwLoadLevel(index) {
   const statusEl = document.getElementById('cwStatus');
   if (statusEl) statusEl.classList.remove('show', 'success');
   cwHideWinNamePrompt();
+  cwRenderHintButton();
 }
 
 function cwGetMyWins() {
@@ -8594,8 +8680,11 @@ function subscribeCwScores() {
 function initCrossword() {
   const checkBtn = document.getElementById('cwCheckBtn');
   const resetBtn = document.getElementById('cwResetBtn');
+  const hintBtn  = document.getElementById('cwHintBtn');
   if (checkBtn) checkBtn.onclick = () => cwCheckAnswers();
   if (resetBtn) resetBtn.onclick = () => cwResetPuzzle();
+  if (hintBtn)  hintBtn.onclick  = () => cwUseHint();
+  cwRenderHintButton();
 
   cwInitPlayer();
   if (!cwPlayerName) {
