@@ -2604,6 +2604,55 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-gs-seed-btn:hover { background: var(--green-dark); transform: translateY(-1px); }
 
+.wc-gs-live-block { margin-bottom: 14px; }
+.wc-gs-live-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.wc-gs-live-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green); color: #FFFDF8;
+  border: none; border-radius: 8px;
+  padding: 8px 16px;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: background .15s, transform .1s;
+  position: relative;
+}
+.wc-gs-live-btn::before {
+  content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: #6CE08A; margin-inline-end: 2px;
+  animation: wcLivePulse 1.6s infinite ease-in-out;
+}
+@keyframes wcLivePulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+.wc-gs-live-btn:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); }
+.wc-gs-live-btn:disabled { opacity: .7; cursor: wait; transform: none; }
+.wc-gs-live-status { font-size: 11.5px; color: var(--text-mute); }
+.wc-gs-fallback-btn {
+  display: block; margin-top: 8px; margin-bottom: 0;
+  background: transparent; color: var(--text-mute);
+  border: 1px dashed var(--border);
+}
+.wc-gs-fallback-btn:hover { background: var(--beige); color: var(--text); }
+.wc-gs-key-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--beige); border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 10px;
+}
+.wc-gs-key-label { font-size: 12px; color: var(--text); flex: 1 1 100%; line-height: 1.5; }
+.wc-gs-key-input {
+  flex: 1 1 160px; min-width: 140px;
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 7px 10px; font-size: 12.5px;
+  font-family: inherit; background: var(--card); color: var(--text);
+}
+.wc-gs-key-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px rgba(49,92,59,.1); }
+.wc-gs-key-save {
+  background: var(--green); color: #FFFDF8; border: none; border-radius: 8px;
+  padding: 7px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+}
+.wc-gs-key-save:hover { background: var(--green-dark); }
+.wc-gs-key-help { font-size: 11.5px; color: var(--clay); text-decoration: none; }
+.wc-gs-key-help:hover { text-decoration: underline; }
+.wc-gs-live-note { font-size: 11px; color: var(--text-mute); line-height: 1.6; margin-top: 6px; }
+
 .wc-knockout-stage { margin-bottom: 22px; }
 .wc-stage-title {
   font-family: 'Co Headline', 'Tajawal', sans-serif;
@@ -4149,7 +4198,22 @@ const I18N = {
     'wc.gs.gd':                'فرق',
     'wc.gs.pts':               'نقاط',
     'wc.gs.pending':           '— لم تُلعب مباريات بعد —',
-    'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 22 يونيو)',
+    'wc.gs.loadSeed':          'تحميل آخر نسخة احتياطية يدوية (حتى 22 يونيو)',
+    'wc.gs.loadLivePrefix':    'تحديث النتائج من الإنترنت',
+    'wc.gs.until':             'حتى',
+    'wc.gs.loadingLive':       'جارٍ الجلب من الإنترنت…',
+    'wc.gs.liveSuccess':       'تم تحديث الترتيب حتى لحظة الضغط.',
+    'wc.gs.liveEmpty':         'لم يصل أي ترتيب من المصدر — تحقّق من المفتاح أو حاول لاحقاً.',
+    'wc.gs.liveError':         'تعذّر الجلب المباشر. تحقّق من الاتصال أو استخدم النسخة اليدوية الاحتياطية أدناه.',
+    'wc.gs.keyInvalid':        'المفتاح غير صالح أو منتهي. تحقّق منه في حسابك على football-data.org.',
+    'wc.gs.rateLimited':       'تجاوزت الحد المسموح من الطلبات (10/دقيقة على الباقة المجانية). انتظر دقيقة وحاول مجدداً.',
+    'wc.gs.keyMissing':        'لتفعيل التحديث المباشر، أدخل مفتاح API مجاني من football-data.org:',
+    'wc.gs.keyPlaceholder':    'مفتاح API',
+    'wc.gs.keySave':           'حفظ المفتاح',
+    'wc.gs.keySaveError':      'تعذّر حفظ المفتاح. حاول مرة أخرى.',
+    'wc.gs.keyHelp':           'احصل على مفتاح مجاني ←',
+    'wc.gs.lastLiveUpdate':    'آخر تحديث مباشر:',
+    'wc.gs.liveNote':          'ملاحظة: يعتمد التحديث المباشر على football-data.org (باقة مجانية، نتائج قد تتأخر بضع دقائق). المفتاح يظهر في كود المتصفح لأي زائر لهذه الصفحة — استخدم مفتاحاً مجانياً مخصصاً لهذا الموقع فقط، لا مفتاحاً تستخدمه في مكان آخر.',
     'wc.admin.ko':             '— مواجهات ونتائج',
     'wc.admin.matches':       'مباراة',
     'wc.admin.selectTeam':    '— اختر منتخب —',
@@ -4383,7 +4447,22 @@ const I18N = {
     'wc.gs.gd':                'GD',
     'wc.gs.pts':               'Pts',
     'wc.gs.pending':           '— No matches played yet —',
-    'wc.gs.loadSeed':          'Load current results (as of June 22)',
+    'wc.gs.loadSeed':          'Load last manual backup (as of June 22)',
+    'wc.gs.loadLivePrefix':    'Update results from the web',
+    'wc.gs.until':             'as of',
+    'wc.gs.loadingLive':       'Fetching from the web…',
+    'wc.gs.liveSuccess':       'Standings updated to the moment you clicked.',
+    'wc.gs.liveEmpty':         'No standings came back from the source — check the key or try again later.',
+    'wc.gs.liveError':         'Live fetch failed. Check your connection, or use the manual backup below.',
+    'wc.gs.keyInvalid':        'Invalid or expired key. Check it in your football-data.org account.',
+    'wc.gs.rateLimited':       'You hit the request limit (10/min on the free plan). Wait a minute and try again.',
+    'wc.gs.keyMissing':        'To enable live updates, enter a free football-data.org API key:',
+    'wc.gs.keyPlaceholder':    'API key',
+    'wc.gs.keySave':           'Save key',
+    'wc.gs.keySaveError':      'Could not save the key. Try again.',
+    'wc.gs.keyHelp':           'Get a free key ←',
+    'wc.gs.lastLiveUpdate':    'Last live update:',
+    'wc.gs.liveNote':          'Note: live updates rely on football-data.org (free tier, results can lag a few minutes). The key is visible in this page\'s browser code to any visitor — use a free key dedicated to this site only, not one you use elsewhere.',
     'wc.admin.ko':            '— Matchups and results',
     'wc.admin.matches':       'matches',
     'wc.admin.selectTeam':    '— Select a team —',
@@ -8719,6 +8798,7 @@ initCrossword();
 
 const WC_PRED_DOC = db.collection('calendar').doc('wc_predictions');
 const WC_RESULTS_DOC = db.collection('calendar').doc('wc_results');
+const WC_CONFIG_DOC = db.collection('calendar').doc('wc_config'); // { apiKey: '<football-data.org key>' }
 
 // ────────────────────────────────────────────────────────────────
 // 🔧 EDITABLE CONFIG — stage timings & scoring rules
@@ -8823,6 +8903,13 @@ const wcState = {
   draft: null,
   now: Date.now(),
 };
+
+// Shared football-data.org API key for the live "update from the web" button below.
+// Stored in Firestore (calendar/wc_config) so any admin can set it once from the UI —
+// no source edit needed. NOTE: because this whole app is static client-side JS, this
+// key is visible to any visitor in the browser network tab / page source. Use a free
+// key dedicated to this site only (see wc.gs.liveNote text shown next to the button).
+let wcLiveApiKey = '';
 
 const WC_LS_PLAYER = 'asaas_wc_player';
 
@@ -8955,6 +9042,11 @@ function wcSubscribe() {
     });
     wcMaybeRender('results');
   }, err => console.error('[WC] results sub error:', err));
+
+  WC_CONFIG_DOC.onSnapshot(snap => {
+    wcLiveApiKey = (snap.exists && snap.data().apiKey) ? String(snap.data().apiKey).trim() : '';
+    wcMaybeRender('config');
+  }, err => console.error('[WC] config sub error:', err));
 }
 
 function wcMaybeRender(source) {
@@ -9089,6 +9181,132 @@ async function wcLoadSeedGroupResults() {
   wcRender();
 }
 window.wcLoadSeedGroupResults = wcLoadSeedGroupResults;
+
+// ────────────────────────────────────────────────────────────────
+// Live results — pulls real, current group-stage standings from
+// football-data.org's free API at the moment the admin clicks the
+// button, instead of a fixed hand-typed snapshot. Same write path
+// as manual entry (wcSyncGroupQualifiers + wcSaveResults), so it
+// triggers the normal live recalculation for every participant.
+//
+// Free tier: 10 requests/minute, World Cup included, scores can lag
+// the real match by a few minutes. The API key is entered once by
+// an admin (saved to calendar/wc_config in Firestore) and is then
+// visible to anyone who opens this page's browser dev tools — use a
+// throwaway free key for this site only, never a key used elsewhere.
+// ────────────────────────────────────────────────────────────────
+const WC_LIVE_STANDINGS_URL = 'https://api.football-data.org/v4/competitions/WC/standings';
+
+function wcTodayLabel() {
+  const d = new Date();
+  if (CURRENT_LANG === 'en') {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}`;
+  }
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+function wcLiveButtonLabel() {
+  return `📡 ${t('wc.gs.loadLivePrefix')} (${t('wc.gs.until')} ${wcTodayLabel()})`;
+}
+
+function wcFmtTimeShort(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const hh = String(d.getHours()).padStart(2,'0'), mm = String(d.getMinutes()).padStart(2,'0');
+  if (CURRENT_LANG === 'en') {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}, ${hh}:${mm}`;
+  }
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return `${d.getDate()} ${months[d.getMonth()]} · ${hh}:${mm}`;
+}
+
+// Calls football-data.org and reshapes its response into the same
+// { groupId: { TEAMCODE: {w,d,l,gf,ga} } } shape used by the manual
+// seed above, matched via the official FIFA 3-letter team code ("tla").
+async function wcFetchLiveGroupStats(apiKey) {
+  const res = await fetch(WC_LIVE_STANDINGS_URL, { headers: { 'X-Auth-Token': apiKey } });
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) throw new Error('badkey');
+    if (res.status === 429) throw new Error('ratelimit');
+    throw new Error('http' + res.status);
+  }
+  const data = await res.json();
+  const out = {};
+  (data.standings || []).forEach(block => {
+    if (block.type && block.type !== 'TOTAL') return; // skip home/away splits, keep overall table
+    const gid = String(block.group || '').replace('GROUP_', '').trim();
+    if (!gid || !WC_GROUPS.some(g => g.id === gid)) return;
+    (block.table || []).forEach(row => {
+      const code = row.team && row.team.tla;
+      if (!code || !WC_TEAM_MAP[code]) return;
+      if (!out[gid]) out[gid] = {};
+      out[gid][code] = {
+        w:  Number(row.won) || 0,
+        d:  Number(row.draw) || 0,
+        l:  Number(row.lost) || 0,
+        gf: Number(row.goalsFor) || 0,
+        ga: Number(row.goalsAgainst) || 0,
+      };
+    });
+  });
+  return out;
+}
+
+// Admin-only: fetches the live table right now and writes it straight
+// into the shared standings — same effect as typing it in by hand.
+async function wcLoadLiveGroupResults() {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  if (!wcLiveApiKey) { alert(t('wc.gs.keyMissing')); return; }
+
+  const btn = document.getElementById('wcLiveBtn');
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ ' + t('wc.gs.loadingLive'); }
+
+  try {
+    const live = await wcFetchLiveGroupStats(wcLiveApiKey);
+    const groupIds = Object.keys(live);
+    if (groupIds.length === 0) { alert(t('wc.gs.liveEmpty')); return; }
+
+    if (!wcState.results.groupStats) wcState.results.groupStats = {};
+    groupIds.forEach(gid => {
+      wcState.results.groupStats[gid] = live[gid];
+      wcSyncGroupQualifiers(gid);
+    });
+    wcState.results.lastLiveUpdate = Date.now();
+    await wcSaveResults();
+    wcRender();
+  } catch (e) {
+    console.error('[WC] live fetch error:', e);
+    const msg = e.message === 'badkey'    ? t('wc.gs.keyInvalid')
+              : e.message === 'ratelimit' ? t('wc.gs.rateLimited')
+              : t('wc.gs.liveError');
+    alert(msg);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml || wcLiveButtonLabel(); }
+  }
+}
+window.wcLoadLiveGroupResults = wcLoadLiveGroupResults;
+
+// Admin-only: saves the football-data.org key once to Firestore so every
+// admin sees the live button instead of the key-entry prompt afterward.
+async function wcSaveLiveApiKey() {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  const inp = document.getElementById('wcLiveKeyInput');
+  const key = inp ? inp.value.trim() : '';
+  if (!key) return;
+  try {
+    await WC_CONFIG_DOC.set({ apiKey: key, updatedAt: Date.now() }, { merge: true });
+    wcLiveApiKey = key;
+    wcRender();
+  } catch (e) {
+    console.error('[WC] save key error:', e);
+    alert(t('wc.gs.keySaveError'));
+  }
+}
+window.wcSaveLiveApiKey = wcSaveLiveApiKey;
 
 // Admin-only: manually open/close a stage, or revert to auto (time-based)
 async function wcSetStageOverride(stageId, mode) {
@@ -9727,7 +9945,23 @@ function wcRenderAdmin() {
     <div class="wc-admin-section">
       <div class="wc-admin-section-title">${t('wc.admin.groups')}</div>
       <div class="wc-gs-hint">${t('wc.gs.hint')}</div>
-      <button class="wc-gs-seed-btn" onclick="wcLoadSeedGroupResults()">📥 ${t('wc.gs.loadSeed')}</button>
+      <div class="wc-gs-live-block">
+        ${!wcLiveApiKey ? `
+          <div class="wc-gs-key-row">
+            <span class="wc-gs-key-label">${t('wc.gs.keyMissing')}</span>
+            <input id="wcLiveKeyInput" class="wc-gs-key-input" type="text" placeholder="${t('wc.gs.keyPlaceholder')}" autocomplete="off" />
+            <button class="wc-gs-key-save" onclick="wcSaveLiveApiKey()">${t('wc.gs.keySave')}</button>
+            <a class="wc-gs-key-help" href="https://www.football-data.org/client/register" target="_blank" rel="noopener noreferrer">${t('wc.gs.keyHelp')}</a>
+          </div>
+        ` : `
+          <div class="wc-gs-live-row">
+            <button id="wcLiveBtn" class="wc-gs-live-btn" onclick="wcLoadLiveGroupResults()">${wcLiveButtonLabel()}</button>
+            ${wcState.results.lastLiveUpdate ? `<span class="wc-gs-live-status">${t('wc.gs.lastLiveUpdate')} ${wcFmtTimeShort(wcState.results.lastLiveUpdate)}</span>` : ''}
+          </div>
+        `}
+        <button class="wc-gs-seed-btn wc-gs-fallback-btn" onclick="wcLoadSeedGroupResults()">📥 ${t('wc.gs.loadSeed')}</button>
+        <div class="wc-gs-live-note">${t('wc.gs.liveNote')}</div>
+      </div>
       <div class="wc-groups-grid wc-gs-grid">
         ${WC_GROUPS.map(g => wcRenderGroupStandingsAdmin(g)).join('')}
       </div>
@@ -9840,6 +10074,14 @@ function wcWireEvents() {
     };
     document.getElementById('wcNameInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') regBtn.click();
+    });
+  }
+
+  // Live results API key input (admin)
+  const keyInput = document.getElementById('wcLiveKeyInput');
+  if (keyInput) {
+    keyInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') wcSaveLiveApiKey();
     });
   }
 
