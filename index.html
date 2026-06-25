@@ -9636,8 +9636,21 @@ function wcRenderLeaderboard() {
   const delLabel = (CURRENT_LANG === 'en') ? 'Delete participant' : 'حذف المشارك';
   const viewLabel = (CURRENT_LANG === 'en') ? 'View predictions' : 'عرض التوقعات';
 
+  // Competition ranking ("1224"): tied scores share the same rank;
+  // the next distinct score skips ahead by the number of tied entries.
+  const ranks = [];
+  let lastRank = 0;
+  let lastScore = null;
+  for (let i = 0; i < ranked.length; i++) {
+    if (ranked[i].score !== lastScore) {
+      lastRank = i + 1;
+      lastScore = ranked[i].score;
+    }
+    ranks.push(lastRank);
+  }
+
   const rows = ranked.map((p, i) => {
-    const rank = i + 1;
+    const rank = ranks[i];
     const isMe = p.id === wcState.myId;
     const cls = rank === 1 ? 'gold' : '';
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
