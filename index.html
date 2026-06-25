@@ -9636,14 +9636,14 @@ function wcRenderLeaderboard() {
   const delLabel = (CURRENT_LANG === 'en') ? 'Delete participant' : 'حذف المشارك';
   const viewLabel = (CURRENT_LANG === 'en') ? 'View predictions' : 'عرض التوقعات';
 
-  // Competition ranking ("1224"): tied scores share the same rank;
-  // the next distinct score skips ahead by the number of tied entries.
+  // Dense ranking ("1223"): tied scores share the same rank;
+  // the next distinct score increments by exactly 1, never skipping a rank.
   const ranks = [];
   let lastRank = 0;
   let lastScore = null;
   for (let i = 0; i < ranked.length; i++) {
     if (ranked[i].score !== lastScore) {
-      lastRank = i + 1;
+      lastRank = lastRank + 1;
       lastScore = ranked[i].score;
     }
     ranks.push(lastRank);
