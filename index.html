@@ -1098,6 +1098,54 @@
 .cw-subtitle { font-size: 13px; color: var(--text-mute); margin-top: 2px; }
 .cw-howto { font-size: 12px; color: var(--text-mute); margin-top: 8px; max-width: 620px; line-height: 1.7; }
 
+/* Progress bar (puzzles solved out of 15) */
+.cw-progress {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.cw-progress-label {
+  color: var(--text); font-weight: 700; flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+}
+.cw-progress-bar {
+  flex: 1; min-width: 80px;
+  height: 8px;
+  background: var(--border-soft);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.cw-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--green-dark));
+  border-radius: 999px;
+  transition: width .6s cubic-bezier(.34,1.56,.64,1);
+  width: 0%;
+}
+.cw-progress-count {
+  font-weight: 800; color: var(--green-dark); flex-shrink: 0;
+  font-variant-numeric: tabular-nums; font-size: 14px;
+}
+.cw-progress-count .cw-progress-extra {
+  color: var(--text-mute); font-weight: 600; font-size: 12px; margin-inline-start: 4px;
+}
+/* Brief celebration pulse on the progress bar when a puzzle is solved */
+.cw-progress.celebrate {
+  animation: cwProgressPulse .9s ease;
+  border-color: var(--green-light);
+  background: var(--green-tint);
+}
+@keyframes cwProgressPulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.025); }
+  100% { transform: scale(1); }
+}
+
 .cw-status {
   display: none;
   align-items: center; gap: 12px;
@@ -3784,6 +3832,7 @@ html.view-wc .hide-on-wc { display: none !important; }
 
     <div id="cwPlayArea">
       <div class="cw-player-bar" id="cwPlayerBar"></div>
+      <div class="cw-progress" id="cwProgress"></div>
 
       <div class="cw-status" id="cwStatus">
         <span class="cw-stamp" id="cwStamp">النتيجة</span>
@@ -4099,6 +4148,11 @@ const I18N = {
     'cw.register.hint':       'العب الآن! سيُطلب اسمك فقط عند فوزك الأول لإضافتك إلى لوحة الترتيب.',
     'cw.lb.title':            '🏆 ترتيب اللاعبين',
     'cw.lb.sub':              'عدد مرات الفوز بحلّ اللغز كاملاً',
+    // Progress & encouragements (Crossword)
+    'cw.progress.label':       '🎯 تقدّمك:',
+    'cw.progress.outOf':       'من',
+    'cw.progress.extraRounds': 'جولة مكتملة +',
+    'cw.progress.allDone':     'أكملت كل الـ ١٥ لغزاً!',
 
     // ── WC launcher ────────────────────────────────────────────
     'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
@@ -4342,6 +4396,11 @@ const I18N = {
     'cw.register.hint':       'Play now! Your name will only be asked for the first time you win, to add you to the leaderboard.',
     'cw.lb.title':            '🏆 Player rankings',
     'cw.lb.sub':              'Number of times each player has fully solved a puzzle',
+    // Progress & encouragements (Crossword)
+    'cw.progress.label':       '🎯 Your progress:',
+    'cw.progress.outOf':       'of',
+    'cw.progress.extraRounds': 'full round +',
+    'cw.progress.allDone':     'All 15 puzzles complete!',
 
     'wc.launcher.eyebrow':    'FIFA WORLD CUP · 2026',
     'wc.launcher.title':      'World Cup Prediction Challenge',
@@ -8242,6 +8301,101 @@ let cwAdvanceTimer = null;
 
 function cwGetLocalWins() { return parseInt(localStorage.getItem('asaas_cw_local_wins') || '0', 10); }
 
+// ─── Encouragement bank: 18 messages, sampled at random after each win.
+//     A handful escalate based on how many puzzles the player has solved,
+//     so a first-time solver sees a different vibe than someone on their 12th.
+const CW_ENCOURAGEMENTS_AR = [
+  '🎉 ممتاز! حلٌّ متقن — ننتقل للّغز التالي…',
+  '🌟 رائع! استمر على هذا الإيقاع.',
+  '🔥 أحسنت! دماغك في كامل لياقته اليوم.',
+  '💫 عمل جميل — لغز جديد بانتظارك!',
+  '👏 إجابات صحيحة بالكامل — مذهل!',
+  '🚀 سرعة وذكاء — انطلق للّغز التالي!',
+  '🏆 أنت في المسار الصحيح — استمر!',
+  '✨ متقن! خطوة أقرب لإكمال السلسلة.',
+  '💎 حلّ نظيف — دقّةٌ وثبات.',
+  '🎯 إصابة كاملة — لغز آخر يا بطل!',
+  '🌱 كل لغز يُنمّي مفرداتك — برافو!',
+  '🧠 ذكاء حادّ! استحقّيت اللغز التالي.',
+  '⚡ سريع ودقيق — لغز جديد قادم!',
+  '🎊 رائع جداً! لا تتوقّف الآن.',
+  '🥇 أداء بطولي — للأمام دائماً!',
+];
+
+// Sustained-streak bonus lines (used after many wins to keep it fresh)
+const CW_ENCOURAGEMENTS_STREAK_AR = [
+  '🔥 سلسلة مذهلة! أصبحت محترفاً.',
+  '👑 ملك الكلمات المتقاطعة — استمر!',
+  '🌠 لا يُوقَفون! للغز التالي…',
+];
+
+const CW_ENCOURAGEMENTS_EN = [
+  '🎉 Excellent! A clean solve — moving to the next puzzle…',
+  '🌟 Brilliant! Keep that rhythm going.',
+  '🔥 Nicely done! Your brain is firing today.',
+  '💫 Great work — a new puzzle is waiting!',
+  '👏 All answers correct — amazing!',
+  '🚀 Sharp and fast — on to the next one!',
+  '🏆 You\'re on the right track — keep at it!',
+  '✨ Perfect! One step closer to the full set.',
+  '💎 A polished solve — precise and steady.',
+  '🎯 Bullseye! One more puzzle, champ.',
+  '🌱 Every puzzle stretches your vocabulary — well done!',
+  '🧠 Sharp mind! You\'ve earned the next one.',
+  '⚡ Fast and accurate — next puzzle incoming!',
+  '🎊 Fantastic! Don\'t stop now.',
+  '🥇 Championship-grade — forward!',
+];
+const CW_ENCOURAGEMENTS_STREAK_EN = [
+  '🔥 Incredible streak! You\'ve gone pro.',
+  '👑 Crossword royalty — keep going!',
+  '🌠 Unstoppable! On to the next…',
+];
+
+function cwGetEncouragement(winsAfter) {
+  const isEn = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'en');
+  const bank = (winsAfter >= 8 ? (isEn ? CW_ENCOURAGEMENTS_STREAK_EN : CW_ENCOURAGEMENTS_STREAK_AR) : [])
+    .concat(isEn ? CW_ENCOURAGEMENTS_EN : CW_ENCOURAGEMENTS_AR);
+  return bank[Math.floor(Math.random() * bank.length)];
+}
+
+// ─── Progress bar: shows X / 15 puzzles solved this round. When the player
+//     loops past 15 we keep a small "+1 full round" tag so they still see
+//     forward momentum.
+function cwRenderProgress(celebrate) {
+  const wrap = document.getElementById('cwProgress');
+  if (!wrap) return;
+  const totalWins = cwPlayerName ? cwGetMyWins() : cwGetLocalWins();
+  const TOTAL = CW_LEVELS.length; // 15
+  const rounds = Math.floor(totalWins / TOTAL);
+  const inRound = totalWins % TOTAL;
+  // When the player has just finished a full round (inRound === 0 after wins > 0),
+  // show "15 / 15" instead of "0 / 15" until the next puzzle loads.
+  const display = (totalWins > 0 && inRound === 0) ? TOTAL : inRound;
+  const pct = Math.min(100, (display / TOTAL) * 100);
+  const isEn = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'en');
+  const extra = rounds > 0
+    ? `<span class="cw-progress-extra">(${t('cw.progress.extraRounds')}${rounds})</span>`
+    : '';
+  wrap.innerHTML = `
+    <div class="cw-progress-label">${t('cw.progress.label')}</div>
+    <div class="cw-progress-bar">
+      <div class="cw-progress-fill" style="width:${pct}%"></div>
+    </div>
+    <div class="cw-progress-count">
+      ${mArabicNum(display)} <span style="opacity:.55">${t('cw.progress.outOf')}</span> ${mArabicNum(TOTAL)}
+      ${extra}
+    </div>`;
+  if (celebrate) {
+    wrap.classList.remove('celebrate');
+    // Force reflow so the animation re-triggers
+    void wrap.offsetWidth;
+    wrap.classList.add('celebrate');
+    setTimeout(() => wrap.classList.remove('celebrate'), 1000);
+  }
+}
+window.addEventListener('langchange', () => { try { cwRenderProgress(false); } catch (e) {} });
+
 function cwBuildModel(words) {
   const cells = new Map(); // "r,c" -> { row, col, letter, words:[idx,...] }
   let maxRow = 0, maxCol = 0;
@@ -8449,16 +8603,23 @@ function cwCheckAnswers() {
   if (correct === total) {
     statusEl.classList.add('success');
     stampEl.textContent = '✓ تم الحل';
+    // Increment the local win counter FIRST so the progress bar & encouragement
+    // reflect the puzzle we just solved.
     if (cwPlayerName) {
-      textEl.textContent = 'رائع! حللت اللغز كاملاً — الانتقال للّغز التالي…';
       cwRegisterWin();
+      // Optimistic local count for the progress bar — Firestore will sync
+      // shortly but we want instant feedback.
+      const optimistic = cwGetMyWins() + 1;
+      textEl.textContent = cwGetEncouragement(optimistic);
     } else {
-      textEl.textContent = 'رائع! حللت اللغز كاملاً 🎉';
       localStorage.setItem('asaas_cw_local_wins', String(cwGetLocalWins() + 1));
+      textEl.textContent = cwGetEncouragement(cwGetLocalWins());
       cwShowWinNamePrompt();
     }
+    cwRenderProgress(true);   // animate the progress bar
+    cwRenderPlayerBar();      // update "won X times" line too
     clearTimeout(cwAdvanceTimer);
-    cwAdvanceTimer = setTimeout(() => { cwLoadLevel((cwLevelIndex + 1) % CW_LEVELS.length); }, 1700);
+    cwAdvanceTimer = setTimeout(() => { cwLoadLevel((cwLevelIndex + 1) % CW_LEVELS.length); }, 1900);
   } else {
     statusEl.classList.remove('success');
     stampEl.textContent = 'النتيجة';
@@ -8569,6 +8730,7 @@ function cwLoadLevel(index) {
   if (statusEl) statusEl.classList.remove('show', 'success');
   cwHideWinNamePrompt();
   cwRenderHintButton();
+  cwRenderProgress(false);
 }
 
 function cwGetMyWins() {
@@ -8613,6 +8775,7 @@ function cwChangeName() {
 
 function cwInitPlayer() {
   cwRenderPlayerBar();
+  cwRenderProgress(false);
 }
 
 function cwShowWinNamePrompt() {
@@ -8667,6 +8830,7 @@ async function cwSyncNameToFirestore(name) {
     console.error('[ASAAS] crossword name sync error:', err);
   }
   cwRenderPlayerBar();
+  cwRenderProgress(false);
 }
 
 async function cwRegisterWin() {
@@ -8762,6 +8926,7 @@ function subscribeCwScores() {
     CW_SCORES_DATA = snap.exists ? snap.data() : { players: [] };
     cwRenderLeaderboard();
     cwRenderPlayerBar();
+    cwRenderProgress(false);  // keep the X/15 bar in sync with the cloud
     if (cwPlayerId && !cwModel) cwLoadLevelForPlayer(); // first time we know the real win count
   }, err => {
     console.error('[ASAAS] crossword scores subscription error:', err);
