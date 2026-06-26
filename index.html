@@ -1345,7 +1345,9 @@ input, textarea, select { font-family: inherit; }
   pointer-events: none;
 }
 
-.brand { display: flex; align-items: center; gap: 14px; cursor: pointer; user-select: none; }
+.brand { display: flex; align-items: center; gap: 14px; cursor: pointer; user-select: none; transition: opacity .15s; }
+.brand:hover { opacity: .78; }
+.brand:active { opacity: .6; }
 .brand-mark {
   width: 50px; height: 50px;
   display: grid; place-items: center;
@@ -7529,6 +7531,32 @@ if (__wcBackBtn) {
     history.pushState('', document.title, window.location.pathname + window.location.search);
     applyRoute();
   };
+}
+
+// Brand/logo — clicking it always returns the user to the main page.
+const __brandEl = document.getElementById('brand');
+if (__brandEl) {
+  __brandEl.setAttribute('role', 'link');
+  __brandEl.setAttribute('tabindex', '0');
+  __brandEl.setAttribute('aria-label',
+    (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'en')
+      ? 'Go to home page'
+      : 'الذهاب إلى الصفحة الرئيسية');
+  const goHome = (e) => {
+    if (e) e.preventDefault();
+    // Clear any hash (e.g. #predictions) and return to the main view.
+    if (window.location.hash) {
+      history.pushState('', document.title, window.location.pathname + window.location.search);
+      applyRoute();
+    } else {
+      // Already on home — just scroll to top for feedback.
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+  __brandEl.addEventListener('click', goHome);
+  __brandEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') goHome(e);
+  });
 }
 
 // Initial dispatch + Firestore subscription
