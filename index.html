@@ -2592,6 +2592,20 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-variant-numeric: tabular-nums; color: var(--text);
 }
 .wc-gs-pts { color: var(--green-dark); }
+.wc-gs-cell {
+  width: 100%; text-align: center; padding: 4px 2px;
+  border: 1px solid var(--border-soft); border-radius: 6px;
+  background: var(--bg-2); color: var(--text);
+  font-weight: 700; font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.wc-gs-public-title {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  margin: 14px 0 4px; display: flex; align-items: center; gap: 6px;
+}
+.wc-gs-public-hint {
+  font-size: 12px; color: var(--text-mute); line-height: 1.55; margin-bottom: 12px;
+}
 .wc-gs-hint { font-size: 12px; color: var(--text-mute); line-height: 1.6; margin-bottom: 12px; }
 .wc-gs-seed-btn {
   display: inline-flex; align-items: center; gap: 6px;
@@ -4134,6 +4148,8 @@ const I18N = {
     'wc.gate.forceClosed':    'أغلق',
     'wc.gate.current':        'الحالة الحالية:',
     'wc.admin.groups':        '🏁 ترتيب المجموعات (يُحدَّث تلقائياً حسب نتائج المباريات)',
+    'wc.gs.publicTitle':       'الترتيب الحالي للمجموعات',
+    'wc.gs.publicHint':        'يُحدَّث الجدول مباشرةً بعد كل مباراة. المنتخبات الخضراء (✓) تأهّلت لدور الـ32.',
     'wc.gs.hint':              'أدخل عدد مباريات الفوز والتعادل والخسارة وعدد الأهداف له/عليه لكل منتخب — يُحسَب الترتيب والمتأهلان (أول فريقين) تلقائياً، وتتحدّث نقاط جميع المشاركين فوراً.',
     'wc.gs.w':                 'فاز',
     'wc.gs.d':                 'تعادل',
@@ -4364,6 +4380,8 @@ const I18N = {
     'wc.gate.forceClosed':    'Close',
     'wc.gate.current':        'Current status:',
     'wc.admin.groups':        '🏁 Group standings (updates automatically from match results)',
+    'wc.gs.publicTitle':       'Current group standings',
+    'wc.gs.publicHint':        'The table updates live after every match. Teams highlighted in green (✓) have qualified for the Round of 32.',
     'wc.gs.hint':              'Enter each team\'s wins, draws, losses, and goals for/against — the table and the two qualifiers are calculated automatically, and every participant\'s points update instantly.',
     'wc.gs.w':                 'W',
     'wc.gs.d':                 'D',
@@ -9488,6 +9506,7 @@ function wcRenderStageCard(stage) {
         <div class="wc-closed-line">${t('wc.closed.msg')}</div>
         ${myPred ? `<div class="wc-closed-points">${t('wc.closed.points')}: <strong>${myPts}</strong></div>` : ''}
         ${hasResults ? wcRenderStageSummary(stage, myPred, true) : ''}
+        ${stage.id === 'groups' ? wcRenderAllGroupStandingsPublic() : ''}
       </div>`;
   } else {
     // OPEN
@@ -9753,6 +9772,62 @@ function wcRenderAdmin() {
 
     <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-mute)">
       ${t('wc.admin.autosave')}
+    </div>`;
+}
+
+// Read-only standings table for visitors (mirrors the admin version
+// but renders divs instead of editable inputs).
+function wcRenderGroupStandingsPublic(g) {
+  const standings = wcGroupStandings(g.id);
+  const hasResults = wcGroupHasResults(g.id);
+  const qualBadge = hasResults
+    ? standings.slice(0, 2).map(r => wcFlagImg(r.code, 14)).join(' ')
+    : t('wc.gs.pending');
+
+  const rows = standings.map((r, i) => {
+    const rank = i + 1;
+    const qualified = hasResults && rank <= 2;
+    const gdStr = r.gd > 0 ? '+' + r.gd : r.gd;
+    return `
+      <div class="wc-gs-row ${qualified ? 'qualified' : ''}">
+        <div class="wc-gs-rank">${qualified ? '✓' : rank}</div>
+        <div class="wc-gs-team">${wcFlagImg(r.code, 16)}<span>${r.name}</span></div>
+        <div class="wc-gs-cell">${r.w}</div>
+        <div class="wc-gs-cell">${r.d}</div>
+        <div class="wc-gs-cell">${r.l}</div>
+        <div class="wc-gs-cell">${r.gf}</div>
+        <div class="wc-gs-cell">${r.ga}</div>
+        <div class="wc-gs-gd">${gdStr}</div>
+        <div class="wc-gs-pts">${r.pts}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="wc-group wc-gs-group ${hasResults ? 'complete' : ''}">
+      <div class="wc-group-header">
+        <div class="wc-group-label">${t('wc.group')} ${g.id}</div>
+        <div class="wc-group-progress">${qualBadge}</div>
+      </div>
+      <div class="wc-gs-scroll">
+        <div class="wc-gs-headrow">
+          <div></div><div></div>
+          <div>${t('wc.gs.w')}</div><div>${t('wc.gs.d')}</div><div>${t('wc.gs.l')}</div>
+          <div>${t('wc.gs.gf')}</div><div>${t('wc.gs.ga')}</div><div>${t('wc.gs.gd')}</div><div>${t('wc.gs.pts')}</div>
+        </div>
+        ${rows}
+      </div>
+    </div>`;
+}
+
+// Wraps all 12 group standings tables in a single block for visitors.
+function wcRenderAllGroupStandingsPublic() {
+  const anyResults = WC_GROUPS.some(g => wcGroupHasResults(g.id));
+  if (!anyResults) return '';
+  return `
+    <div class="wc-gs-public-title">📊 ${t('wc.gs.publicTitle')}</div>
+    <div class="wc-gs-public-hint">${t('wc.gs.publicHint')}</div>
+    <div class="wc-groups-grid wc-gs-grid">
+      ${WC_GROUPS.map(g => wcRenderGroupStandingsPublic(g)).join('')}
     </div>`;
 }
 
