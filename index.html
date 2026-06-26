@@ -2748,6 +2748,26 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   border-radius: 12px;
   overflow: hidden;
 }
+.wc-lb-view-hint {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--green-tint);
+  border: 1px solid var(--green-light);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 13px; line-height: 1.55;
+  color: var(--text);
+}
+.wc-lb-view-hint .wc-lb-view-hint-ico {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  background: var(--green); color: #FFFDF8;
+  border-radius: 50%;
+  font-size: 15px;
+}
+.wc-lb-view-hint .wc-lb-view-hint-text { flex: 1; min-width: 0; }
+.wc-lb-view-hint strong { color: var(--green-dark); }
 .wc-lb-header {
   background: var(--bg-2);
   display: grid;
@@ -4133,6 +4153,7 @@ const I18N = {
     'wc.lb.champOf':          'بطل توقعات',
     'wc.lb.champsOf':         'أبطال توقعات',
     'wc.lb.count':            'مشارك · يُحدَّث تلقائياً عند إدخال نتائج جديدة',
+    'wc.lb.viewHint':         'يمكنك مشاهدة توقعاتك وتوقعات منافسيك بالضغط على زر العين',
     'wc.lb.scoring':          'نظام النقاط:',
     'wc.lb.scoring.q':        'منتخب متأهّل صح',
     'wc.lb.scoring.qExact':   'ترتيب الأول والثاني مطابق تماماً',
@@ -4366,6 +4387,7 @@ const I18N = {
     'wc.lb.champOf':          'Champion of',
     'wc.lb.champsOf':         'Joint Champions of',
     'wc.lb.count':            'participants · Updated automatically when results are entered',
+    'wc.lb.viewHint':         'Tap the eye button to see your own predictions and those of any competitor',
     'wc.lb.scoring':          'Scoring:',
     'wc.lb.scoring.q':        'correct qualifier',
     'wc.lb.scoring.qExact':   'exact 1st & 2nd order',
@@ -9699,6 +9721,10 @@ function wcRenderLeaderboard() {
   return subTabs + champCard + `
     <div style="font-size:12.5px;color:var(--text-mute);margin-bottom:10px">
       ${ranked.length} ${t('wc.lb.count')}
+    </div>
+    <div class="wc-lb-view-hint">
+      <div class="wc-lb-view-hint-ico">👁</div>
+      <div class="wc-lb-view-hint-text">${t('wc.lb.viewHint')}</div>
     </div>
     <div class="wc-leaderboard ${isAdmin?'lb-admin':''}">
       <div class="wc-lb-header">
