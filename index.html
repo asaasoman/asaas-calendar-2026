@@ -5689,7 +5689,7 @@ function startNews() {
 
 /* ---------- Inspirational Quote ---------- */
 let quoteInterval = null;
-let quoteSessionHidden = false;  // session-only — never persisted, refresh always brings it back
+let quoteSessionHidden = true;  // hidden by default — only shown when the user taps the lightbulb 💡
 function getQuoteDirection(text) {
   const arabicChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
   const englishChars = (text.match(/[A-Za-z]/g) || []).length;
