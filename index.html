@@ -4143,7 +4143,7 @@ const I18N = {
     'wc.gs.gd':                'فرق',
     'wc.gs.pts':               'نقاط',
     'wc.gs.pending':           '— لم تُلعب مباريات بعد —',
-    'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 25 يونيو)',
+    'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 26 يونيو)',
     'wc.admin.ko':             '— مواجهات ونتائج',
     'wc.admin.matches':       'مباراة',
     'wc.admin.selectTeam':    '— اختر منتخب —',
@@ -4373,7 +4373,7 @@ const I18N = {
     'wc.gs.gd':                'GD',
     'wc.gs.pts':               'Pts',
     'wc.gs.pending':           '— No matches played yet —',
-    'wc.gs.loadSeed':          'Load current results (as of June 25)',
+    'wc.gs.loadSeed':          'Load current results (as of June 26)',
     'wc.admin.ko':            '— Matchups and results',
     'wc.admin.matches':       'matches',
     'wc.admin.selectTeam':    '— Select a team —',
@@ -9042,28 +9042,29 @@ function wcSyncGroupQualifiers(groupId) {
 // Croatia) are today's games (Tue June 23) and kick off later — not yet
 // played/confirmed as of this snapshot, so deliberately left as-is to
 // avoid seeding unconfirmed scores. Re-run this loader once those finish.
-const WC_SEED_GROUP_RESULTS_20260625 = {
+const WC_SEED_GROUP_RESULTS_20260626 = {
   // Group A — completed (matchday-3 results: Mexico 3-0 Czechia, South Africa 1-0 South Korea)
   A: { MEX:{w:3,d:0,l:0,gf:6,ga:0}, RSA:{w:1,d:1,l:1,gf:2,ga:3}, KOR:{w:1,d:0,l:2,gf:2,ga:3}, CZE:{w:0,d:1,l:2,gf:2,ga:6} },
   // Group B — completed (matchday-3 results: Switzerland 2-1 Canada, Bosnia 3-1 Qatar)
   B: { SUI:{w:2,d:1,l:0,gf:7,ga:3}, CAN:{w:1,d:1,l:1,gf:8,ga:3}, BIH:{w:1,d:1,l:1,gf:5,ga:6}, QAT:{w:0,d:1,l:2,gf:2,ga:10} },
   // Group C — completed (matchday-3 results: Brazil 3-0 Scotland, Morocco 4-2 Haiti)
   C: { BRA:{w:2,d:1,l:0,gf:7,ga:1}, MAR:{w:2,d:1,l:0,gf:6,ga:3}, SCO:{w:1,d:0,l:2,gf:1,ga:4}, HAI:{w:0,d:0,l:3,gf:2,ga:8} },
-  D: { USA:{w:2,d:0,l:0,gf:6,ga:1}, AUS:{w:1,d:0,l:1,gf:2,ga:2}, PAR:{w:1,d:0,l:1,gf:2,ga:4}, TUR:{w:0,d:0,l:2,gf:0,ga:3} },
-  E: { GER:{w:2,d:0,l:0,gf:9,ga:2}, CIV:{w:1,d:0,l:1,gf:2,ga:2}, ECU:{w:0,d:1,l:1,gf:0,ga:1}, CUW:{w:0,d:1,l:1,gf:1,ga:7} },
-  F: { NED:{w:1,d:1,l:0,gf:7,ga:3}, JPN:{w:1,d:1,l:0,gf:6,ga:2}, SWE:{w:1,d:0,l:1,gf:6,ga:6}, TUN:{w:0,d:0,l:2,gf:1,ga:9} },
-  // Group G — updated with the Jun 21 matchday-2 results: Belgium 0-0 Iran, Egypt 3-1 New Zealand
+  // Group D — completed (matchday-3 results: Turkey 3-2 USA, Paraguay 0-0 Australia)
+  D: { USA:{w:2,d:0,l:1,gf:8,ga:4}, AUS:{w:1,d:1,l:1,gf:2,ga:2}, PAR:{w:1,d:1,l:1,gf:2,ga:4}, TUR:{w:1,d:0,l:2,gf:3,ga:5} },
+  // Group E — completed (matchday-3 results: Ecuador 2-1 Germany, Curacao 0-2 Ivory Coast)
+  E: { GER:{w:2,d:0,l:1,gf:10,ga:4}, CIV:{w:2,d:0,l:1,gf:4,ga:2}, ECU:{w:1,d:1,l:1,gf:2,ga:2}, CUW:{w:0,d:1,l:2,gf:1,ga:9} },
+  // Group F — completed (matchday-3 results: Netherlands 3-1 Tunisia, Japan 1-1 Sweden)
+  F: { NED:{w:2,d:1,l:0,gf:10,ga:4}, JPN:{w:1,d:2,l:0,gf:7,ga:3}, SWE:{w:1,d:1,l:1,gf:7,ga:7}, TUN:{w:0,d:0,l:3,gf:2,ga:12} },
+  // Group G — through matchday-2: Belgium 0-0 Iran, Egypt 3-1 New Zealand
   G: { EGY:{w:1,d:1,l:0,gf:4,ga:2}, IRN:{w:0,d:2,l:0,gf:2,ga:2}, BEL:{w:0,d:2,l:0,gf:1,ga:1}, NZL:{w:0,d:1,l:1,gf:3,ga:5} },
-  // Group H — updated with the Jun 21 matchday-2 results: Spain 4-0 Saudi Arabia, Uruguay 2-2 Cabo Verde
+  // Group H — through matchday-2: Spain 4-0 Saudi Arabia, Uruguay 2-2 Cabo Verde
   H: { ESP:{w:1,d:1,l:0,gf:4,ga:0}, URU:{w:0,d:2,l:0,gf:3,ga:3}, CPV:{w:0,d:2,l:0,gf:2,ga:2}, KSA:{w:0,d:1,l:1,gf:1,ga:5} },
-  // Groups I & J: matchday-2 results confirmed Mon June 22 —
-  // France 3-0 Iraq, Norway 3-2 Senegal (Group I);
-  // Argentina 2-0 Austria, Algeria 2-1 Jordan (Group J, Jordan eliminated).
+  // Groups I & J: through matchday-2 (France 3-0 Iraq, Norway 3-2 Senegal,
+  // Argentina 2-0 Austria, Algeria 2-1 Jordan). MD-3 games tonight (Jun 26).
   I: { FRA:{w:2,d:0,l:0,gf:6,ga:1}, NOR:{w:2,d:0,l:0,gf:7,ga:3}, SEN:{w:0,d:0,l:2,gf:3,ga:6}, IRQ:{w:0,d:0,l:2,gf:1,ga:7} },
   J: { ARG:{w:2,d:0,l:0,gf:5,ga:0}, AUT:{w:1,d:0,l:1,gf:3,ga:3}, ALG:{w:1,d:0,l:1,gf:2,ga:4}, JOR:{w:0,d:0,l:2,gf:2,ga:5} },
-  // Groups K & L — updated with the Jun 23 matchday-2 results:
-  // Portugal 5-0 Uzbekistan, Colombia 1-0 DR Congo (Group K — Colombia qualified);
-  // England 0-0 Ghana, Croatia 1-0 Panama (Group L — Panama eliminated).
+  // Groups K & L — through matchday-2 (Portugal 5-0 Uzbekistan, Colombia 1-0 DR Congo,
+  // England 0-0 Ghana, Croatia 1-0 Panama). MD-3 games on Jun 27.
   K: { COL:{w:2,d:0,l:0,gf:4,ga:1}, POR:{w:1,d:1,l:0,gf:6,ga:1}, COD:{w:0,d:1,l:1,gf:1,ga:2}, UZB:{w:0,d:0,l:2,gf:1,ga:8} },
   L: { ENG:{w:1,d:1,l:0,gf:4,ga:2}, GHA:{w:1,d:1,l:0,gf:1,ga:0}, CRO:{w:1,d:0,l:1,gf:3,ga:4}, PAN:{w:0,d:0,l:2,gf:0,ga:2} },
 };
@@ -9073,12 +9074,12 @@ const WC_SEED_GROUP_RESULTS_20260625 = {
 async function wcLoadSeedGroupResults() {
   if (!(typeof state !== 'undefined' && state.isAdmin)) return;
   const msg = (CURRENT_LANG === 'en')
-    ? 'Load the verified group-stage results (as of June 25, 2026 — Groups A, B, C complete after matchday-3; Groups D–L still through matchday-2)? This will overwrite any standings already entered.'
-    : 'تحميل نتائج دور المجموعات الموثَّقة (حتى 25 يونيو 2026 — المجموعات A وB وC اكتملت بعد الجولة الثالثة، والمجموعات D حتى L ما زالت بعد الجولة الثانية)؟ سيتم استبدال أي ترتيب مُدخَل حالياً.';
+    ? 'Load the verified group-stage results (as of June 26, 2026 — Groups A–F complete after matchday-3; Groups G–L still through matchday-2)? This will overwrite any standings already entered.'
+    : 'تحميل نتائج دور المجموعات الموثَّقة (حتى 26 يونيو 2026 — المجموعات A حتى F اكتملت بعد الجولة الثالثة، والمجموعات G حتى L ما زالت بعد الجولة الثانية)؟ سيتم استبدال أي ترتيب مُدخَل حالياً.';
   if (!confirm(msg)) return;
   if (!wcState.results.groupStats) wcState.results.groupStats = {};
-  Object.keys(WC_SEED_GROUP_RESULTS_20260625).forEach(gid => {
-    wcState.results.groupStats[gid] = JSON.parse(JSON.stringify(WC_SEED_GROUP_RESULTS_20260625[gid]));
+  Object.keys(WC_SEED_GROUP_RESULTS_20260626).forEach(gid => {
+    wcState.results.groupStats[gid] = JSON.parse(JSON.stringify(WC_SEED_GROUP_RESULTS_20260626[gid]));
     wcSyncGroupQualifiers(gid);
   });
   try {
