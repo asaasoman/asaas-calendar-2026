@@ -3502,6 +3502,8 @@ html.view-wc .hide-on-wc { display: none !important; }
 /* ─── Back button in WC view ────────────────────────────────── */
 .wc-back-bar {
   margin: 16px 0 0;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
 }
 .wc-back-btn {
   display: inline-flex; align-items: center; gap: 8px;
@@ -3521,6 +3523,93 @@ html.view-wc .hide-on-wc { display: none !important; }
   color: var(--green-dark);
 }
 .wc-back-btn::before { content: "→"; font-size: 14px; }
+
+/* Dark-mode toggle (right side of back bar — WC page only) */
+.wc-theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; padding: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 17px; line-height: 1;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .12s;
+}
+.wc-theme-toggle:hover {
+  background: var(--green-tint);
+  border-color: var(--green-light);
+  color: var(--green-dark);
+}
+.wc-theme-toggle:active { transform: scale(.94); }
+.wc-theme-toggle:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.wc-theme-toggle .wc-theme-icon-dark { display: inline; }
+.wc-theme-toggle .wc-theme-icon-light { display: none; }
+html.wc-dark .wc-theme-toggle .wc-theme-icon-dark  { display: none; }
+html.wc-dark .wc-theme-toggle .wc-theme-icon-light { display: inline; }
+
+/* ─── Dark mode palette — applies ONLY on the WC challenge page ───────
+   Tournament-night feel: deep evergreen-charcoal background with the
+   brand's gold and green lifted just enough to remain readable. */
+html.view-wc.wc-dark {
+  --bg:          #0F1815;
+  --bg-2:        #16221C;
+  --green:       #4D8C5A;
+  --green-dark:  #6FB180;
+  --green-light: #5E9D6D;
+  --green-tint:  #1E3026;
+  --text:        #EEE6D2;
+  --text-soft:   #C7BEA6;
+  --text-mute:   #8E8773;
+  --beige:       #2A2218;
+  --gold:        #E6BD55;
+  --gold-soft:   #B8943F;
+  --gold-tint:   #3A2E14;
+  --clay:        #E0A075;
+  --clay-soft:   #B36A3C;
+  --card:        #1B2A23;
+  --card-2:      #213127;
+  --border:      #2E3F35;
+  --border-soft: #263429;
+  --danger:      #E07368;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.42), 0 2px 6px rgba(0,0,0,.28);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.55), 0 4px 14px rgba(0,0,0,.32);
+}
+/* Body gradient adapted for dark */
+html.view-wc.wc-dark body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(at 90% -10%, rgba(230,189,85,.10) 0, transparent 45%),
+    radial-gradient(at -10% 110%, rgba(77,140,90,.14) 0, transparent 50%);
+}
+/* Form controls — ensure adequate contrast on dark */
+html.view-wc.wc-dark input,
+html.view-wc.wc-dark select,
+html.view-wc.wc-dark textarea {
+  background: var(--card-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+html.view-wc.wc-dark input::placeholder,
+html.view-wc.wc-dark textarea::placeholder { color: var(--text-mute); }
+/* The penalty picker uses a goldish tint — keep readable on dark */
+html.view-wc.wc-dark .wc-pens-label { color: var(--gold); }
+html.view-wc.wc-dark .wc-pens-tag {
+  background: var(--gold-tint); color: var(--gold); border-color: var(--gold-soft);
+}
+/* The "official result" green text stays legible on dark */
+html.view-wc.wc-dark .wc-match-card .wc-match-row + div,
+html.view-wc.wc-dark .wc-bm-result { color: var(--green-dark); }
+/* Light hardcoded danger-tint backgrounds (used in admin warning) */
+html.view-wc.wc-dark .wc-admin-warn,
+html.view-wc.wc-dark .wc-notice.warn { filter: brightness(.92); }
+/* Modal surfaces while on dark WC page */
+html.view-wc.wc-dark .modal { background: var(--card); color: var(--text); }
+html.view-wc.wc-dark .modal-header,
+html.view-wc.wc-dark .modal-footer { border-color: var(--border); }
+/* Subtle scrollbar nudge to match dark palette */
+html.view-wc.wc-dark { color-scheme: dark; }
 
 /* ─── Group stage deadline notice ───────────────────────────── */
 .wc-notice {
@@ -4329,6 +4418,15 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
 </style>
 </head>
 <body>
+<script>
+  // Early bootstrap: apply the WC dark-mode class before paint to avoid a flash.
+  // The CSS only activates the dark palette when ALSO on the #predictions view.
+  try {
+    if (localStorage.getItem('asaas_wc_dark') === '1') {
+      document.documentElement.classList.add('wc-dark');
+    }
+  } catch (e) {}
+</script>
 <div class="app">
 
   <!-- ========= HEADER ========= -->
@@ -4623,6 +4721,13 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
   <div class="show-on-wc">
     <div class="wc-back-bar">
       <a href="#" class="wc-back-btn" id="wcBackBtn" data-i18n="wc.back">العودة للصفحة الرئيسية</a>
+      <button class="wc-theme-toggle" id="wcThemeToggle" type="button"
+              aria-pressed="false"
+              aria-label="تبديل الوضع الداكن" title="تبديل الوضع الداكن"
+              data-i18n-aria="wc.theme.toggle" data-i18n-title="wc.theme.toggle">
+        <span class="wc-theme-icon-dark">🌙</span>
+        <span class="wc-theme-icon-light">☀️</span>
+      </button>
     </div>
     <div class="wc-section" id="wcSection">
     <div class="wc-header">
@@ -4907,6 +5012,9 @@ const I18N = {
     'wc.launcher.sub':        'توقّع المتأهّلين من المجموعات ونتائج الأدوار الإقصائية · نافِس على أعلى نقاط',
     'wc.launcher.cta':        'شارك الآن',
     'wc.back':                'العودة للصفحة الرئيسية',
+    'wc.theme.toggle':        'تبديل الوضع الداكن',
+    'wc.theme.toLight':       'تفعيل الوضع الفاتح',
+    'wc.theme.toDark':        'تفعيل الوضع الداكن',
 
     // ── WC section ─────────────────────────────────────────────
     'wc.title':               'تحدّي توقعات كأس العالم 2026',
@@ -5206,6 +5314,9 @@ const I18N = {
     'wc.launcher.sub':        'Predict group qualifiers and knockout scores · Compete for top points',
     'wc.launcher.cta':        'Join Now',
     'wc.back':                'Back to Home',
+    'wc.theme.toggle':        'Toggle dark mode',
+    'wc.theme.toLight':       'Switch to light mode',
+    'wc.theme.toDark':        'Switch to dark mode',
 
     'wc.title':               'FIFA World Cup 2026 Prediction Challenge',
     'wc.subtitle':            'Join the challenge — predict qualifiers and track your rank on the global leaderboard',
@@ -8479,6 +8590,46 @@ function applyRoute() {
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 window.addEventListener('hashchange', applyRoute);
+
+// ── WC-only dark mode ───────────────────────────────────────────
+// Class lives on <html>, but the CSS only kicks in when ALSO `view-wc`,
+// so the rest of the site stays in its light brand theme.
+const WC_DARK_LS_KEY = 'asaas_wc_dark';
+(function initWcDark() {
+  try {
+    if (localStorage.getItem(WC_DARK_LS_KEY) === '1') {
+      document.documentElement.classList.add('wc-dark');
+    }
+  } catch (e) { /* localStorage may be blocked */ }
+})();
+function wcSetDarkMode(on) {
+  document.documentElement.classList.toggle('wc-dark', !!on);
+  try { localStorage.setItem(WC_DARK_LS_KEY, on ? '1' : '0'); } catch (e) {}
+  const btn = document.getElementById('wcThemeToggle');
+  if (btn) {
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    const labelKey = on ? 'wc.theme.toLight' : 'wc.theme.toDark';
+    btn.setAttribute('aria-label', t(labelKey));
+    btn.title = t(labelKey);
+  }
+}
+const __wcThemeBtn = document.getElementById('wcThemeToggle');
+if (__wcThemeBtn) {
+  // Sync initial aria-pressed + title with current state
+  wcSetDarkMode(document.documentElement.classList.contains('wc-dark'));
+  __wcThemeBtn.onclick = () => {
+    wcSetDarkMode(!document.documentElement.classList.contains('wc-dark'));
+  };
+}
+// Update the aria-label when language changes
+window.addEventListener('langchange', () => {
+  const btn = document.getElementById('wcThemeToggle');
+  if (!btn) return;
+  const on = document.documentElement.classList.contains('wc-dark');
+  const labelKey = on ? 'wc.theme.toLight' : 'wc.theme.toDark';
+  btn.setAttribute('aria-label', t(labelKey));
+  btn.title = t(labelKey);
+});
 
 // Back button (also clears the hash cleanly)
 const __wcBackBtn = document.getElementById('wcBackBtn');
