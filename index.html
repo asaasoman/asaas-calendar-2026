@@ -2739,6 +2739,56 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-match-score input:disabled { opacity: .5; cursor: not-allowed; }
 .wc-match-dash { color: var(--text-mute); font-weight: 700; }
+
+/* ── Knockout: penalty-shootout winner picker ───────────────────── */
+.wc-pens-row {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--gold-tint, #FBF4DD);
+  border: 1px dashed var(--gold-soft, #E5D08A);
+  border-radius: 8px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.wc-pens-label {
+  font-size: 11.5px; font-weight: 600;
+  color: var(--clay, #8C6A1F);
+  display: flex; align-items: center; gap: 6px;
+}
+.wc-pens-label::before { content: "🥅"; }
+.wc-pens-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.wc-pens-btn {
+  flex: 1 1 0; min-width: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px; font-weight: 600;
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .1s;
+}
+.wc-pens-btn:hover:not(:disabled) { background: var(--bg-2); border-color: var(--gold-soft, #E5D08A); }
+.wc-pens-btn.selected {
+  background: var(--gold, #D4A437); color: #fff;
+  border-color: var(--gold, #D4A437);
+  box-shadow: 0 1px 4px rgba(212,164,55,.35);
+}
+.wc-pens-btn:disabled { opacity: .55; cursor: not-allowed; }
+.wc-pens-btn .wc-flag-img { height: 14px; }
+.wc-pens-tag {
+  display: inline-block; margin-inline-start: 6px;
+  padding: 1px 7px; font-size: 10.5px; font-weight: 600;
+  background: var(--gold-tint, #FBF4DD); color: var(--clay, #8C6A1F);
+  border: 1px solid var(--gold-soft, #E5D08A); border-radius: 99px;
+}
+/* Compact variant for bracket cells */
+.wc-bm .wc-pens-row {
+  margin-top: 4px; padding: 5px 6px;
+  font-size: 11px;
+}
+.wc-bm .wc-pens-label { font-size: 10px; }
+.wc-bm .wc-pens-btn { padding: 3px 6px; font-size: 11px; }
+
 .wc-empty {
   text-align: center; padding: 24px 16px;
   background: var(--bg-2); border-radius: 10px;
@@ -4910,6 +4960,10 @@ const I18N = {
     'wc.ko.hint.winner':      'الفائز الصحيح =',
     'wc.ko.hint.exact':       'النتيجة المضبوطة =',
     'wc.ko.hint.points':      'نقاط.',
+    'wc.ko.pens.q':           'في حال التعادل، من يفوز بضربات الترجيح؟',
+    'wc.ko.pens.choose':      'اختر الفائز بالركلات',
+    'wc.ko.pens.tag':         'فائز بالترجيح',
+    'wc.ko.pens.missing':     '⚠ هناك مباريات إقصائية متعادلة لم تختر فيها الفائز بضربات الترجيح.',
     'wc.match.tbd':           'منتظر',
     'wc.match.official':      'النتيجة الرسمية',
     'wc.group':               'المجموعة',
@@ -5199,6 +5253,10 @@ const I18N = {
     'wc.ko.hint.winner':      'Correct winner =',
     'wc.ko.hint.exact':       'Exact score =',
     'wc.ko.hint.points':      'points.',
+    'wc.ko.pens.q':           'If tied, who wins on penalties?',
+    'wc.ko.pens.choose':      'Pick the penalty-shootout winner',
+    'wc.ko.pens.tag':         'Won on pens',
+    'wc.ko.pens.missing':     '⚠ Some tied knockout matches are missing a penalty-shootout winner.',
     'wc.match.tbd':           'TBD',
     'wc.match.official':      'Official result',
     'wc.group':               'Group',
@@ -9814,6 +9872,10 @@ const WC_RESULTS_DOC = db.collection('calendar').doc('wc_results');
 // ────────────────────────────────────────────────────────────────
 // 🔧 EDITABLE CONFIG — stage timings & scoring rules
 // ────────────────────────────────────────────────────────────────
+// Rule applied: each knockout stage opens ~2h45m after the last match of the
+// previous stage kicks off (allows 90' + extra time + penalties + buffer),
+// and closes EXACTLY at the first match kickoff of this stage.
+// All match times sourced from the official FIFA 2026 schedule.
 const WC_STAGES = [
   { id: 'groups', name: 'دور المجموعات', icon: '📋',
     opensAt: '2026-06-01T00:00:00Z',  // open since June 1
@@ -9821,28 +9883,43 @@ const WC_STAGES = [
     matchCount: 0,                     // groups stage uses group picks, not matches
   },
   { id: 'r32', name: 'دور الـ32', icon: '⚔️',
-    opensAt: '2026-06-27T20:00:00Z',  // after last group match
-    closesAt: '2026-06-28T16:00:00Z', // before first R32 match
+    // Last group matches (Algeria–Austria, Jordan–Argentina) kick off 02:00 UTC Jun 28.
+    // Opens ~2h45m later → 04:45 UTC Jun 28 (08:45 Muscat).
+    opensAt:  '2026-06-28T04:45:00Z',
+    // First R32 match: South Africa vs Canada, 12:00 PDT (LA) = 19:00 UTC Jun 28 (23:00 Muscat).
+    closesAt: '2026-06-28T19:00:00Z',
     matchCount: 16,
   },
   { id: 'r16', name: 'دور الـ16', icon: '🛡️',
-    opensAt: '2026-07-03T20:00:00Z',
-    closesAt: '2026-07-04T12:00:00Z',
+    // Last R32 match (Match 87, Kansas City) kicks off 01:30 UTC Jul 4.
+    // Opens ~2h45m later → 04:15 UTC Jul 4 (08:15 Muscat).
+    opensAt:  '2026-07-04T04:15:00Z',
+    // First R16 match: Houston, 13:00 ET = 17:00 UTC Jul 4 (21:00 Muscat).
+    closesAt: '2026-07-04T17:00:00Z',
     matchCount: 8,
   },
   { id: 'qf', name: 'ربع النهائي', icon: '⚡',
-    opensAt: '2026-07-07T20:00:00Z',
-    closesAt: '2026-07-09T15:00:00Z',
+    // Last R16 match (Match 96, Vancouver) kicks off 20:00 UTC Jul 7.
+    // Opens ~2h45m later → 22:45 UTC Jul 7 (02:45 Muscat Jul 8).
+    opensAt:  '2026-07-07T22:45:00Z',
+    // First QF: Foxborough, 16:00 ET = 20:00 UTC Jul 9 (00:00 Muscat Jul 10).
+    closesAt: '2026-07-09T20:00:00Z',
     matchCount: 4,
   },
   { id: 'sf', name: 'نصف النهائي', icon: '🔥',
-    opensAt: '2026-07-11T20:00:00Z',
-    closesAt: '2026-07-14T12:00:00Z',
+    // Last QF (Kansas City) kicks off 01:00 UTC Jul 12 (Sat night ET in local).
+    // Opens ~2h45m later → 03:45 UTC Jul 12 (07:45 Muscat).
+    opensAt:  '2026-07-12T03:45:00Z',
+    // First SF: Arlington, 15:00 ET = 19:00 UTC Jul 14 (23:00 Muscat).
+    closesAt: '2026-07-14T19:00:00Z',
     matchCount: 2,
   },
   { id: 'final', name: 'النهائي', icon: '🏆',
-    opensAt: '2026-07-15T20:00:00Z',
-    closesAt: '2026-07-19T15:00:00Z',
+    // Last SF (Atlanta) kicks off 19:00 UTC Jul 15.
+    // Opens ~2h45m later → 21:45 UTC Jul 15 (01:45 Muscat Jul 16).
+    opensAt:  '2026-07-15T21:45:00Z',
+    // Final: MetLife, 15:00 ET = 19:00 UTC Jul 19 (23:00 Muscat).
+    closesAt: '2026-07-19T19:00:00Z',
     matchCount: 1,
   },
 ];
@@ -10331,29 +10408,36 @@ function wcViewParticipant(participantId) {
           const g = guesses[i] || {};
           const home = m.home ? WC_TEAM_MAP[m.home] : null;
           const away = m.away ? WC_TEAM_MAP[m.away] : null;
-          const hasGuess = g.homeScore != null && g.awayScore != null;
-          const hasActual = m.homeScore != null && m.awayScore != null;
+          const hasGuess  = g.homeScore != null && g.awayScore != null;
+          const hasActual = wcKoMatchComplete(m);
           let cls = '';
           if (hasGuess && hasActual) {
-            const exact = (g.homeScore === m.homeScore && g.awayScore === m.awayScore);
-            const aw = m.homeScore > m.awayScore ? 'h' : m.homeScore < m.awayScore ? 'a' : 'd';
-            const pw = g.homeScore > g.awayScore ? 'h' : g.homeScore < g.awayScore ? 'a' : 'd';
+            const aSide = wcKoWinnerSide(m);
+            const pSide = wcKoWinnerSide(g);
+            const exactScore = (g.homeScore === m.homeScore && g.awayScore === m.awayScore);
+            // Exact bonus also requires matching penalty winner when tied
+            const exact = exactScore && (!wcKoIsTied(m) || g.penWinner === m.penWinner);
             if (exact) cls = 'correct';
-            else if (aw === pw) cls = 'partial';
+            else if (pSide && aSide === pSide) cls = 'partial';
             else cls = 'wrong';
           }
           const homeHTML = home ? `${home.name}${wcFlagImg(home.code, 14)}` : `<span style="color:var(--text-mute);font-style:italic">${t('wc.match.tbd')}</span>`;
           const awayHTML = away ? `${wcFlagImg(away.code, 14)}${away.name}` : `<span style="color:var(--text-mute);font-style:italic">${t('wc.match.tbd')}</span>`;
           const predictedScore = hasGuess ? `${g.homeScore} − ${g.awayScore}` : `— − —`;
+          // Append a pens annotation when relevant
+          const actualPenTag = (hasActual && wcKoIsTied(m) && m.penWinner)
+            ? ` <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span>` : '';
+          const predPenTag = (hasGuess && g.homeScore === g.awayScore && g.penWinner)
+            ? ` <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(g.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span>` : '';
           const actualMeta = hasActual
-            ? `<span>${correctLbl}: <strong>${m.homeScore} − ${m.awayScore}</strong></span>`
+            ? `<span>${correctLbl}: <strong>${m.homeScore} − ${m.awayScore}</strong>${actualPenTag}</span>`
             : '';
           return `
             <div class="wcv-match ${cls}">
               <div class="wcv-match-team home">${homeHTML}</div>
               <div class="wcv-score">${predictedScore}</div>
               <div class="wcv-match-team away">${awayHTML}</div>
-              ${actualMeta ? `<div class="wcv-match-meta"><span>${predictedLbl}: ${predictedScore}</span>${actualMeta}</div>` : ''}
+              ${actualMeta ? `<div class="wcv-match-meta"><span>${predictedLbl}: ${predictedScore}${predPenTag}</span>${actualMeta}</div>` : ''}
             </div>`;
         }).join('')
       : `<div class="wcv-empty">${CURRENT_LANG==='en'?'No matchups defined yet':'لم تُعلَن المواجهات بعد'}</div>`;
@@ -10393,6 +10477,60 @@ function wcScoreGroups(pred) {
   return pts;
 }
 
+// ────────────────────────────────────────────────────────────────
+// Knockout helpers — penalties-aware winner detection
+// ────────────────────────────────────────────────────────────────
+// Returns 'h' | 'a' | null. Null when the match has no result yet,
+// or when scores are tied AND no penalty winner is set (incomplete).
+function wcKoWinnerSide(m) {
+  if (!m || m.homeScore == null || m.awayScore == null) return null;
+  if (m.homeScore > m.awayScore) return 'h';
+  if (m.homeScore < m.awayScore) return 'a';
+  // Tied — must consult penWinner
+  if (m.penWinner === 'home') return 'h';
+  if (m.penWinner === 'away') return 'a';
+  return null;
+}
+// Returns the winning team code (e.g. 'BRA'), or null.
+function wcKoWinnerCode(m) {
+  const side = wcKoWinnerSide(m);
+  if (!side) return null;
+  return side === 'h' ? (m.home || null) : (m.away || null);
+}
+// Match has a complete, valid result (no tied-without-penWinner ambiguity).
+function wcKoMatchComplete(m) {
+  if (!m || m.homeScore == null || m.awayScore == null) return false;
+  if (m.homeScore === m.awayScore && m.penWinner !== 'home' && m.penWinner !== 'away') return false;
+  return true;
+}
+// Is this match tied on regular score? (does not require completeness)
+function wcKoIsTied(m) {
+  return m && m.homeScore != null && m.awayScore != null && m.homeScore === m.awayScore;
+}
+
+// Renders the penalty-shootout winner picker (hidden unless tied OR has a penWinner already).
+// `scope` = 'draft' (writes to wcState.draft) or 'admin' (writes to wcState.results) — used by the wiring code.
+function wcRenderPensRow(scope, stageId, idx, home, away, draftOrActual, readOnly) {
+  if (!home || !away) return '';
+  const tied = (draftOrActual.homeScore != null && draftOrActual.awayScore != null &&
+                draftOrActual.homeScore === draftOrActual.awayScore);
+  const has  = draftOrActual.penWinner === 'home' || draftOrActual.penWinner === 'away';
+  const show = tied || has;
+  const homeSel = draftOrActual.penWinner === 'home' ? ' selected' : '';
+  const awaySel = draftOrActual.penWinner === 'away' ? ' selected' : '';
+  const dis = readOnly ? 'disabled' : '';
+  const homeFlag = wcFlagImg(home.code, 12) || '';
+  const awayFlag = wcFlagImg(away.code, 12) || '';
+  return `
+    <div class="wc-pens-row" data-wcpenscope="${scope}" data-wcpenstage="${stageId}" data-wcpenidx="${idx}" style="${show ? '' : 'display:none'}">
+      <span class="wc-pens-label">${wcEsc(t('wc.ko.pens.q'))}</span>
+      <div class="wc-pens-buttons">
+        <button type="button" class="wc-pens-btn${homeSel}" data-wcpen="home" ${dis}>${homeFlag}<span>${wcEsc(home.name)}</span></button>
+        <button type="button" class="wc-pens-btn${awaySel}" data-wcpen="away" ${dis}>${awayFlag}<span>${wcEsc(away.name)}</span></button>
+      </div>
+    </div>`;
+}
+
 function wcScoreKO(stageId, pred) {
   let pts = 0;
   const actuals = (wcState.results.knockout && wcState.results.knockout[stageId]) || [];
@@ -10400,13 +10538,18 @@ function wcScoreKO(stageId, pred) {
   actuals.forEach((a, i) => {
     const p = guesses[i];
     if (!a || !p) return;
-    if (a.homeScore == null || a.awayScore == null) return;
-    if (p.homeScore == null || p.awayScore == null) return;
-    const exact = (p.homeScore === a.homeScore && p.awayScore === a.awayScore);
-    const aw = a.homeScore > a.awayScore ? 'h' : a.homeScore < a.awayScore ? 'a' : 'd';
-    const pw = p.homeScore > p.awayScore ? 'h' : p.homeScore < p.awayScore ? 'a' : 'd';
-    if (aw === pw) pts += WC_SCORING.knockoutWinner;
-    if (exact)     pts += WC_SCORING.knockoutExactBonus;
+    if (!wcKoMatchComplete(a)) return;                              // official result not finalised
+    if (p.homeScore == null || p.awayScore == null) return;          // no prediction
+    // Predicted side must also be unambiguous: if predictor went for a tie,
+    // they need to have picked a penalty winner.
+    const pSide = wcKoWinnerSide(p);
+    if (!pSide) return;
+    const aSide = wcKoWinnerSide(a);
+    // Exact-score bonus also requires matching penWinner when the score is tied.
+    const exactScore = (p.homeScore === a.homeScore && p.awayScore === a.awayScore);
+    const exact = exactScore && (!wcKoIsTied(a) || p.penWinner === a.penWinner);
+    if (aSide === pSide) pts += WC_SCORING.knockoutWinner;
+    if (exact)           pts += WC_SCORING.knockoutExactBonus;
   });
   return pts;
 }
@@ -10686,8 +10829,9 @@ function wcRenderKOForm(stage) {
                    : '<span class="wc-match-team-tbd">منتظر</span>'}
           </div>
         </div>
+        ${wcRenderPensRow('draft', stage.id, i, home, away, d, resultIn)}
         ${resultIn ? `<div style="text-align:center;font-size:11px;color:var(--green-dark);margin-top:6px;font-weight:600">
-            ${t('wc.match.official')}: ${m.homeScore} − ${m.awayScore}</div>` : ''}
+            ${t('wc.match.official')}: ${m.homeScore} − ${m.awayScore}${wcKoIsTied(m) && m.penWinner ? ` · <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span>` : ''}</div>` : ''}
       </div>`;
   }).join('');
 
@@ -11023,15 +11167,20 @@ function wcRenderAdminStage(stage) {
       <div class="wc-admin-section-title">${stage.icon} ${t('wc.stage.'+stage.id)} ${t('wc.admin.ko')} (${stage.matchCount} ${t('wc.admin.matches')})</div>
       ${Array.from({length: stage.matchCount}, (_, i) => {
         const m = arr[i] || {};
+        const home = m.home ? WC_TEAM_MAP[m.home] : null;
+        const away = m.away ? WC_TEAM_MAP[m.away] : null;
         return `
-          <div class="wc-adm-row">
-            ${wcAdmTeamSelect(stage.id, i, 'home', m.home)}
-            <div class="wc-adm-score">
-              <input type="number" min="0" max="20" data-wcadmstage="${stage.id}" data-wcadmidx="${i}" data-wcadmfield="homeScore" value="${m.homeScore ?? ''}" />
-              <span style="font-weight:700;color:var(--text-mute)">−</span>
-              <input type="number" min="0" max="20" data-wcadmstage="${stage.id}" data-wcadmidx="${i}" data-wcadmfield="awayScore" value="${m.awayScore ?? ''}" />
+          <div class="wc-adm-row-wrap" data-wcadmcard="${stage.id}" data-wcadmcardidx="${i}">
+            <div class="wc-adm-row">
+              ${wcAdmTeamSelect(stage.id, i, 'home', m.home)}
+              <div class="wc-adm-score">
+                <input type="number" min="0" max="20" data-wcadmstage="${stage.id}" data-wcadmidx="${i}" data-wcadmfield="homeScore" value="${m.homeScore ?? ''}" />
+                <span style="font-weight:700;color:var(--text-mute)">−</span>
+                <input type="number" min="0" max="20" data-wcadmstage="${stage.id}" data-wcadmidx="${i}" data-wcadmfield="awayScore" value="${m.awayScore ?? ''}" />
+              </div>
+              ${wcAdmTeamSelect(stage.id, i, 'away', m.away)}
             </div>
-            ${wcAdmTeamSelect(stage.id, i, 'away', m.away)}
+            ${wcRenderPensRow('admin', stage.id, i, home, away, m, false)}
           </div>`;
       }).join('')}
     </div>`;
@@ -11103,6 +11252,37 @@ function wcWireEvents() {
       while (wcState.draft.knockout[stage].length <= idx) wcState.draft.knockout[stage].push({});
       const v = inp.value === '' ? null : parseInt(inp.value, 10);
       wcState.draft.knockout[stage][idx][field === 'home' ? 'homeScore' : 'awayScore'] = v;
+      // Show/hide the penalty winner picker inside this card.
+      wcTogglePensRow(card, wcState.draft.knockout[stage][idx], 'draft', stage, idx);
+    };
+  });
+
+  // KO penalty-shootout winner buttons (participant draft)
+  document.querySelectorAll('.wc-pens-btn[data-wcpen]').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.preventDefault();
+      if (btn.disabled) return;
+      const row = btn.closest('.wc-pens-row');
+      if (!row) return;
+      const scope = row.getAttribute('data-wcpenscope');
+      const stage = row.getAttribute('data-wcpenstage');
+      const idx   = parseInt(row.getAttribute('data-wcpenidx'), 10);
+      const side  = btn.getAttribute('data-wcpen'); // 'home' | 'away'
+      if (scope === 'draft') {
+        if (!wcState.draft.knockout[stage]) wcState.draft.knockout[stage] = [];
+        while (wcState.draft.knockout[stage].length <= idx) wcState.draft.knockout[stage].push({});
+        wcState.draft.knockout[stage][idx].penWinner = side;
+      } else if (scope === 'admin') {
+        if (!wcState.results.knockout) wcState.results.knockout = {};
+        if (!wcState.results.knockout[stage]) wcState.results.knockout[stage] = [];
+        while (wcState.results.knockout[stage].length <= idx) wcState.results.knockout[stage].push({});
+        wcState.results.knockout[stage][idx].penWinner = side;
+        try { await wcSaveResults(); } catch (err) { console.error('[WC] save pen winner (admin):', err); }
+        wcRender();
+        return;
+      }
+      // Visual toggle (draft path)
+      row.querySelectorAll('.wc-pens-btn').forEach(b => b.classList.toggle('selected', b === btn));
     };
   });
 
@@ -11122,6 +11302,22 @@ function wcWireEvents() {
           alert(t('wc.submit.remaining') + ' ' + incomplete);
           return;
         }
+      }
+      // Block submit if any knockout draft has a tied score without a penalty-shootout winner
+      const tiedNoPen = [];
+      ['r32','r16','qf','sf','final'].forEach(sid => {
+        const arr = (wcState.draft.knockout && wcState.draft.knockout[sid]) || [];
+        arr.forEach((g, i) => {
+          if (!g) return;
+          if (g.homeScore != null && g.awayScore != null && g.homeScore === g.awayScore
+              && g.penWinner !== 'home' && g.penWinner !== 'away') {
+            tiedNoPen.push(`${sid} #${i+1}`);
+          }
+        });
+      });
+      if (tiedNoPen.length) {
+        alert(t('wc.ko.pens.missing') + '\n• ' + tiedNoPen.join('\n• '));
+        return;
       }
       submitBtn.disabled = true;
       const orig = submitBtn.innerHTML;
@@ -11172,9 +11368,36 @@ function wcWireEvents() {
       let v = el.value;
       if (field === 'homeScore' || field === 'awayScore') v = (v === '' ? null : parseInt(v, 10));
       wcState.results.knockout[stage][idx][field] = v;
+      // If the score is no longer tied, drop any stale penWinner.
+      const m = wcState.results.knockout[stage][idx];
+      if (!wcKoIsTied(m) && m.penWinner) delete m.penWinner;
       try { await wcSaveResults(); } catch(e){ console.error(e); }
+      // For team-name or score changes, toggle the pens row visibility inline.
+      const card = el.closest('[data-wcadmcard]');
+      if (card) wcTogglePensRow(card, m, 'admin', stage, idx);
     };
   });
+}
+
+// Show/hide the .wc-pens-row inside `card` based on whether `obj` is tied.
+// When it newly appears we also refresh selected state from `obj.penWinner`.
+function wcTogglePensRow(card, obj, scope, stageId, idx) {
+  if (!card) return;
+  const row = card.querySelector('.wc-pens-row');
+  if (!row) return;
+  const tied = (obj && obj.homeScore != null && obj.awayScore != null && obj.homeScore === obj.awayScore);
+  const has  = obj && (obj.penWinner === 'home' || obj.penWinner === 'away');
+  // If score is no longer tied, drop any stale penWinner from the draft.
+  if (!tied && scope === 'draft' && obj && obj.penWinner) delete obj.penWinner;
+  if (tied || has) {
+    row.style.display = '';
+    row.querySelectorAll('.wc-pens-btn').forEach(b => {
+      b.classList.toggle('selected', b.getAttribute('data-wcpen') === obj.penWinner);
+    });
+  } else {
+    row.style.display = 'none';
+    row.querySelectorAll('.wc-pens-btn').forEach(b => b.classList.remove('selected'));
+  }
 }
 
 window.wcLogout = function() {
@@ -11307,10 +11530,13 @@ function wcRenderBracket() {
   const finalArr = (wcState.results.knockout && wcState.results.knockout.final) || [];
   const fm = finalArr[0];
   let championHtml = `<div class="wc-bracket-trophy-winner tbd">${wcEsc(t('wc.bracket.tbd'))}</div>`;
-  if (fm && fm.home && fm.away && fm.homeScore != null && fm.awayScore != null && fm.homeScore !== fm.awayScore) {
-    const winCode = fm.homeScore > fm.awayScore ? fm.home : fm.away;
+  const winCode = fm ? wcKoWinnerCode(fm) : null;
+  if (winCode) {
     const wt = WC_TEAM_MAP[winCode];
-    if (wt) championHtml = `<div class="wc-bracket-trophy-winner">${wcFlagImg(wt.code, 18)} <span>${wcEsc(wt.name)}</span></div>`;
+    if (wt) {
+      const onPens = wcKoIsTied(fm) && fm.penWinner;
+      championHtml = `<div class="wc-bracket-trophy-winner">${wcFlagImg(wt.code, 18)} <span>${wcEsc(wt.name)}</span>${onPens ? ` <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}</span>` : ''}</div>`;
+    }
   }
 
   const trophyCol = `
@@ -11368,10 +11594,12 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
   if (status === 'upcoming' || status === 'closed') cls.push('locked');
   if (officialIn) cls.push('has-result');
 
-  // Golden if my own pick equals exact for this match
+  // Golden if my own pick equals exact for this match (and pen winner matches when tied)
   let golden = '';
   if (officialIn && d.homeScore === m.homeScore && d.awayScore === m.awayScore) {
-    golden = '<span class="wc-bm-golden" title="'+wcEsc(t('wc.golden.tooltip'))+'">🏅</span>';
+    if (!wcKoIsTied(m) || d.penWinner === m.penWinner) {
+      golden = '<span class="wc-bm-golden" title="'+wcEsc(t('wc.golden.tooltip'))+'">🏅</span>';
+    }
   }
 
   const tbd = `<span class="wc-bm-side-tbd-flag"></span><span class="wc-bm-side-name tbd">${wcEsc(t('wc.bracket.tbd'))}</span>`;
@@ -11405,12 +11633,24 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
     ? `<div class="wc-bm-result">${wcEsc(t('wc.match.official'))}: ${m.homeScore} − ${m.awayScore}${golden}</div>`
     : '';
 
+  const officialTiedNote = (officialIn && wcKoIsTied(m) && m.penWinner)
+    ? `<div class="wc-bm-result" style="margin-top:2px"><span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span></div>`
+    : '';
+
+  // Pens picker — only meaningful while the user is editing their prediction
+  // (and the official result isn't in yet). Hidden unless draft is tied.
+  const pensPicker = (editable && !officialIn)
+    ? wcRenderPensRow('draft', stage.id, idx, home, away, d, false)
+    : '';
+
   return `
     <div class="${cls.join(' ')}" data-wcstage="${stage.id}" data-wcidx="${idx}">
       ${homeRow}
       <div class="wc-bm-divider"></div>
       ${awayRow}
+      ${pensPicker}
       ${resultBar}
+      ${officialTiedNote}
     </div>`;
 }
 
@@ -11422,10 +11662,13 @@ function wcCountGoldenInStage(stageId, pred) {
   const guesses = (pred.knockout && pred.knockout[stageId]) || [];
   let count = 0;
   actuals.forEach((a, i) => {
-    if (!a || a.homeScore == null || a.awayScore == null) return;
+    if (!wcKoMatchComplete(a)) return;
     const g = guesses[i];
     if (!g || g.homeScore == null || g.awayScore == null) return;
-    if (g.homeScore === a.homeScore && g.awayScore === a.awayScore) count++;
+    if (g.homeScore !== a.homeScore || g.awayScore !== a.awayScore) return;
+    // When tied, also require matching penalty-shootout winner for a golden.
+    if (wcKoIsTied(a) && g.penWinner !== a.penWinner) return;
+    count++;
   });
   return count;
 }
