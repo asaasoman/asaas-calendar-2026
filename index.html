@@ -7028,6 +7028,17 @@ function panelSettings() {
       </div>
     </div>
     <div style="height:14px"></div>
+    <div class="section-divider">🏆 كأس العالم</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:12.5px;color:var(--text-mute);line-height:1.6">
+        يدفع هذا الزر النسخة المحلية الحالية من نتائج كأس العالم إلى Firestore (المستند <code>calendar/wc_results</code>). استخدمه إذا أردت فرض مزامنة فورية بدون الحاجة إلى Console.
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <button class="btn btn-primary" id="wcResultsUpdateBtn">🔄 تحديث نتائج كأس العالم</button>
+        <span id="wcResultsUpdateMsg" style="font-size:12.5px;font-weight:600;display:none"></span>
+      </div>
+    </div>
+    <div style="height:14px"></div>
     <div class="section-divider">إعادة تعيين</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       <button class="btn btn-danger" data-reset="events">إعادة الفعاليات</button>
@@ -7318,6 +7329,42 @@ function wirePanel(tab) {
       save(K.hijriOffset, state.hijriOffset);
       updateClock();
     };
+
+    // ── 🏆 World Cup: manual force-sync of WC_RESULTS_DOC to Firestore ───
+    const wcUpdBtn = document.getElementById('wcResultsUpdateBtn');
+    const wcUpdMsg = document.getElementById('wcResultsUpdateMsg');
+    if (wcUpdBtn && wcUpdMsg) {
+      const showWcMsg = (text, ok) => {
+        wcUpdMsg.textContent = text;
+        wcUpdMsg.style.color = ok ? 'var(--green-dark, #1e4d29)' : 'var(--danger, #a8423a)';
+        wcUpdMsg.style.display = 'inline';
+        clearTimeout(showWcMsg._t);
+        showWcMsg._t = setTimeout(() => { wcUpdMsg.style.display = 'none'; }, 4000);
+      };
+      wcUpdBtn.onclick = async () => {
+        if (wcUpdBtn.disabled) return;
+        const originalLabel = wcUpdBtn.textContent;
+        wcUpdBtn.disabled = true;
+        wcUpdBtn.textContent = '⏳ جارٍ التحديث…';
+        try {
+          // Make sure we have a sane shape even if wcState wasn't initialised
+          if (typeof wcState === 'undefined' || !wcState) {
+            throw new Error('wcState غير متاح — افتح صفحة كأس العالم مرة واحدة أولاً.');
+          }
+          const payload = wcState.results || { groups: {}, groupStats: {}, knockout: { r32: [], r16: [], qf: [], sf: [], final: [] } };
+          await WC_RESULTS_DOC.set({ value: payload, updatedAt: Date.now() });
+          showWcMsg('✅ تم تحديث النتائج في Firestore بنجاح.', true);
+        } catch (err) {
+          console.error('[ASAAS] WC results manual update failed:', err);
+          const reason = (err && (err.message || err.code)) ? (err.message || err.code) : 'خطأ غير معروف';
+          showWcMsg('❌ فشل التحديث: ' + reason, false);
+        } finally {
+          wcUpdBtn.disabled = false;
+          wcUpdBtn.textContent = originalLabel;
+        }
+      };
+    }
+
     document.querySelectorAll('[data-reset]').forEach(btn => {
       btn.onclick = async () => {
         const what = btn.getAttribute('data-reset');
