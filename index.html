@@ -3579,6 +3579,703 @@ html.view-wc .hide-on-wc { display: none !important; }
   left: 23px;
   background: #FFFDF8;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ⬇  تحسينات الأدوار الإقصائية  ⬇
+   1) Bracket view  2) Badges  3) Share card  4) Big countdown
+   5) Top-3 podium  6) Points animation
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1) Bracket view ─────────────────────────────────────────── */
+.wc-bracket-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 8px 18px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.wc-bracket-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 14px;
+}
+.wc-bracket-head-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 15px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.wc-bracket-head-hint {
+  font-size: 11.5px; color: var(--text-mute);
+}
+.wc-bracket-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.wc-bracket-grid {
+  display: flex;
+  flex-direction: row-reverse; /* RTL: R32 → ... → Final from right to left */
+  gap: 14px;
+  min-width: max-content;
+  padding: 4px 8px 8px;
+  align-items: stretch;
+}
+.wc-bracket-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  gap: 8px;
+  position: relative;
+}
+.wc-bracket-col-header {
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-soft);
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-soft);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center; justify-content: center;
+  gap: 8px;
+}
+.wc-bracket-col.col-open .wc-bracket-col-header {
+  background: var(--green-tint);
+  color: var(--green-dark);
+  border-color: var(--green-light);
+}
+.wc-bracket-col.col-closed .wc-bracket-col-header {
+  opacity: .75;
+}
+.wc-bracket-col-status {
+  display: inline-block;
+  font-size: 9.5px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  background: var(--card);
+}
+.wc-bracket-col.col-open .wc-bracket-col-status {
+  background: var(--green); color: #FFFDF8;
+}
+.wc-bracket-col.col-closed .wc-bracket-col-status {
+  background: var(--text-mute); color: #FFFDF8;
+}
+.wc-bracket-col.col-upcoming .wc-bracket-col-status {
+  background: var(--gold-soft); color: var(--clay);
+}
+.wc-bracket-matches {
+  display: flex; flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+  gap: 12px;
+}
+.wc-bm {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 7px 9px;
+  font-size: 12px;
+  position: relative;
+  transition: background .2s, border-color .2s, transform .15s;
+}
+.wc-bm.editable {
+  background: var(--card);
+  border-color: var(--border);
+  box-shadow: 0 2px 6px rgba(58,42,29,.04);
+}
+.wc-bm.editable:hover {
+  border-color: var(--green-light);
+}
+.wc-bm.locked { opacity: .72; }
+.wc-bm.has-result {
+  border-color: var(--green-light);
+  background: linear-gradient(180deg, var(--green-tint) 0%, var(--card-2) 100%);
+}
+.wc-bm-side {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 2px;
+  font-size: 11.5px;
+}
+.wc-bm-side .wc-flag-img { height: 14px; flex-shrink: 0; }
+.wc-bm-side-name {
+  white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  color: var(--text);
+  font-weight: 500;
+}
+.wc-bm-side-name.tbd {
+  color: var(--text-mute);
+  font-style: italic;
+  font-weight: 400;
+}
+.wc-bm-side-tbd-flag {
+  width: 14px; height: 14px;
+  background: var(--bg-2);
+  border-radius: 2px;
+  border: 1px dashed var(--border);
+  flex-shrink: 0;
+}
+.wc-bm-side-input {
+  width: 32px;
+  text-align: center;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+}
+.wc-bm-side-input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-tint);
+}
+.wc-bm-side-input:disabled {
+  background: var(--bg-2);
+  cursor: not-allowed;
+  color: var(--text-mute);
+  opacity: .85;
+}
+.wc-bm-side-score-static {
+  display: inline-block;
+  min-width: 32px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-dark);
+  font-variant-numeric: tabular-nums;
+}
+.wc-bm-divider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 3px -9px;
+}
+.wc-bm-result {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--green-dark);
+  margin-top: 4px;
+  font-weight: 600;
+}
+.wc-bm-golden {
+  display: inline-block;
+  margin-inline-start: 4px;
+  font-size: 11px;
+}
+
+/* Champion node */
+.wc-bracket-trophy-col {
+  min-width: 140px;
+  justify-content: center;
+  align-items: stretch;
+  padding: 0 4px;
+}
+.wc-bracket-trophy {
+  background: linear-gradient(135deg, var(--gold-tint) 0%, #FFF7E0 100%);
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  padding: 18px 14px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(201,166,70,.25);
+  margin: auto 0;
+}
+.wc-bracket-trophy-icon {
+  font-size: 38px;
+  filter: drop-shadow(0 2px 4px rgba(201,166,70,.4));
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.wc-bracket-trophy-label {
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: var(--clay);
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.wc-bracket-trophy-winner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.wc-bracket-trophy-winner.tbd {
+  color: var(--text-mute);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 11.5px;
+}
+
+/* Bracket → list view toggle */
+.wc-view-toggle {
+  display: inline-flex;
+  background: var(--bg-2);
+  border-radius: 99px;
+  padding: 3px;
+  margin: 4px 0 14px;
+  border: 1px solid var(--border);
+  gap: 2px;
+}
+.wc-view-toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-mute);
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.wc-view-toggle-btn.active {
+  background: var(--card);
+  color: var(--green-dark);
+  box-shadow: 0 1px 3px rgba(58,42,29,.06);
+}
+.wc-view-toggle-btn:hover:not(.active) { color: var(--text); }
+
+@media (max-width: 720px) {
+  .wc-bracket-grid {
+    flex-direction: column-reverse;
+    min-width: 100%;
+  }
+  .wc-bracket-col {
+    min-width: 100%;
+    width: 100%;
+  }
+  .wc-bracket-trophy-col { min-width: 100%; order: -1; }
+  .wc-bracket-trophy { margin: 0 0 4px; }
+  .wc-bm-side-input { width: 38px; font-size: 14px; }
+}
+
+/* ── 4) Big countdown banner ─────────────────────────────────── */
+.wc-big-countdown {
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+  color: #FFFDF8;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 14px rgba(49,92,59,.22);
+  position: relative;
+  overflow: hidden;
+}
+.wc-big-countdown::before {
+  content: "";
+  position: absolute;
+  top: -40%; inset-inline-start: -10%;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(255,253,248,.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+.wc-bcd-left {
+  flex: 1;
+  min-width: 0;
+  z-index: 1;
+}
+.wc-bcd-label {
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  opacity: .82;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.wc-bcd-stage {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+.wc-bcd-sub {
+  font-size: 11.5px;
+  opacity: .85;
+}
+.wc-bcd-numbers {
+  display: flex;
+  gap: 7px;
+  z-index: 1;
+  direction: ltr; /* numbers in LTR for time format consistency */
+}
+.wc-bcd-cell {
+  display: flex; flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+  padding: 7px 8px 6px;
+  background: rgba(255,253,248,.16);
+  border-radius: 10px;
+}
+.wc-bcd-num {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+.wc-bcd-lbl {
+  font-size: 9.5px;
+  letter-spacing: .5px;
+  opacity: .82;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+.wc-big-countdown.urgent {
+  background: linear-gradient(135deg, #B84A38 0%, #C9503A 100%);
+  animation: bcdPulse 2s ease-in-out infinite;
+}
+@keyframes bcdPulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(184,74,56,.32); }
+  50%      { box-shadow: 0 6px 24px rgba(184,74,56,.55); }
+}
+.wc-big-countdown.expired {
+  background: linear-gradient(135deg, var(--text-mute) 0%, var(--text-soft) 100%);
+  opacity: .85;
+}
+.wc-big-countdown.opening {
+  background: linear-gradient(135deg, var(--clay) 0%, #C77747 100%);
+}
+@media (max-width: 560px) {
+  .wc-big-countdown { padding: 14px; gap: 10px; }
+  .wc-bcd-cell { min-width: 48px; padding: 6px 6px 5px; }
+  .wc-bcd-num { font-size: 18px; }
+  .wc-bcd-stage { font-size: 15px; }
+}
+
+/* ── 5) Top-3 podium ─────────────────────────────────────────── */
+.wc-podium {
+  display: grid;
+  grid-template-columns: 1fr 1.18fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: end;
+  padding-top: 10px; /* room for the lifted gold card */
+}
+.wc-podium-spot {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 12px 13px;
+  text-align: center;
+  position: relative;
+  transition: transform .2s, box-shadow .2s;
+  overflow: visible;
+}
+.wc-podium-spot.gold {
+  background: linear-gradient(180deg, #FFF7DA 0%, var(--gold-tint) 100%);
+  border-color: var(--gold);
+  box-shadow: 0 6px 20px rgba(201,166,70,.28);
+  transform: translateY(-8px);
+}
+.wc-podium-spot.gold:hover { transform: translateY(-11px); }
+.wc-podium-spot.silver {
+  background: linear-gradient(180deg, #F5F4F1 0%, #E5E3DE 100%);
+  border-color: #B5B2AB;
+}
+.wc-podium-spot.silver:hover { transform: translateY(-2px); }
+.wc-podium-spot.bronze {
+  background: linear-gradient(180deg, #F7E5CE 0%, #E9CDA8 100%);
+  border-color: #B68A57;
+}
+.wc-podium-spot.bronze:hover { transform: translateY(-2px); }
+.wc-podium-medal {
+  font-size: 30px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.12));
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.wc-podium-spot.gold .wc-podium-medal { font-size: 40px; }
+.wc-podium-rank-lbl {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 5px;
+}
+.wc-podium-spot.gold .wc-podium-rank-lbl { color: #8A6500; }
+.wc-podium-spot.silver .wc-podium-rank-lbl { color: #555; }
+.wc-podium-spot.bronze .wc-podium-rank-lbl { color: #8B5A2B; }
+.wc-podium-name {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  line-height: 1.3;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+.wc-podium-spot.gold .wc-podium-name { font-size: 15.5px; }
+.wc-podium-pts {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-dark);
+  font-variant-numeric: tabular-nums;
+}
+.wc-podium-spot.gold .wc-podium-pts { font-size: 14.5px; }
+.wc-podium-meta {
+  font-size: 10.5px;
+  margin-top: 5px;
+  color: var(--clay);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 14px;
+}
+.wc-podium-spot.me::after {
+  content: "أنت";
+  position: absolute;
+  top: 8px; inset-inline-end: 8px;
+  font-size: 9.5px;
+  padding: 2px 7px;
+  background: var(--green);
+  color: #FFFDF8;
+  border-radius: 99px;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
+.wc-podium-share {
+  position: absolute;
+  top: 8px; inset-inline-start: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all .15s;
+  z-index: 2;
+  padding: 0;
+}
+.wc-podium-share:hover {
+  background: var(--green-tint);
+  border-color: var(--green-light);
+  transform: scale(1.08);
+}
+@media (max-width: 560px) {
+  .wc-podium { gap: 6px; padding-top: 8px; }
+  .wc-podium-spot { padding: 12px 6px 10px; }
+  .wc-podium-name { font-size: 12px; }
+  .wc-podium-spot.gold .wc-podium-name { font-size: 13.5px; }
+  .wc-podium-medal { font-size: 26px; }
+  .wc-podium-spot.gold .wc-podium-medal { font-size: 34px; }
+  .wc-podium-share { width: 24px; height: 24px; font-size: 11px; top: 5px; inset-inline-start: 5px; }
+  .wc-podium-spot.me::after { font-size: 8.5px; padding: 1px 5px; top: 5px; inset-inline-end: 5px; }
+}
+
+/* Leaderboard rows: silver/bronze gradients */
+.wc-lb-row.silver {
+  background: linear-gradient(90deg, #EFEEEA 0%, transparent 50%);
+}
+.wc-lb-row.bronze {
+  background: linear-gradient(90deg, #F5E1C8 0%, transparent 50%);
+}
+
+/* Share button in leaderboard row */
+.wc-lb-btn.share { color: var(--green); }
+.wc-lb-btn.share:hover { background: var(--green-tint); color: var(--green-dark); }
+
+/* ── 2) Golden prediction badge ──────────────────────────────── */
+.wc-golden-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, var(--gold-tint) 0%, #FFF7E0 100%);
+  border: 1px solid var(--gold-soft);
+  color: var(--clay);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 99px;
+  margin-inline-start: 6px;
+  vertical-align: middle;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+.wc-golden-badge::before { content: "🏅"; font-size: 11px; }
+
+/* Stage-card achievements bar */
+.wc-stage-achievements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 4px;
+}
+.wc-achievement-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, var(--gold-tint) 0%, #FFF7E0 100%);
+  border: 1px solid var(--gold-soft);
+  color: var(--clay);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 99px;
+}
+
+/* ── 6) Floating "+N" points animation ───────────────────────── */
+.wc-pts-float {
+  position: absolute;
+  top: 4px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--green);
+  text-shadow: 0 1px 3px rgba(255,253,248,.95), 0 0 6px rgba(255,253,248,.6);
+  pointer-events: none;
+  animation: ptsFloat 1.9s ease-out forwards;
+  z-index: 50;
+  white-space: nowrap;
+  letter-spacing: .5px;
+}
+@keyframes ptsFloat {
+  0%   { opacity: 0; transform: translate(-50%, 10px) scale(.7); }
+  18%  { opacity: 1; transform: translate(-50%, -2px) scale(1.08); }
+  35%  { transform: translate(-50%, -8px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -40px) scale(.92); }
+}
+
+/* ── 3) Share-card modal ─────────────────────────────────────── */
+.wc-share-modal {
+  position: fixed; inset: 0;
+  background: rgba(36,66,41,.62);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+.wc-share-modal.open { display: flex; }
+.wc-share-modal-inner {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 22px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0,0,0,.28);
+  position: relative;
+  border: 1px solid var(--border);
+}
+.wc-share-modal-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 14px;
+  text-align: center;
+  padding-inline-start: 30px;
+  padding-inline-end: 30px;
+}
+.wc-share-preview {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  background: #fafaf6;
+  border: 1px solid var(--border);
+  display: block;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.wc-share-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.wc-share-btn {
+  flex: 1;
+  min-width: 130px;
+  background: var(--green);
+  color: #FFFDF8;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background .15s, transform .1s;
+}
+.wc-share-btn:hover { background: var(--green-dark); transform: translateY(-1px); }
+.wc-share-btn.secondary {
+  background: var(--bg-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.wc-share-btn.secondary:hover { background: var(--beige); }
+.wc-share-close {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 12px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--text-mute);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 50%;
+  line-height: 1;
+}
+.wc-share-close:hover { color: var(--text); }
+.wc-share-toast {
+  position: fixed;
+  bottom: 30px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  background: var(--green-dark);
+  color: #FFFDF8;
+  padding: 10px 20px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity .25s;
+  z-index: 10000;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2);
+}
+.wc-share-toast.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -4268,6 +4965,54 @@ const I18N = {
     'wc.admin.autosave':      'التعديلات تُحفظ تلقائياً في Firestore.',
     'wc.summary.label':       'توقعاتك:',
 
+    // ── تحسينات الأدوار الإقصائية ──────────────────────────────
+    'wc.bracket.title':       'مسار البطولة',
+    'wc.bracket.hint':        'اسحب أفقياً لاستعراض كل الأدوار',
+    'wc.bracket.champion':    'البطل',
+    'wc.bracket.tbd':         'منتظر',
+    'wc.bracket.status.open':     'مفتوح',
+    'wc.bracket.status.closed':   'مغلق',
+    'wc.bracket.status.upcoming': 'قريباً',
+    'wc.view.bracket':        'شكل البراكت',
+    'wc.view.list':           'قائمة',
+
+    'wc.countdown.openLabel':    'تُغلق توقعات',
+    'wc.countdown.upcomingLabel':'تفتح توقعات',
+    'wc.countdown.allDone':      'انتهت جميع التوقعات',
+    'wc.countdown.noOpen':       'لا توجد أدوار مفتوحة حالياً',
+    'wc.countdown.openSoon':     'سيُفتح قريباً',
+    'wc.countdown.expiredSub':   'تم إغلاق هذا الدور',
+    'wc.countdown.afterText':    'بعد',
+    'wc.countdown.openNow':      'مفتوح للتوقعات الآن!',
+    'wc.countdown.d':            'يوم',
+    'wc.countdown.h':            'ساعة',
+    'wc.countdown.m':            'دقيقة',
+    'wc.countdown.s':            'ثانية',
+
+    'wc.podium.subLabel':     'الترتيب',
+    'wc.podium.share':        'مشاركة بطاقتي',
+
+    'wc.golden.label':        'ذهبي',
+    'wc.golden.title':        'توقعاتك الذهبية في هذا الدور',
+    'wc.golden.tooltip':      'نتيجة مضبوطة 100%',
+
+    'wc.share.title':         'بطاقة ترتيبي',
+    'wc.share.download':      '⬇ تحميل الصورة',
+    'wc.share.native':        '📤 مشاركة',
+    'wc.share.copy':          '📋 نسخ',
+    'wc.share.copied':        '✓ تم النسخ',
+    'wc.share.downloaded':    '✓ تم التحميل',
+    'wc.share.rankWord':      'الترتيب',
+    'wc.share.outOf':         'من',
+    'wc.share.points':        'نقطة',
+    'wc.share.subtitle':      'تقويم أساس المؤسسي · توقعات كأس العالم 2026',
+    'wc.share.quote.top1':    'في الصدارة! 🏆',
+    'wc.share.quote.top3':    'يا له من أداء رائع! ⭐',
+    'wc.share.quote.top10':   'تقدم مذهل، استمر! 💪',
+    'wc.share.quote.mid':     'كل توقع يقربك من القمة 🎯',
+    'wc.share.quote.low':     'الطريق طويل، والقادم أجمل ⚽',
+    'wc.share.quote.zero':    'الفرصة لا تزال متاحة، شارك! ✨',
+
     // ── Control modal ──────────────────────────────────────────
     'ctrl.title':             '⚙ التحكم',
     'ctrl.section.admin':     'الإدارة',
@@ -4505,6 +5250,54 @@ const I18N = {
     'wc.admin.selectTeam':    '— Select a team —',
     'wc.admin.autosave':      'Changes are saved automatically to Firestore.',
     'wc.summary.label':       'Your picks:',
+
+    // ── Knockout enhancements ──────────────────────────────────
+    'wc.bracket.title':       'Tournament Bracket',
+    'wc.bracket.hint':        'Scroll horizontally to view all rounds',
+    'wc.bracket.champion':    'Champion',
+    'wc.bracket.tbd':         'TBD',
+    'wc.bracket.status.open':     'Open',
+    'wc.bracket.status.closed':   'Closed',
+    'wc.bracket.status.upcoming': 'Soon',
+    'wc.view.bracket':        'Bracket',
+    'wc.view.list':           'List',
+
+    'wc.countdown.openLabel':    'Predictions close for',
+    'wc.countdown.upcomingLabel':'Predictions open for',
+    'wc.countdown.allDone':      'All predictions are done',
+    'wc.countdown.noOpen':       'No round is open right now',
+    'wc.countdown.openSoon':     'Opening soon',
+    'wc.countdown.expiredSub':   'This round is now closed',
+    'wc.countdown.afterText':    'in',
+    'wc.countdown.openNow':      'Open for predictions now!',
+    'wc.countdown.d':            'd',
+    'wc.countdown.h':            'h',
+    'wc.countdown.m':            'm',
+    'wc.countdown.s':            's',
+
+    'wc.podium.subLabel':     'Rank',
+    'wc.podium.share':        'Share my card',
+
+    'wc.golden.label':        'Golden',
+    'wc.golden.title':        'Your golden picks in this round',
+    'wc.golden.tooltip':      '100% exact score',
+
+    'wc.share.title':         'My Ranking Card',
+    'wc.share.download':      '⬇ Download',
+    'wc.share.native':        '📤 Share',
+    'wc.share.copy':          '📋 Copy',
+    'wc.share.copied':        '✓ Copied',
+    'wc.share.downloaded':    '✓ Downloaded',
+    'wc.share.rankWord':      'Rank',
+    'wc.share.outOf':         'of',
+    'wc.share.points':        'pts',
+    'wc.share.subtitle':      'ASAAS Calendar · World Cup 2026 Predictions',
+    'wc.share.quote.top1':    'On top! 🏆',
+    'wc.share.quote.top3':    'Amazing performance! ⭐',
+    'wc.share.quote.top10':   'Great momentum, keep it up! 💪',
+    'wc.share.quote.mid':     'Every pick moves you up 🎯',
+    'wc.share.quote.low':     'Long road ahead — keep going ⚽',
+    'wc.share.quote.zero':    'Still time to join in! ✨',
 
     'ctrl.title':             '⚙ Control',
     'ctrl.section.admin':     'Administration',
@@ -9071,6 +9864,9 @@ const wcState = {
   results: { groups: {}, groupStats: {}, knockout: { r32:[], r16:[], qf:[], sf:[], final:[] } },
   tab: 'predict',          // predict | leaderboard | admin
   lbStage: 'overall',      // overall | groups | r32 | r16 | qf | sf | final
+  koView: 'bracket',       // bracket | list (knockout display mode)
+  prevTotals: null,        // { [playerId]: prevTotalScore }  for + animation
+  countdownTimer: null,    // setInterval handle for big countdown
   draft: null,
   now: Date.now(),
 };
@@ -9637,6 +10433,7 @@ function wcRenderPredict() {
   if (!wcState.myName) {
     return `
       ${wcGroupsNotice()}
+      ${wcRenderBigCountdown()}
       <div class="wc-register">
         <div class="wc-register-title">${t('wc.register.title')}</div>
         <div class="wc-register-row">
@@ -9652,8 +10449,23 @@ function wcRenderPredict() {
   }
   if (!wcState.draft) wcInitDraft();
 
-  // Render each stage as a card
-  const stageCards = WC_STAGES.map(stage => wcRenderStageCard(stage)).join('');
+  // Separate groups stage card from knockout stages
+  const groupsStageObj = WC_STAGES.find(s => s.id === 'groups');
+  const koStages = WC_STAGES.filter(s => s.id !== 'groups');
+  const groupsCard = wcRenderStageCard(groupsStageObj);
+
+  // Knockout section: bracket or list depending on koView
+  let koSection = '';
+  const anyKOTouched = koStages.some(s =>
+    ((wcState.results.knockout && wcState.results.knockout[s.id]) || []).some(m => m && (m.home || m.away))
+  );
+  if (anyKOTouched) {
+    koSection = wcRenderViewToggle() + (wcState.koView === 'bracket' ? wcRenderBracket() : koStages.map(s => wcRenderStageCard(s)).join(''));
+  } else {
+    // No matchups announced yet — fall back to stage list (which shows empty/upcoming states)
+    koSection = koStages.map(s => wcRenderStageCard(s)).join('');
+  }
+  const stageCards = groupsCard + koSection;
 
   // Compute groups completion (only matters when groups stage is open)
   const groupsStage = WC_STAGES.find(s => s.id === 'groups');
@@ -9690,7 +10502,7 @@ function wcRenderPredict() {
       </div>`;
   }
 
-  return wcGroupsNotice() + stageCards + submitRow;
+  return wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
 }
 
 function wcRenderStageOverview() {
@@ -9744,7 +10556,10 @@ function wcRenderStageCard(stage) {
     body = `
       <div class="wc-closed-body">
         <div class="wc-closed-line">${t('wc.closed.msg')}</div>
-        ${myPred ? `<div class="wc-closed-points">${t('wc.closed.points')}: <strong>${myPts}</strong></div>` : ''}
+        ${myPred ? `<div class="wc-closed-points">${t('wc.closed.points')}: <strong>${myPts}</strong>${(() => {
+          const g = wcCountGoldenInStage(stage.id, myPred);
+          return g > 0 ? ` <span class="wc-golden-badge" title="${wcEsc(t('wc.golden.tooltip'))}">${g} ${wcEsc(t('wc.golden.label'))}</span>` : '';
+        })()}</div>` : ''}
         ${hasResults ? wcRenderStageSummary(stage, myPred, true) : ''}
         ${stage.id === 'groups' ? wcRenderAllGroupStandingsPublic() : ''}
       </div>`;
@@ -9895,6 +10710,7 @@ function wcRenderLeaderboard() {
   const isAdmin = (typeof state !== 'undefined' && state.isAdmin);
   const delLabel = (CURRENT_LANG === 'en') ? 'Delete participant' : 'حذف المشارك';
   const viewLabel = (CURRENT_LANG === 'en') ? 'View predictions' : 'عرض التوقعات';
+  const shareLabel = t('wc.podium.share');
 
   // Dense ranking ("1223"): tied scores share the same rank;
   // the next distinct score increments by exactly 1, never skipping a rank.
@@ -9909,19 +10725,54 @@ function wcRenderLeaderboard() {
     ranks.push(lastRank);
   }
 
+  // Top-3 podium (only when 3+ participants and the leader has a non-zero score)
+  let podiumHTML = '';
+  if (ranked.length >= 3 && top && top.score > 0) {
+    const top3 = ranked.slice(0, 3).map((p, i) => ({ ...p, rank: ranks[i] }));
+    // Display order: silver(2) — gold(1) — bronze(3) so gold sits at center
+    const order = [top3[1], top3[0], top3[2]];
+    const medalCls = { 1: 'gold', 2: 'silver', 3: 'bronze' };
+    const medalEmoji = { 1: '🥇', 2: '🥈', 3: '🥉' };
+    const rankLbl = (CURRENT_LANG === 'en') ? { 1: '1st', 2: '2nd', 3: '3rd' } : { 1: 'الأول', 2: 'الثاني', 3: 'الثالث' };
+    podiumHTML = `
+      <div class="wc-podium">
+        ${order.filter(Boolean).map(p => {
+          const isMe = p.id === wcState.myId;
+          const cls = medalCls[p.rank] || '';
+          const golden = wcCountGolden(p);
+          const goldenHtml = golden > 0 ? `<span class="wc-golden-badge" title="${wcEsc(t('wc.golden.tooltip'))}">${golden}</span>` : '';
+          const isMyself = isMe;
+          const canShare = true; // any visible player can be shared
+          return `
+            <div class="wc-podium-spot ${cls} ${isMe ? 'me' : ''}" data-wc-player="${wcEsc(p.id)}">
+              ${canShare ? `<button class="wc-podium-share" onclick="wcOpenShareCard('${wcEsc(p.id)}', ${stage === 'overall' ? 'null' : `'${stage}'`})" title="${wcEsc(shareLabel)}" aria-label="${wcEsc(shareLabel)}">📤</button>` : ''}
+              <div class="wc-podium-medal">${medalEmoji[p.rank]}</div>
+              <div class="wc-podium-rank-lbl">${rankLbl[p.rank]}</div>
+              <div class="wc-podium-name">${wcEsc(p.name)}</div>
+              <div class="wc-podium-pts">${p.score} ${t('wc.lb.point')}</div>
+              <div class="wc-podium-meta">${goldenHtml}</div>
+            </div>`;
+        }).join('')}
+      </div>`;
+  }
+
   const rows = ranked.map((p, i) => {
     const rank = ranks[i];
     const isMe = p.id === wcState.myId;
-    const cls = rank === 1 ? 'gold' : '';
+    const cls = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    const golden = wcCountGolden(p);
+    const goldenHtml = golden > 0 ? `<span class="wc-golden-badge" title="${wcEsc(t('wc.golden.tooltip'))}">${golden}</span>` : '';
+    const shareBtn = `<button class="wc-lb-btn share" onclick="wcOpenShareCard('${wcEsc(p.id)}', ${stage === 'overall' ? 'null' : `'${stage}'`})" title="${wcEsc(shareLabel)}" aria-label="${wcEsc(shareLabel)}">📤</button>`;
     const actions = `<div class="wc-lb-actions">
+           ${shareBtn}
            <button class="wc-lb-btn view" onclick="wcViewParticipant('${wcEsc(p.id)}')" title="${viewLabel}" aria-label="${viewLabel}">👁</button>
            ${isAdmin ? `<button class="wc-lb-btn del" onclick="wcDeleteParticipant('${wcEsc(p.id)}')" title="${delLabel}" aria-label="${delLabel}">🗑</button>` : ''}
          </div>`;
     return `
-      <div class="wc-lb-row ${cls} ${isMe?'me':''}">
+      <div class="wc-lb-row ${cls} ${isMe?'me':''}" data-wc-player="${wcEsc(p.id)}">
         <div class="wc-lb-rank">${medal}</div>
-        <div class="wc-lb-name">${wcEsc(p.name)}</div>
+        <div class="wc-lb-name">${wcEsc(p.name)}${goldenHtml}</div>
         <div class="wc-lb-points">${p.score} ${t('wc.lb.point')}</div>
         ${actions}
       </div>`;
@@ -9936,7 +10787,7 @@ function wcRenderLeaderboard() {
       ${t('wc.lb.scoring.e')} = ${WC_SCORING.knockoutWinner + WC_SCORING.knockoutExactBonus} ${t('wc.lb.point')} (${WC_SCORING.knockoutWinner} + ${WC_SCORING.knockoutExactBonus} ${t('wc.lb.scoring.bonus')})
     </div>`;
 
-  return subTabs + champCard + `
+  return subTabs + champCard + podiumHTML + `
     <div style="font-size:12.5px;color:var(--text-mute);margin-bottom:10px">
       ${ranked.length} ${t('wc.lb.count')}
     </div>
@@ -10284,6 +11135,594 @@ window.wcLogout = function() {
   wcClearIdentity();
   wcRender();
 };
+
+// ════════════════════════════════════════════════════════════════
+//   🎯  تحسينات الأدوار الإقصائية  -  دوال مساعدة
+// ════════════════════════════════════════════════════════════════
+
+// ── (4) Big countdown banner ─────────────────────────────────────
+function wcRenderBigCountdown() {
+  // Find next-closing OPEN stage; else next OPEN-soon upcoming stage; else expired msg.
+  const now = Date.now();
+  const open = WC_STAGES.filter(s => wcStageStatus(s) === 'open')
+                        .sort((a,b) => new Date(a.closesAt) - new Date(b.closesAt))[0];
+  let mode, target, stage;
+  if (open) {
+    mode = 'closing';
+    target = new Date(open.closesAt).getTime();
+    stage = open;
+  } else {
+    const upcoming = WC_STAGES.filter(s => wcStageStatus(s) === 'upcoming')
+                              .sort((a,b) => new Date(a.opensAt) - new Date(b.opensAt))[0];
+    if (upcoming) {
+      mode = 'opening';
+      target = new Date(upcoming.opensAt).getTime();
+      stage = upcoming;
+    } else {
+      // No open & no upcoming → all closed (tournament finished)
+      return `
+        <div class="wc-big-countdown expired" id="wcBigCountdown">
+          <div class="wc-bcd-left">
+            <div class="wc-bcd-label">${wcEsc(t('wc.countdown.allDone'))}</div>
+            <div class="wc-bcd-stage">🏁</div>
+            <div class="wc-bcd-sub">${wcEsc(t('wc.countdown.expiredSub'))}</div>
+          </div>
+        </div>`;
+    }
+  }
+
+  const diff = Math.max(0, target - now);
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000) / 60000);
+  const secs  = Math.floor((diff % 60000) / 1000);
+  const urgent = (mode === 'closing' && diff > 0 && diff < 6 * 3600000);
+
+  const labelText = (mode === 'closing') ? t('wc.countdown.openLabel') : t('wc.countdown.upcomingLabel');
+  const stageName = t('wc.stage.' + stage.id);
+  const subText = (mode === 'closing')
+                    ? (urgent ? `⚠️ ${t('wc.countdown.afterText')}` : t('wc.countdown.afterText'))
+                    : t('wc.countdown.afterText');
+  const stateCls = (mode === 'opening') ? 'opening' : (urgent ? 'urgent' : '');
+
+  return `
+    <div class="wc-big-countdown ${stateCls}" id="wcBigCountdown"
+         data-target="${target}" data-mode="${mode}">
+      <div class="wc-bcd-left">
+        <div class="wc-bcd-label">${wcEsc(labelText)} · ${wcEsc(stage.icon)} ${wcEsc(stageName)}</div>
+        <div class="wc-bcd-stage">${wcEsc(subText)}</div>
+        <div class="wc-bcd-sub" id="wcBcdSubLine"></div>
+      </div>
+      <div class="wc-bcd-numbers" id="wcBcdNumbers">
+        ${days > 0 ? `<div class="wc-bcd-cell"><div class="wc-bcd-num" data-bcd="d">${String(days).padStart(2,'0')}</div><div class="wc-bcd-lbl">${wcEsc(t('wc.countdown.d'))}</div></div>` : ''}
+        <div class="wc-bcd-cell"><div class="wc-bcd-num" data-bcd="h">${String(hours).padStart(2,'0')}</div><div class="wc-bcd-lbl">${wcEsc(t('wc.countdown.h'))}</div></div>
+        <div class="wc-bcd-cell"><div class="wc-bcd-num" data-bcd="m">${String(mins).padStart(2,'0')}</div><div class="wc-bcd-lbl">${wcEsc(t('wc.countdown.m'))}</div></div>
+        <div class="wc-bcd-cell"><div class="wc-bcd-num" data-bcd="s">${String(secs).padStart(2,'0')}</div><div class="wc-bcd-lbl">${wcEsc(t('wc.countdown.s'))}</div></div>
+      </div>
+    </div>`;
+}
+
+function wcStartCountdownLoop() {
+  if (wcState.countdownTimer) { clearInterval(wcState.countdownTimer); wcState.countdownTimer = null; }
+  wcState.countdownTimer = setInterval(() => {
+    const el = document.getElementById('wcBigCountdown');
+    if (!el) return;
+    const target = parseInt(el.getAttribute('data-target') || '0', 10);
+    if (!target) return;
+    const mode = el.getAttribute('data-mode');
+    const diff = Math.max(0, target - Date.now());
+    if (diff === 0) {
+      // Stage just transitioned: re-render the WC view to recompute stage statuses
+      wcRender();
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const dEl = el.querySelector('[data-bcd="d"]');
+    const hEl = el.querySelector('[data-bcd="h"]');
+    const mEl = el.querySelector('[data-bcd="m"]');
+    const sEl = el.querySelector('[data-bcd="s"]');
+    if (dEl) dEl.textContent = String(d).padStart(2,'0');
+    if (hEl) hEl.textContent = String(h).padStart(2,'0');
+    if (mEl) mEl.textContent = String(m).padStart(2,'0');
+    if (sEl) sEl.textContent = String(s).padStart(2,'0');
+    // Toggle urgent state at <6h for closing
+    if (mode === 'closing') {
+      const urgent = diff < 6 * 3600000;
+      el.classList.toggle('urgent', urgent);
+    }
+  }, 1000);
+}
+
+// ── (1) Bracket view of all knockout stages ──────────────────────
+function wcRenderViewToggle() {
+  return `
+    <div class="wc-view-toggle" role="group" aria-label="Knockout view">
+      <button class="wc-view-toggle-btn ${wcState.koView === 'bracket' ? 'active' : ''}"
+              onclick="wcSetKoView('bracket')" type="button">🌳 ${wcEsc(t('wc.view.bracket'))}</button>
+      <button class="wc-view-toggle-btn ${wcState.koView === 'list' ? 'active' : ''}"
+              onclick="wcSetKoView('list')" type="button">📋 ${wcEsc(t('wc.view.list'))}</button>
+    </div>`;
+}
+window.wcSetKoView = function(mode) {
+  wcState.koView = (mode === 'list') ? 'list' : 'bracket';
+  try { localStorage.setItem('asaas_wc_koView', wcState.koView); } catch(e){}
+  wcRender();
+};
+
+function wcRenderBracket() {
+  const koStages = WC_STAGES.filter(s => s.id !== 'groups');
+  const cols = koStages.map(stage => wcRenderBracketColumn(stage)).join('');
+
+  // Compute champion (from final match result, if present)
+  const finalArr = (wcState.results.knockout && wcState.results.knockout.final) || [];
+  const fm = finalArr[0];
+  let championHtml = `<div class="wc-bracket-trophy-winner tbd">${wcEsc(t('wc.bracket.tbd'))}</div>`;
+  if (fm && fm.home && fm.away && fm.homeScore != null && fm.awayScore != null && fm.homeScore !== fm.awayScore) {
+    const winCode = fm.homeScore > fm.awayScore ? fm.home : fm.away;
+    const wt = WC_TEAM_MAP[winCode];
+    if (wt) championHtml = `<div class="wc-bracket-trophy-winner">${wcFlagImg(wt.code, 18)} <span>${wcEsc(wt.name)}</span></div>`;
+  }
+
+  const trophyCol = `
+    <div class="wc-bracket-col wc-bracket-trophy-col">
+      <div class="wc-bracket-trophy">
+        <div class="wc-bracket-trophy-icon">🏆</div>
+        <div class="wc-bracket-trophy-label">${wcEsc(t('wc.bracket.champion'))}</div>
+        ${championHtml}
+      </div>
+    </div>`;
+
+  return `
+    <div class="wc-bracket-wrap">
+      <div class="wc-bracket-head">
+        <div class="wc-bracket-head-title">🌳 ${wcEsc(t('wc.bracket.title'))}</div>
+        <div class="wc-bracket-head-hint">${wcEsc(t('wc.bracket.hint'))}</div>
+      </div>
+      <div class="wc-bracket-scroll">
+        <div class="wc-bracket-grid">
+          ${cols}
+          ${trophyCol}
+        </div>
+      </div>
+    </div>`;
+}
+
+function wcRenderBracketColumn(stage) {
+  const status = wcStageStatus(stage);
+  const matches = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
+  const draftArr = (wcState.draft && wcState.draft.knockout && wcState.draft.knockout[stage.id]) || [];
+  const statusText = t('wc.bracket.status.' + status);
+  const cells = Array.from({ length: stage.matchCount }, (_, i) => {
+    const m = matches[i] || {};
+    const d = draftArr[i] || {};
+    return wcRenderBracketMatch(stage, i, m, d, status);
+  }).join('');
+
+  return `
+    <div class="wc-bracket-col col-${status}">
+      <div class="wc-bracket-col-header">
+        <span>${stage.icon} ${wcEsc(t('wc.stage.' + stage.id))}</span>
+        <span class="wc-bracket-col-status">${wcEsc(statusText)}</span>
+      </div>
+      <div class="wc-bracket-matches">${cells}</div>
+    </div>`;
+}
+
+function wcRenderBracketMatch(stage, idx, m, d, status) {
+  const home = m.home ? WC_TEAM_MAP[m.home] : null;
+  const away = m.away ? WC_TEAM_MAP[m.away] : null;
+  const officialIn = (m.homeScore != null && m.awayScore != null);
+  const editable = (status === 'open');
+  const cls = ['wc-bm'];
+  if (editable && !officialIn) cls.push('editable');
+  if (status === 'upcoming' || status === 'closed') cls.push('locked');
+  if (officialIn) cls.push('has-result');
+
+  // Golden if my own pick equals exact for this match
+  let golden = '';
+  if (officialIn && d.homeScore === m.homeScore && d.awayScore === m.awayScore) {
+    golden = '<span class="wc-bm-golden" title="'+wcEsc(t('wc.golden.tooltip'))+'">🏅</span>';
+  }
+
+  const tbd = `<span class="wc-bm-side-tbd-flag"></span><span class="wc-bm-side-name tbd">${wcEsc(t('wc.bracket.tbd'))}</span>`;
+
+  // Score control: input when editable+no-official, static when locked or official
+  const scoreCtrl = (homeOrAway, val) => {
+    if (editable && !officialIn) {
+      return `<input class="wc-bm-side-input" type="number" min="0" max="20"
+                     data-wci="${homeOrAway}" value="${val ?? ''}" />`;
+    }
+    if (officialIn) {
+      return `<span class="wc-bm-side-score-static">${m[homeOrAway + 'Score']}</span>`;
+    }
+    return `<span class="wc-bm-side-score-static" style="color:var(--text-mute)">${val != null ? val : '—'}</span>`;
+  };
+
+  const homeRow = `
+    <div class="wc-bm-side">
+      ${home ? wcFlagImg(home.code, 14) : '<span class="wc-bm-side-tbd-flag"></span>'}
+      <span class="wc-bm-side-name${home ? '' : ' tbd'}">${home ? wcEsc(home.name) : wcEsc(t('wc.bracket.tbd'))}</span>
+      ${scoreCtrl('home', d.homeScore)}
+    </div>`;
+  const awayRow = `
+    <div class="wc-bm-side">
+      ${away ? wcFlagImg(away.code, 14) : '<span class="wc-bm-side-tbd-flag"></span>'}
+      <span class="wc-bm-side-name${away ? '' : ' tbd'}">${away ? wcEsc(away.name) : wcEsc(t('wc.bracket.tbd'))}</span>
+      ${scoreCtrl('away', d.awayScore)}
+    </div>`;
+
+  const resultBar = officialIn
+    ? `<div class="wc-bm-result">${wcEsc(t('wc.match.official'))}: ${m.homeScore} − ${m.awayScore}${golden}</div>`
+    : '';
+
+  return `
+    <div class="${cls.join(' ')}" data-wcstage="${stage.id}" data-wcidx="${idx}">
+      ${homeRow}
+      <div class="wc-bm-divider"></div>
+      ${awayRow}
+      ${resultBar}
+    </div>`;
+}
+
+// ── (2) Golden prediction helpers ────────────────────────────────
+function wcCountGoldenInStage(stageId, pred) {
+  if (!pred) return 0;
+  if (stageId === 'groups') return 0; // groups uses qualifiers, exact bonus differs
+  const actuals = (wcState.results.knockout && wcState.results.knockout[stageId]) || [];
+  const guesses = (pred.knockout && pred.knockout[stageId]) || [];
+  let count = 0;
+  actuals.forEach((a, i) => {
+    if (!a || a.homeScore == null || a.awayScore == null) return;
+    const g = guesses[i];
+    if (!g || g.homeScore == null || g.awayScore == null) return;
+    if (g.homeScore === a.homeScore && g.awayScore === a.awayScore) count++;
+  });
+  return count;
+}
+function wcCountGolden(pred) {
+  if (!pred) return 0;
+  let total = 0;
+  ['r32','r16','qf','sf','final'].forEach(s => { total += wcCountGoldenInStage(s, pred); });
+  // Also count exact group-order bonuses as golden
+  const actuals = (wcState.results.groups) || {};
+  WC_GROUPS.forEach(g => {
+    const a = actuals[g.id] || [];
+    const p = (pred.groups || {})[g.id] || [];
+    if (a.length === 2 && p.length === 2 && p[0] === a[0] && p[1] === a[1]) total++;
+  });
+  return total;
+}
+
+// ── (6) Points-change animation ──────────────────────────────────
+function wcSnapshotTotals() {
+  const m = {};
+  (wcState.predictions || []).forEach(p => { m[p.id] = wcTotal(p); });
+  return m;
+}
+function wcDetectDeltas() {
+  const newTotals = wcSnapshotTotals();
+  if (!wcState.prevTotals) { wcState.prevTotals = newTotals; return []; }
+  const deltas = [];
+  Object.keys(newTotals).forEach(id => {
+    const oldV = wcState.prevTotals[id] || 0;
+    const newV = newTotals[id];
+    if (newV > oldV) deltas.push({ id, delta: newV - oldV });
+  });
+  wcState.prevTotals = newTotals;
+  return deltas;
+}
+function wcRunPointDeltaAnimations(deltas) {
+  if (!deltas || !deltas.length) return;
+  deltas.forEach(({ id, delta }) => {
+    document.querySelectorAll(`[data-wc-player="${CSS.escape(id)}"]`).forEach(el => {
+      const float = document.createElement('div');
+      float.className = 'wc-pts-float';
+      float.textContent = '+' + delta;
+      // Ensure host can position the absolute floater
+      const cs = window.getComputedStyle(el);
+      if (cs.position === 'static') el.style.position = 'relative';
+      el.appendChild(float);
+      setTimeout(() => { try { float.remove(); } catch(e){} }, 2000);
+    });
+  });
+}
+
+// ── (3) Share ranking card ───────────────────────────────────────
+function wcPickQuoteForRank(rank, total, score) {
+  if (score === 0)            return t('wc.share.quote.zero');
+  if (rank === 1)             return t('wc.share.quote.top1');
+  if (rank <= 3)              return t('wc.share.quote.top3');
+  if (rank <= 10)             return t('wc.share.quote.top10');
+  if (rank <= total / 2)      return t('wc.share.quote.mid');
+  return t('wc.share.quote.low');
+}
+
+function wcDenseRanks(arr) {
+  const ranks = [];
+  let lastRank = 0, lastScore = null;
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i].score !== lastScore) { lastRank = lastRank + 1; lastScore = arr[i].score; }
+    ranks.push(lastRank);
+  }
+  return ranks;
+}
+
+function wcDrawShareCard(canvas, ctx, payload) {
+  const W = canvas.width, H = canvas.height;
+  const isAr = (CURRENT_LANG !== 'en');
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#244229');
+  bg.addColorStop(0.6, '#315C3B');
+  bg.addColorStop(1, '#1a3520');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Decorative soft circle
+  ctx.fillStyle = 'rgba(255,253,248,0.06)';
+  ctx.beginPath(); ctx.arc(W * 0.85, H * 0.2, 220, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(201,166,70,0.07)';
+  ctx.beginPath(); ctx.arc(W * 0.15, H * 0.85, 180, 0, Math.PI * 2); ctx.fill();
+
+  // Top brand strip
+  ctx.fillStyle = 'rgba(255,253,248,0.10)';
+  ctx.fillRect(0, 0, W, 70);
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#FFFDF8';
+  ctx.font = '600 22px "Tajawal", "Co Headline", system-ui, sans-serif';
+  ctx.fillText(payload.subtitle, W / 2, 36);
+
+  // Medal / rank badge
+  const cy = 175;
+  ctx.font = '110px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+  ctx.fillText(payload.medal, W / 2, cy);
+
+  // Rank label
+  ctx.fillStyle = 'rgba(255,253,248,0.78)';
+  ctx.font = '700 14px "Tajawal", system-ui, sans-serif';
+  const rankLine = `${payload.rankLabel}: ${isAr ? `${payload.rank} ${payload.outOf} ${payload.total}` : `${payload.rank} ${payload.outOf} ${payload.total}`}`;
+  ctx.fillText(rankLine, W / 2, cy + 80);
+
+  // Name
+  ctx.fillStyle = '#FFFDF8';
+  ctx.font = '700 38px "Tajawal", "Co Headline", system-ui, sans-serif';
+  // Truncate long names
+  let displayName = payload.name;
+  const maxNameW = W - 80;
+  while (ctx.measureText(displayName).width > maxNameW && displayName.length > 6) {
+    displayName = displayName.slice(0, -2);
+  }
+  if (displayName !== payload.name) displayName += '…';
+  ctx.fillText(displayName, W / 2, cy + 130);
+
+  // Points capsule
+  const capsuleY = cy + 200;
+  const capsuleH = 56;
+  const capsuleText = `${payload.score} ${payload.pointsWord}`;
+  ctx.font = '700 26px "Tajawal", "Co Headline", system-ui, sans-serif';
+  const tw = ctx.measureText(capsuleText).width;
+  const capsuleW = tw + 60;
+  const capsuleX = (W - capsuleW) / 2;
+  ctx.fillStyle = 'rgba(201,166,70,0.95)';
+  // Rounded rect (manual for older browsers)
+  const r = capsuleH / 2;
+  ctx.beginPath();
+  ctx.moveTo(capsuleX + r, capsuleY);
+  ctx.lineTo(capsuleX + capsuleW - r, capsuleY);
+  ctx.arcTo(capsuleX + capsuleW, capsuleY, capsuleX + capsuleW, capsuleY + r, r);
+  ctx.lineTo(capsuleX + capsuleW, capsuleY + capsuleH - r);
+  ctx.arcTo(capsuleX + capsuleW, capsuleY + capsuleH, capsuleX + capsuleW - r, capsuleY + capsuleH, r);
+  ctx.lineTo(capsuleX + r, capsuleY + capsuleH);
+  ctx.arcTo(capsuleX, capsuleY + capsuleH, capsuleX, capsuleY + capsuleH - r, r);
+  ctx.lineTo(capsuleX, capsuleY + r);
+  ctx.arcTo(capsuleX, capsuleY, capsuleX + r, capsuleY, r);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#244229';
+  ctx.fillText(capsuleText, W / 2, capsuleY + capsuleH / 2);
+
+  // Quote
+  ctx.fillStyle = 'rgba(255,253,248,0.92)';
+  ctx.font = '500 22px "Tajawal", system-ui, sans-serif';
+  ctx.fillText(payload.quote, W / 2, capsuleY + capsuleH + 50);
+
+  // Bottom branding
+  ctx.fillStyle = 'rgba(255,253,248,0.55)';
+  ctx.font = '500 13px "Tajawal", system-ui, sans-serif';
+  ctx.fillText('asaas-calendar-2026', W / 2, H - 24);
+}
+
+let wcShareCanvasCache = null; // last-drawn canvas for download
+
+window.wcOpenShareCard = function(playerId, stageOrNull) {
+  const all = (wcState.predictions || []).slice();
+  if (!all.length) return;
+  // Re-rank with the chosen stage
+  const ranked = all.map(p => {
+    const score = (stageOrNull == null) ? wcTotal(p) : (wcPointsByStage(p)[stageOrNull] || 0);
+    return { ...p, score };
+  }).sort((a,b) => b.score - a.score || a.ts - b.ts);
+  const ranks = wcDenseRanks(ranked);
+  const i = ranked.findIndex(p => p.id === playerId);
+  if (i < 0) return;
+  const player = ranked[i];
+  const rank = ranks[i];
+  const total = ranked.length;
+  const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🎯';
+  const quote = wcPickQuoteForRank(rank, total, player.score);
+
+  // Modal HTML — created lazily once
+  let modal = document.getElementById('wcShareModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'wcShareModal';
+    modal.className = 'wc-share-modal';
+    modal.innerHTML = `
+      <div class="wc-share-modal-inner">
+        <button class="wc-share-close" aria-label="Close" onclick="wcCloseShareCard()">✕</button>
+        <div class="wc-share-modal-title" id="wcShareTitle"></div>
+        <canvas class="wc-share-preview" id="wcShareCanvas" width="1080" height="566"></canvas>
+        <div class="wc-share-actions" id="wcShareActions"></div>
+      </div>
+      <div class="wc-share-toast" id="wcShareToast"></div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) wcCloseShareCard(); });
+  }
+
+  document.getElementById('wcShareTitle').textContent = t('wc.share.title');
+
+  const canvas = document.getElementById('wcShareCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  wcDrawShareCard(canvas, ctx, {
+    subtitle: t('wc.share.subtitle'),
+    medal,
+    rank,
+    rankLabel: t('wc.share.rankWord'),
+    outOf: t('wc.share.outOf'),
+    total,
+    name: player.name,
+    score: player.score,
+    pointsWord: t('wc.share.points'),
+    quote,
+  });
+  wcShareCanvasCache = canvas;
+
+  const actions = document.getElementById('wcShareActions');
+  const hasNativeShare = !!(navigator.share && navigator.canShare);
+  actions.innerHTML = `
+    ${hasNativeShare ? `<button class="wc-share-btn" id="wcShareNativeBtn">${wcEsc(t('wc.share.native'))}</button>` : ''}
+    <button class="wc-share-btn ${hasNativeShare ? 'secondary' : ''}" id="wcShareDownloadBtn">${wcEsc(t('wc.share.download'))}</button>
+    <button class="wc-share-btn secondary" id="wcShareCopyBtn">${wcEsc(t('wc.share.copy'))}</button>`;
+
+  const safeName = (player.name || 'rank').replace(/[^\w\u0600-\u06FF\-]+/g, '_').slice(0, 40);
+
+  const dl = document.getElementById('wcShareDownloadBtn');
+  if (dl) dl.onclick = () => {
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'asaas-rank-' + safeName + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      wcShareToast(t('wc.share.downloaded'));
+    }, 'image/png');
+  };
+
+  const cp = document.getElementById('wcShareCopyBtn');
+  if (cp) cp.onclick = async () => {
+    try {
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        wcShareToast(t('wc.share.copied'));
+      } else {
+        // Fallback: trigger download
+        dl && dl.click();
+      }
+    } catch (e) {
+      console.warn('[WC] copy failed, falling back to download:', e);
+      dl && dl.click();
+    }
+  };
+
+  const nb = document.getElementById('wcShareNativeBtn');
+  if (nb) nb.onclick = async () => {
+    try {
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      const file = new File([blob], 'asaas-rank-' + safeName + '.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: t('wc.share.title'),
+          text: `${t('wc.share.rankWord')}: ${rank} · ${player.score} ${t('wc.share.points')}`,
+        });
+      } else {
+        dl && dl.click();
+      }
+    } catch (e) {
+      if (e && e.name !== 'AbortError') {
+        console.warn('[WC] share failed:', e);
+        dl && dl.click();
+      }
+    }
+  };
+
+  modal.classList.add('open');
+};
+
+window.wcCloseShareCard = function() {
+  const modal = document.getElementById('wcShareModal');
+  if (modal) modal.classList.remove('open');
+};
+
+function wcShareToast(message) {
+  const el = document.getElementById('wcShareToast');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// Hook countdown into the render lifecycle. Function declarations at script
+// scope create script-scoped bindings; we reassign that binding so every
+// caller in the script uses the wrapped version.
+(function installWcRenderHook() {
+  const orig = wcRender;
+  const wrapped = function() {
+    const r = orig.apply(this, arguments);
+    if (wcState.tab === 'predict') {
+      wcStartCountdownLoop();
+    } else if (wcState.countdownTimer) {
+      clearInterval(wcState.countdownTimer);
+      wcState.countdownTimer = null;
+    }
+    return r;
+  };
+  try { wcRender = wrapped; } catch(e) {}
+  try { window.wcRender = wrapped; } catch(e) {}
+})();
+
+// Restore last-chosen koView from localStorage
+try {
+  const lk = localStorage.getItem('asaas_wc_koView');
+  if (lk === 'list' || lk === 'bracket') wcState.koView = lk;
+} catch(e) {}
+
+// Patch wcMaybeRender so that results updates trigger "+N" animations
+(function patchMaybeRender() {
+  const origMaybe = wcMaybeRender;
+  const wrapped = function(source) {
+    if (source === 'results') {
+      const deltas = wcDetectDeltas();
+      const r = origMaybe(source);
+      // Animate after DOM is updated (two rAFs to ensure layout is committed)
+      requestAnimationFrame(() => requestAnimationFrame(() => wcRunPointDeltaAnimations(deltas)));
+      return r;
+    }
+    if (source === 'predictions') {
+      // Snapshot initial totals on first arrival without animating (baseline)
+      if (!wcState.prevTotals) wcState.prevTotals = wcSnapshotTotals();
+    }
+    return origMaybe(source);
+  };
+  try { wcMaybeRender = wrapped; } catch(e) {}
+  try { window.wcMaybeRender = wrapped; } catch(e) {}
+})();
+
+// ════════════════════════════════════════════════════════════════
+//   نهاية تحسينات الأدوار الإقصائية
+// ════════════════════════════════════════════════════════════════
 
 // ────────────────────────────────────────────────────────────────
 // Init + periodic refresh (to detect stage opening/closing)
