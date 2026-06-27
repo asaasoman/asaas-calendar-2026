@@ -3668,6 +3668,130 @@ html.view-wc.wc-dark { color-scheme: dark; }
   .wc-notice-text { font-size: 12px; }
 }
 
+/* ─── Current-stage badge: compact "you are here" indicator at the
+   top of the predictions tab — shows the active prediction window
+   in one glance (which stage + open/upcoming/closed). ─────────── */
+.wc-cs {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 14px;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(58,42,29,.04);
+}
+.wc-cs-leading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  background: linear-gradient(180deg, var(--gold-tint, rgba(201,166,70,.12)) 0%, transparent 100%);
+  border-inline-end: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.wc-cs-leading-ico { font-size: 18px; line-height: 1; }
+.wc-cs-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 10px 14px;
+  min-width: 0;
+}
+.wc-cs-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.wc-cs-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-mute);
+  letter-spacing: .2px;
+  white-space: nowrap;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+}
+.wc-cs-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.1px;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  white-space: nowrap;
+}
+.wc-cs-value-ico { font-size: 16px; line-height: 1; }
+.wc-cs-divider {
+  width: 1px;
+  background: var(--border);
+  margin: 4px 0;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+.wc-cs-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  border: 1px solid transparent;
+}
+.wc-cs-status.is-open {
+  background: rgba(74,122,85,.14);
+  color: var(--green);
+  border-color: rgba(74,122,85,.32);
+}
+.wc-cs-status.is-upcoming {
+  background: rgba(201,166,70,.14);
+  color: #8A6500;
+  border-color: rgba(201,166,70,.4);
+}
+.wc-cs-status.is-closed {
+  background: rgba(150,129,114,.14);
+  color: var(--text-mute);
+  border-color: rgba(150,129,114,.3);
+}
+.wc-cs-status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.wc-cs-status.is-open .wc-cs-status-dot {
+  box-shadow: 0 0 0 3px rgba(74,122,85,.18);
+  animation: wcCsPulse 2.2s ease-in-out infinite;
+}
+@keyframes wcCsPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(74,122,85,.18); }
+  50%      { box-shadow: 0 0 0 5px rgba(74,122,85,.08); }
+}
+/* Dark mode tweaks (predictions view) */
+html.view-wc.wc-dark .wc-cs-status.is-upcoming { color: var(--gold); }
+html.view-wc.wc-dark .wc-cs-leading {
+  background: linear-gradient(180deg, rgba(230,189,85,.10) 0%, transparent 100%);
+}
+
+@media (max-width: 600px) {
+  .wc-cs-leading { padding: 0 11px; }
+  .wc-cs-leading-ico { font-size: 16px; }
+  .wc-cs-body { gap: 6px 12px; padding: 9px 12px; }
+  .wc-cs-label { font-size: 11px; }
+  .wc-cs-value { font-size: 13px; }
+  .wc-cs-status { font-size: 11.5px; padding: 2px 9px; }
+  .wc-cs-divider { display: none; }
+}
+
 /* ─── Admin: sections visibility list ───────────────────────── */
 .sect-vis-list {
   display: flex; flex-direction: column;
@@ -10523,6 +10647,66 @@ function wcFmtDeadlineMuscat(iso) {
   return `${wd} ${day} ${month} ${year} · ${hh}:${mm} بتوقيت مسقط`;
 }
 
+// ──────────────────────────────────────────────────────────────
+// Current-stage badge: a compact "you are here" pill at the top
+// of the predictions tab. Picks the active stage by status:
+//   1) the first OPEN stage (prediction window currently active)
+//   2) else the next UPCOMING stage (what comes next)
+//   3) else the final CLOSED stage (tournament has wrapped)
+// ──────────────────────────────────────────────────────────────
+function wcRenderCurrentStageBadge() {
+  if (!Array.isArray(WC_STAGES) || WC_STAGES.length === 0) return '';
+
+  // Find the stage to highlight, in priority order
+  let stage = WC_STAGES.find(s => wcStageStatus(s) === 'open');
+  if (!stage) stage = WC_STAGES.find(s => wcStageStatus(s) === 'upcoming');
+  if (!stage) {
+    // Everything closed — use the last stage (Final) as the "current" anchor
+    const closed = WC_STAGES.filter(s => wcStageStatus(s) === 'closed');
+    stage = closed.length ? closed[closed.length - 1] : WC_STAGES[0];
+  }
+
+  const status = wcStageStatus(stage);
+  const lang = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'en') ? 'en' : 'ar';
+
+  // Stage name from i18n keys (already defined in the bundle)
+  const stageName = t('wc.stage.' + stage.id);
+
+  // Status copy (matches the requested phrasing for the open case)
+  const statusText = (lang === 'en')
+    ? (status === 'open'     ? 'Predictions open'
+      : status === 'closed'  ? 'Closed'
+      :                        'Not open yet')
+    : (status === 'open'     ? 'التوقعات مفتوحة'
+      : status === 'closed'  ? 'مغلقة'
+      :                        'لم تفتح بعد');
+
+  const labelStage  = (lang === 'en') ? 'Current stage' : 'المرحلة الحالية';
+  const labelStatus = (lang === 'en') ? 'Status'        : 'الحالة';
+
+  return `
+    <div class="wc-cs" aria-label="${wcEsc(labelStage)}: ${wcEsc(stageName)}">
+      <div class="wc-cs-leading"><span class="wc-cs-leading-ico">📍</span></div>
+      <div class="wc-cs-body">
+        <div class="wc-cs-item">
+          <span class="wc-cs-label">${wcEsc(labelStage)}</span>
+          <span class="wc-cs-value">
+            <span class="wc-cs-value-ico">${stage.icon || ''}</span>
+            <span>${wcEsc(stageName)}</span>
+          </span>
+        </div>
+        <span class="wc-cs-divider" aria-hidden="true"></span>
+        <div class="wc-cs-item">
+          <span class="wc-cs-label">${wcEsc(labelStatus)}</span>
+          <span class="wc-cs-status is-${status}">
+            <span class="wc-cs-status-dot" aria-hidden="true"></span>
+            <span>${wcEsc(statusText)}</span>
+          </span>
+        </div>
+      </div>
+    </div>`;
+}
+
 // Build the group-stage deadline notice (before/after closure)
 function wcGroupsNotice() {
   const groupsStage = WC_STAGES.find(s => s.id === 'groups');
@@ -11075,6 +11259,7 @@ function wcRender() {
 function wcRenderPredict() {
   if (!wcState.myName) {
     return `
+      ${wcRenderCurrentStageBadge()}
       ${wcGroupsNotice()}
       ${wcRenderBigCountdown()}
       <div class="wc-register">
@@ -11150,7 +11335,7 @@ function wcRenderPredict() {
       </div>`;
   }
 
-  return wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
+  return wcRenderCurrentStageBadge() + wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
 }
 
 function wcRenderStageOverview() {
