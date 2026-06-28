@@ -13355,7 +13355,13 @@ function wcStartCountdownLoop() {
     const mode = el.getAttribute('data-mode');
     const diff = Math.max(0, target - Date.now());
     if (diff === 0) {
-      // Stage just transitioned: re-render the WC view to recompute stage statuses
+      // Stage just transitioned: re-render the WC view ONCE to recompute stage
+      // statuses. Without this guard, if `target` keeps resolving to a past/
+      // indeterminate time (e.g. a match still missing its kickoff time), this
+      // tick fires every second forever and wipes the whole tab (incl. the
+      // name input and the names list) on every render.
+      if (wcState.lastHandledCountdownTarget === target) return;
+      wcState.lastHandledCountdownTarget = target;
       wcRender();
       return;
     }
