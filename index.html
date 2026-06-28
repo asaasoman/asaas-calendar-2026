@@ -5490,6 +5490,7 @@ const I18N = {
     'wc.logout.title':        'تسجيل خروج',
     'wc.name.required':       'الرجاء إدخال اسمك',
     'wc.name.tooShort':       'الاسم قصير جداً',
+    'wc.name.existingConfirm':'⚠️ هذا الاسم مُستخدم مسبقاً في القائمة (من جهاز آخر).\n\nإذا كان هذا أنت، اضغط "موافق" للاستمرار بتوقعاتك المحفوظة على هذا الجهاز أيضاً.\n\nإذا لم يكن هذا أنت، اضغط "إلغاء" واختر اسماً مختلفاً لتجنّب التعديل على توقعات شخص آخر.',
     'wc.noOpen':              'لا توجد مراحل مفتوحة حالياً للتوقعات.',
     // status
     'wc.status.open':         '🟢 مفتوحة',
@@ -5791,6 +5792,7 @@ const I18N = {
     'wc.logout.title':        'Sign out',
     'wc.name.required':       'Please enter your name',
     'wc.name.tooShort':       'Name is too short',
+    'wc.name.existingConfirm':'⚠️ This name is already on the list (from another device).\n\nIf that\'s you, press "OK" to continue with your saved predictions on this device too.\n\nIf it isn\'t you, press "Cancel" and choose a different name to avoid editing someone else\'s predictions.',
     'wc.noOpen':              'No stages are currently open for predictions.',
     'wc.status.open':         '🟢 Open',
     'wc.status.closed':       '🔒 Closed',
@@ -10617,6 +10619,20 @@ function wcSaveIdentity(name) {
   localStorage.setItem(WC_LS_PLAYER, JSON.stringify({ id, name }));
   wcState.myId = id; wcState.myName = name;
 }
+// Find an already-submitted player whose name matches (trimmed, case-insensitive) —
+// used to offer "continue with this name" when registering from a new device/browser.
+function wcFindExistingPlayerByName(name) {
+  const norm = String(name || '').trim().toLowerCase();
+  if (!norm) return null;
+  return (wcState.predictions || []).find(p => String(p.name || '').trim().toLowerCase() === norm) || null;
+}
+// Claim an existing player's id (instead of generating a new one) so this device
+// continues the same identity — their previously saved predictions become editable here.
+function wcSaveIdentityAs(name, id) {
+  localStorage.setItem(WC_LS_PLAYER, JSON.stringify({ id, name }));
+  wcState.myId = id; wcState.myName = name;
+  wcState.draft = null; // force re-init from the claimed player's saved predictions
+}
 function wcClearIdentity() {
   localStorage.removeItem(WC_LS_PLAYER);
   wcState.myId = null; wcState.myName = ''; wcState.draft = null;
@@ -11896,7 +11912,14 @@ function wcWireEvents() {
       const name = (document.getElementById('wcNameInput').value || '').trim();
       if (!name) return alert(t('wc.name.required'));
       if (name.length < 2) return alert(t('wc.name.tooShort'));
-      wcSaveIdentity(name);
+      const existing = wcFindExistingPlayerByName(name);
+      if (existing) {
+        const ok = confirm(t('wc.name.existingConfirm'));
+        if (!ok) return; // user said "this isn't me" — let them edit the name field
+        wcSaveIdentityAs(existing.name, existing.id);
+      } else {
+        wcSaveIdentity(name);
+      }
       wcRender();
     };
     document.getElementById('wcNameInput').addEventListener('keydown', e => {
