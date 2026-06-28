@@ -13292,7 +13292,7 @@ function wcRenderBigCountdown() {
   let mode, target, stage;
   if (open) {
     mode = 'closing';
-    target = new Date(open.closesAt).getTime();
+    target = wcStageEffectiveCloseTime(open);
     stage = open;
   } else {
     const upcoming = WC_STAGES.filter(s => wcStageStatus(s) === 'upcoming')
