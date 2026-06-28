@@ -3309,6 +3309,26 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-weight: 700; background: var(--card);
   font-variant-numeric: tabular-nums;
 }
+.wc-adm-row-wrap {
+  padding-bottom: 10px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.wc-adm-row-wrap:last-child { border-bottom: 0; margin-bottom: 0; }
+.wc-adm-kickoff {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 6px; font-size: 12px;
+}
+.wc-adm-kickoff-label { color: var(--text-mute); white-space: nowrap; }
+.wc-adm-kickoff-input {
+  padding: 5px 8px; font-size: 12.5px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--card); color: var(--text);
+}
+.wc-adm-kickoff-status {
+  font-size: 11px; font-weight: 600; color: var(--green);
+  background: var(--green-tint); padding: 2px 8px; border-radius: 999px;
+}
+.wc-adm-kickoff-status.started { color: var(--clay); background: var(--gold-tint); }
 
 @media (max-width: 600px) {
   .wc-section { padding: 16px 14px 20px; }
@@ -3320,6 +3340,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   .wc-submit-row { margin: 16px -14px -20px; padding: 12px 14px 14px; }
   .wc-adm-row { grid-template-columns: 1fr; gap: 6px; }
   .wc-adm-row select { width: 100%; }
+  .wc-adm-kickoff { font-size: 11.5px; }
 }
 
 /* ── v2: stage cards, status badges, sub-tabs, champion ──────── */
@@ -10586,8 +10607,16 @@ const WC_RESULTS_DOC = db.collection('calendar').doc('wc_results');
 // 🔧 EDITABLE CONFIG — stage timings & scoring rules
 // ────────────────────────────────────────────────────────────────
 // Rule applied: each knockout stage opens ~2h45m after the last match of the
-// previous stage kicks off (allows 90' + extra time + penalties + buffer),
-// and closes EXACTLY at the first match kickoff of this stage.
+// previous stage kicks off (allows 90' + extra time + penalties + buffer).
+// Knockout rounds close PROGRESSIVELY, match by match — once the admin
+// assigns each match's real kickoff time (in the Admin tab), that specific
+// match locks the instant it kicks off while the rest of the round stays
+// open; the round as a whole only fully closes once its LAST match starts.
+// The `closesAt` below is only a fallback used before the admin has entered
+// any of this round's matchups/kickoff times yet (so the stage doesn't
+// appear open forever) — it mirrors the first match's scheduled kickoff.
+// The groups stage is the one exception: it still closes all at once, at
+// the tournament's very first kickoff, since group picks aren't per-match.
 // All match times sourced from the official FIFA 2026 schedule.
 const WC_STAGES = [
   { id: 'groups', name: 'دور المجموعات', icon: '📋',
@@ -10599,7 +10628,9 @@ const WC_STAGES = [
     // Last group matches (Algeria–Austria, Jordan–Argentina) kick off 02:00 UTC Jun 28.
     // Opens ~2h45m later → 04:45 UTC Jun 28 (08:45 Muscat).
     opensAt:  '2026-06-28T04:45:00Z',
-    // First R32 match: South Africa vs Canada, 12:00 PDT (LA) = 19:00 UTC Jun 28 (23:00 Muscat).
+    // Fallback only — first R32 match: South Africa vs Canada, 19:00 UTC Jun 28 (23:00 Muscat).
+    // Once admin enters each match's real kickoff time, the round stays open
+    // until the LAST of its 16 matches actually kicks off, not this date.
     closesAt: '2026-06-28T19:00:00Z',
     matchCount: 16,
   },
@@ -10607,7 +10638,7 @@ const WC_STAGES = [
     // Last R32 match (Match 87, Kansas City) kicks off 01:30 UTC Jul 4.
     // Opens ~2h45m later → 04:15 UTC Jul 4 (08:15 Muscat).
     opensAt:  '2026-07-04T04:15:00Z',
-    // First R16 match: Houston, 13:00 ET = 17:00 UTC Jul 4 (21:00 Muscat).
+    // Fallback only — first R16 match: Houston, 17:00 UTC Jul 4 (21:00 Muscat).
     closesAt: '2026-07-04T17:00:00Z',
     matchCount: 8,
   },
@@ -10615,7 +10646,7 @@ const WC_STAGES = [
     // Last R16 match (Match 96, Vancouver) kicks off 20:00 UTC Jul 7.
     // Opens ~2h45m later → 22:45 UTC Jul 7 (02:45 Muscat Jul 8).
     opensAt:  '2026-07-07T22:45:00Z',
-    // First QF: Foxborough, 16:00 ET = 20:00 UTC Jul 9 (00:00 Muscat Jul 10).
+    // Fallback only — first QF: Foxborough, 20:00 UTC Jul 9 (00:00 Muscat Jul 10).
     closesAt: '2026-07-09T20:00:00Z',
     matchCount: 4,
   },
@@ -10623,7 +10654,7 @@ const WC_STAGES = [
     // Last QF (Kansas City) kicks off 01:00 UTC Jul 12 (Sat night ET in local).
     // Opens ~2h45m later → 03:45 UTC Jul 12 (07:45 Muscat).
     opensAt:  '2026-07-12T03:45:00Z',
-    // First SF: Arlington, 15:00 ET = 19:00 UTC Jul 14 (23:00 Muscat).
+    // Fallback only — first SF: Arlington, 19:00 UTC Jul 14 (23:00 Muscat).
     closesAt: '2026-07-14T19:00:00Z',
     matchCount: 2,
   },
@@ -10631,7 +10662,7 @@ const WC_STAGES = [
     // Last SF (Atlanta) kicks off 19:00 UTC Jul 15.
     // Opens ~2h45m later → 21:45 UTC Jul 15 (01:45 Muscat Jul 16).
     opensAt:  '2026-07-15T21:45:00Z',
-    // Final: MetLife, 15:00 ET = 19:00 UTC Jul 19 (23:00 Muscat).
+    // Fallback only — final: MetLife, 19:00 UTC Jul 19 (23:00 Muscat).
     closesAt: '2026-07-19T19:00:00Z',
     matchCount: 1,
   },
@@ -10792,10 +10823,51 @@ function wcStageStatus(stage) {
   // Default: time-based gating
   const now = wcState.now;
   const opens = new Date(stage.opensAt).getTime();
-  const closes = new Date(stage.closesAt).getTime();
   if (now < opens) return 'upcoming';
-  if (now >= closes) return 'closed';
-  return 'open';
+
+  if (stage.id === 'groups') {
+    // Groups stage still closes all at once, exactly at the tournament's
+    // first kickoff (predictions for every group must be locked in before
+    // the tournament begins — there's no per-match concept here).
+    const closes = new Date(stage.closesAt).getTime();
+    return now >= closes ? 'closed' : 'open';
+  }
+
+  // Knockout stages close progressively, match by match: each individual
+  // match locks the instant IT kicks off (handled in the predict form), but
+  // the ROUND itself stays open as long as at least one of its determined
+  // matches hasn't kicked off yet — i.e. it only fully closes once the LAST
+  // match of the round has started.
+  const matches = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
+  const determined = matches.filter(m => m && m.home && m.away);
+  if (determined.length === 0) {
+    // Matchups for this round haven't been entered yet — fall back to the
+    // static configured window so the stage doesn't appear open forever.
+    const closes = new Date(stage.closesAt).getTime();
+    return now >= closes ? 'closed' : 'open';
+  }
+  const allKickedOff = determined.every(m => m.kickoffAt && now >= new Date(m.kickoffAt).getTime());
+  return allKickedOff ? 'closed' : 'open';
+}
+
+// Has this specific knockout match kicked off yet? Used to lock its
+// prediction inputs individually (independent of whether the round as a
+// whole, or the official result, has come in).
+function wcKoMatchKickedOff(m) {
+  return !!(m && m.kickoffAt && wcState.now >= new Date(m.kickoffAt).getTime());
+}
+
+// Snapshot of every knockout match's kicked-off state, used by the periodic
+// refresh to detect when any single match crosses its own kickoff time —
+// even while the round's overall status string hasn't changed.
+function wcKickoffSignature() {
+  const parts = [];
+  WC_STAGES.forEach(s => {
+    if (s.id === 'groups') return;
+    const matches = (wcState.results.knockout && wcState.results.knockout[s.id]) || [];
+    matches.forEach(m => { if (m && m.kickoffAt) parts.push(wcKoMatchKickedOff(m) ? '1' : '0'); });
+  });
+  return parts.join('');
 }
 
 function wcStatusBadge(status) {
@@ -10828,6 +10900,19 @@ function wcFmtDeadlineMuscat(iso) {
   const hh = String(muscat.getUTCHours()).padStart(2,'0');
   const mm = String(muscat.getUTCMinutes()).padStart(2,'0');
   return `${wd} ${day} ${month} ${year} · ${hh}:${mm} بتوقيت مسقط`;
+}
+
+// Convert a stored UTC ISO timestamp into the "YYYY-MM-DDTHH:mm" shape that
+// <input type="datetime-local"> expects for its value — rendered in the
+// viewing admin's own local time zone (each admin sees their own local time;
+// the underlying stored value is always UTC so comparisons stay correct
+// for everyone, regardless of time zone).
+function wcToDatetimeLocalValue(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -11564,13 +11649,14 @@ function wcRenderPredict() {
   const stageCards = groupsCard + qualifiersBracket + koSection;
 
   // Completion check for every currently-open stage — the participant can't
-  // submit until each one is fully predicted (all 12 groups picked, or every
-  // match of an open knockout round scored). Admin-edit mode bypasses this
-  // entirely so an admin can save a partial correction.
+  // submit until each one is fully predicted: all 12 groups picked, or every
+  // STILL-PREDICTABLE match of an open knockout round scored (matches that
+  // already kicked off are excluded — missing one shouldn't block the rest
+  // of the round). Admin-edit mode bypasses this entirely.
   const openStages = adminEdit ? [] : WC_STAGES.filter(s => wcStageStatus(s) === 'open');
   const stageProgress = openStages
-    .map(s => ({ stage: s, completed: wcStageFilledCount(wcState.draft, s), total: wcStageTotalCount(s) }))
-    .filter(p => p.total > 0); // a KO stage whose matchups aren't determined yet has nothing to require
+    .map(s => ({ stage: s, ...wcStageSubmitProgress(wcState.draft, s) }))
+    .filter(p => p.total > 0); // nothing currently required for this stage
   const incompleteStages = stageProgress.filter(p => p.completed < p.total);
   const blockSubmit = incompleteStages.length > 0;
   const allOpenDone = stageProgress.length > 0 && incompleteStages.length === 0;
@@ -11731,12 +11817,23 @@ function wcRenderKOForm(stage) {
   const rows = matchups.map((m, i) => {
     const d = draftArr[i] || {};
     const hasOfficial = (m.homeScore != null && m.awayScore != null);
-    const resultIn = hasOfficial && !wcState.editTargetId;
+    const kickedOff = wcKoMatchKickedOff(m);
+    // Locked once the match itself has kicked off OR its result is in —
+    // whichever comes first — unless an admin is editing on someone's
+    // behalf, in which case every match always stays editable.
+    const resultIn = (hasOfficial || kickedOff) && !wcState.editTargetId;
     const home = m.home ? WC_TEAM_MAP[m.home] : null;
     const away = m.away ? WC_TEAM_MAP[m.away] : null;
     const livePts = hasOfficial ? wcKoMatchPickPoints(stage.id, i, d) : null;
     const ptsBadge = hasOfficial
       ? `<div class="wc-match-pts ${livePts > 0 ? 'pos' : 'zero'}" data-wckopts="${stage.id}|${i}">${livePts > 0 ? '+' : ''}${livePts} ${t('wc.lb.point')}</div>`
+      : '';
+    // Match has started but no official score entered yet — tell the
+    // participant why the inputs just locked, even though the round
+    // itself (other matches) is still open.
+    const startedNoResult = (kickedOff && !hasOfficial && !wcState.editTargetId)
+      ? `<div style="text-align:center;font-size:11px;color:var(--clay);margin-top:6px;font-weight:600">
+          🔒 ${(CURRENT_LANG === 'en') ? 'Match has started — prediction locked' : 'انطلقت المباراة — التوقع مقفل'}</div>`
       : '';
     return `
       <div class="wc-match-card" data-wcstage="${stage.id}" data-wcidx="${i}">
@@ -11758,6 +11855,7 @@ function wcRenderKOForm(stage) {
         ${wcRenderPensRow('draft', stage.id, i, home, away, d, resultIn)}
         ${hasOfficial ? `<div style="text-align:center;font-size:11px;color:var(--green-dark);margin-top:6px;font-weight:600">
             ${t('wc.match.official')}: ${m.homeScore} − ${m.awayScore}${wcKoIsTied(m) && m.penWinner ? ` · <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span>` : ''}</div>` : ''}
+        ${startedNoResult}
         ${ptsBadge}
       </div>`;
   }).join('');
@@ -11947,6 +12045,36 @@ function wcStageFilledCount(pred, stage) {
 }
 function wcStageTotalCount(stage) {
   return stage.id === 'groups' ? WC_GROUPS.length : stage.matchCount;
+}
+
+// Submission-gate completeness for a knockout stage: counts only matches
+// that are STILL predictable right now (teams known, not yet kicked off,
+// no official result in). Matches that already locked are excluded from
+// both "completed" and "total" — a participant who missed one match's
+// deadline must still be able to submit predictions for the rest of the
+// round, rather than being permanently blocked.
+function wcKoStageSubmitProgress(stage) {
+  const matches = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
+  const draftArr = (wcState.draft && wcState.draft.knockout && wcState.draft.knockout[stage.id]) || [];
+  let total = 0, completed = 0;
+  matches.forEach((m, i) => {
+    if (!m || !m.home || !m.away) return;                 // matchup not determined yet — nothing required
+    const hasOfficial = (m.homeScore != null && m.awayScore != null);
+    if (hasOfficial || wcKoMatchKickedOff(m)) return;      // already locked — no longer required for submission
+    total++;
+    const d = draftArr[i];
+    if (d && d.homeScore != null && d.awayScore != null) completed++;
+  });
+  return { completed, total };
+}
+// Unified "filled / total" used for the submit gate — groups uses the
+// simple full-round count (single deadline), knockout stages use the
+// deadline-aware version above.
+function wcStageSubmitProgress(pred, stage) {
+  if (stage.id === 'groups') {
+    return { completed: wcGroupsFilledCount(pred), total: WC_GROUPS.length };
+  }
+  return wcKoStageSubmitProgress(stage);
 }
 
 // Admin overview: for every registered participant, show how much they've
@@ -12177,6 +12305,10 @@ function wcRenderAdminStage(stage) {
   const arr = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
   while (arr.length < stage.matchCount) arr.push({});
 
+  const kickoffLabel = (CURRENT_LANG === 'en') ? 'Kickoff time' : 'وقت انطلاق المباراة';
+  const startedLabel = (CURRENT_LANG === 'en') ? 'Started — prediction locked' : 'انطلقت — التوقع مقفل';
+  const notStartedLabel = (CURRENT_LANG === 'en') ? 'Not started yet' : 'لم تنطلق بعد';
+
   return `
     <div class="wc-admin-section">
       <div class="wc-admin-section-title">${stage.icon} ${t('wc.stage.'+stage.id)} ${t('wc.admin.ko')} (${stage.matchCount} ${t('wc.admin.matches')})</div>
@@ -12184,6 +12316,7 @@ function wcRenderAdminStage(stage) {
         const m = arr[i] || {};
         const home = m.home ? WC_TEAM_MAP[m.home] : null;
         const away = m.away ? WC_TEAM_MAP[m.away] : null;
+        const kickedOff = wcKoMatchKickedOff(m);
         return `
           <div class="wc-adm-row-wrap" data-wcadmcard="${stage.id}" data-wcadmcardidx="${i}">
             <div class="wc-adm-row">
@@ -12194,6 +12327,11 @@ function wcRenderAdminStage(stage) {
                 <input type="number" min="0" max="20" data-wcadmstage="${stage.id}" data-wcadmidx="${i}" data-wcadmfield="awayScore" value="${m.awayScore ?? ''}" />
               </div>
               ${wcAdmTeamSelect(stage.id, i, 'away', m.away)}
+            </div>
+            <div class="wc-adm-kickoff">
+              <label class="wc-adm-kickoff-label">⏱ ${wcEsc(kickoffLabel)}</label>
+              <input type="datetime-local" class="wc-adm-kickoff-input" data-wcadmstage="${stage.id}" data-wcadmidx="${i}" data-wcadmfield="kickoffAt" value="${wcToDatetimeLocalValue(m.kickoffAt)}" />
+              ${m.kickoffAt ? `<span class="wc-adm-kickoff-status ${kickedOff?'started':''}">${kickedOff ? '🔒 ' + wcEsc(startedLabel) : '🔓 ' + wcEsc(notStartedLabel)}</span>` : ''}
             </div>
             ${wcRenderPensRow('admin', stage.id, i, home, away, m, false)}
           </div>`;
@@ -12321,11 +12459,11 @@ function wcWireEvents() {
       const anyOpen = adminEdit || WC_STAGES.some(s => wcStageStatus(s) === 'open');
       if (!anyOpen) { alert(t('wc.noOpen')); return; }
       // Block submit if any currently-open stage (groups or a knockout round)
-      // isn't fully predicted yet.
+      // isn't fully predicted yet — only counting matches still predictable.
       if (!adminEdit) {
         const incomplete = WC_STAGES
           .filter(s => wcStageStatus(s) === 'open')
-          .map(s => ({ stage: s, completed: wcStageFilledCount(wcState.draft, s), total: wcStageTotalCount(s) }))
+          .map(s => ({ stage: s, ...wcStageSubmitProgress(wcState.draft, s) }))
           .filter(p => p.total > 0 && p.completed < p.total);
         if (incomplete.length) {
           const lines = incomplete.map(p => `${t('wc.stage.'+p.stage.id)}: ${p.completed}/${p.total}`);
@@ -12397,6 +12535,10 @@ function wcWireEvents() {
       while (wcState.results.knockout[stage].length <= idx) wcState.results.knockout[stage].push({});
       let v = el.value;
       if (field === 'homeScore' || field === 'awayScore') v = (v === '' ? null : parseInt(v, 10));
+      // datetime-local gives a local, timezone-less string — convert to a
+      // real UTC ISO timestamp so "has this match kicked off?" compares
+      // correctly no matter which time zone later views it.
+      if (field === 'kickoffAt') v = (v === '' ? null : new Date(v).toISOString());
       wcState.results.knockout[stage][idx][field] = v;
       // If the score is no longer tied, drop any stale penWinner.
       const m = wcState.results.knockout[stage][idx];
@@ -12405,6 +12547,9 @@ function wcWireEvents() {
       // For team-name or score changes, toggle the pens row visibility inline.
       const card = el.closest('[data-wcadmcard]');
       if (card) wcTogglePensRow(card, m, 'admin', stage, idx);
+      // Setting/changing a kickoff time can flip this match's lock state and
+      // the round's overall open/closed status — re-render to reflect both.
+      if (field === 'kickoffAt') wcRender();
     };
   });
 }
@@ -12848,10 +12993,13 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
   const home = m.home ? WC_TEAM_MAP[m.home] : null;
   const away = m.away ? WC_TEAM_MAP[m.away] : null;
   const officialIn = (m.homeScore != null && m.awayScore != null);
-  const editable = (status === 'open');
+  const kickedOff = wcKoMatchKickedOff(m);
+  // A round can stay "open" (other matches still pending) while THIS
+  // particular match has already kicked off — lock it individually.
+  const editable = (status === 'open') && !kickedOff;
   const cls = ['wc-bm'];
   if (editable && !officialIn) cls.push('editable');
-  if (status === 'upcoming' || status === 'closed') cls.push('locked');
+  if (status === 'upcoming' || status === 'closed' || (status === 'open' && kickedOff && !officialIn)) cls.push('locked');
   if (officialIn) cls.push('has-result');
 
   // Golden if my own pick equals exact for this match (and pen winner matches when tied)
@@ -12891,7 +13039,9 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
 
   const resultBar = officialIn
     ? `<div class="wc-bm-result">${wcEsc(t('wc.match.official'))}: ${m.homeScore} − ${m.awayScore}${golden}</div>`
-    : '';
+    : ((status === 'open' && kickedOff)
+        ? `<div class="wc-bm-result" style="color:var(--clay)">🔒 ${(CURRENT_LANG === 'en') ? 'Started — locked' : 'انطلقت — مقفلة'}</div>`
+        : '');
 
   const officialTiedNote = (officialIn && wcKoIsTied(m) && m.penWinner)
     ? `<div class="wc-bm-result" style="margin-top:2px"><span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span></div>`
@@ -13282,12 +13432,16 @@ function initWorldCup() {
   if (me) { wcState.myId = me.id; wcState.myName = me.name; }
   wcSubscribe();
   wcRender();
-  // Re-render every minute to update stage status based on time
+  // Re-render every minute to update stage status AND any individual
+  // match's kickoff-lock state (a round can stay "open" overall while one
+  // specific match inside it just passed its own kickoff time).
   setInterval(() => {
     const oldStatuses = WC_STAGES.map(s => wcStageStatus(s)).join(',');
+    const oldKickoffs = wcKickoffSignature();
     wcState.now = Date.now();
     const newStatuses = WC_STAGES.map(s => wcStageStatus(s)).join(',');
-    if (oldStatuses !== newStatuses) wcRender();
+    const newKickoffs = wcKickoffSignature();
+    if (oldStatuses !== newStatuses || oldKickoffs !== newKickoffs) wcRender();
   }, 60000);
   // Keep the bracket's open stage in view when the viewport size changes
   // (e.g. rotating a tablet, resizing a browser window).
