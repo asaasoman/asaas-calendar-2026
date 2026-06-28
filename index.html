@@ -2590,6 +2590,13 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-weight: 600;
 }
 .wc-team-row.disabled { opacity: .5; cursor: not-allowed; }
+.wc-group-pts {
+  margin-top: 8px; text-align: center;
+  font-size: 11.5px; font-weight: 700;
+  padding: 4px 8px; border-radius: 999px;
+  background: var(--bg-2); color: var(--text-mute);
+}
+.wc-group-pts.pos { background: var(--green-tint); color: var(--green); }
 .wc-team-flag {
   display: inline-flex; align-items: center;
   line-height: 1;
@@ -2709,6 +2716,13 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   border-radius: 10px;
   padding: 10px 14px; margin-bottom: 8px;
 }
+.wc-match-pts {
+  margin: 6px auto 0; width: fit-content; text-align: center;
+  font-size: 11.5px; font-weight: 700;
+  padding: 4px 8px; border-radius: 999px;
+  background: var(--bg-2); color: var(--text-mute);
+}
+.wc-match-pts.pos { background: var(--green-tint); color: var(--green); }
 .wc-match-row {
   display: grid;
   grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
@@ -11249,19 +11263,24 @@ window.wcViewParticipant = wcViewParticipant;
 // ────────────────────────────────────────────────────────────────
 // Scoring — per-stage
 // ────────────────────────────────────────────────────────────────
+// Points a given pick-set would earn for ONE group, against the actual
+// qualifiers (if decided). Shared by the real scorer and the live preview
+// badge shown in the predict form, so they can never drift out of sync.
+function wcGroupPickPoints(groupId, picks) {
+  const a = (wcState.results.groups || {})[groupId] || []; // a[0] = actual 1st, a[1] = actual 2nd
+  const p = (picks || []).filter(Boolean);
+  if (a.length !== 2 || p.length === 0) return 0;
+  const correctCount = p.filter(x => a.includes(x)).length;
+  let pts = correctCount * WC_SCORING.groupQualifier; // each correct qualifier = 3 points, even with a single/partial pick
+  if (p.length === 2 && correctCount === 2 && p[0] === a[0] && p[1] === a[1]) {
+    pts += WC_SCORING.groupExactOrderBonus; // both correct AND exact 1st/2nd order = 9 total
+  }
+  return pts;
+}
 function wcScoreGroups(pred) {
   let pts = 0;
-  const actuals = (wcState.results.groups) || {};
   WC_GROUPS.forEach(g => {
-    const a = actuals[g.id] || []; // a[0] = actual 1st place, a[1] = actual 2nd place
-    const p = (pred.groups || {})[g.id] || []; // could be 0, 1 (incomplete), or 2 picks
-    if (a.length === 2 && p.length > 0) {
-      const correctCount = p.filter(x => a.includes(x)).length;
-      pts += correctCount * WC_SCORING.groupQualifier; // each correct qualifier = 3 points, even with a single/partial pick
-      if (p.length === 2 && correctCount === 2 && p[0] === a[0] && p[1] === a[1]) {
-        pts += WC_SCORING.groupExactOrderBonus; // both correct AND exact 1st/2nd order = 9 total
-      }
-    }
+    pts += wcGroupPickPoints(g.id, (pred.groups || {})[g.id]);
   });
   return pts;
 }
@@ -11320,25 +11339,34 @@ function wcRenderPensRow(scope, stageId, idx, home, away, draftOrActual, readOnl
     </div>`;
 }
 
+// Points a given guess would earn for ONE knockout match, against the
+// official result (if it's in and unambiguous). Returns 0 when nothing
+// would be earned yet (no official result, no guess, incomplete guess).
+function wcKoMatchPickPoints(stageId, idx, guess) {
+  const actuals = (wcState.results.knockout && wcState.results.knockout[stageId]) || [];
+  const a = actuals[idx];
+  if (!a || !guess) return 0;
+  if (!wcKoMatchComplete(a)) return 0;                              // official result not finalised
+  if (guess.homeScore == null || guess.awayScore == null) return 0; // no prediction
+  // Predicted side must also be unambiguous: if predictor went for a tie,
+  // they need to have picked a penalty winner.
+  const pSide = wcKoWinnerSide(guess);
+  if (!pSide) return 0;
+  const aSide = wcKoWinnerSide(a);
+  // Exact-score bonus also requires matching penWinner when the score is tied.
+  const exactScore = (guess.homeScore === a.homeScore && guess.awayScore === a.awayScore);
+  const exact = exactScore && (!wcKoIsTied(a) || guess.penWinner === a.penWinner);
+  let pts = 0;
+  if (aSide === pSide) pts += WC_SCORING.knockoutWinner;
+  if (exact)           pts += WC_SCORING.knockoutExactBonus;
+  return pts;
+}
 function wcScoreKO(stageId, pred) {
   let pts = 0;
   const actuals = (wcState.results.knockout && wcState.results.knockout[stageId]) || [];
   const guesses = (pred.knockout && pred.knockout[stageId]) || [];
   actuals.forEach((a, i) => {
-    const p = guesses[i];
-    if (!a || !p) return;
-    if (!wcKoMatchComplete(a)) return;                              // official result not finalised
-    if (p.homeScore == null || p.awayScore == null) return;          // no prediction
-    // Predicted side must also be unambiguous: if predictor went for a tie,
-    // they need to have picked a penalty winner.
-    const pSide = wcKoWinnerSide(p);
-    if (!pSide) return;
-    const aSide = wcKoWinnerSide(a);
-    // Exact-score bonus also requires matching penWinner when the score is tied.
-    const exactScore = (p.homeScore === a.homeScore && p.awayScore === a.awayScore);
-    const exact = exactScore && (!wcKoIsTied(a) || p.penWinner === a.penWinner);
-    if (aSide === pSide) pts += WC_SCORING.knockoutWinner;
-    if (exact)           pts += WC_SCORING.knockoutExactBonus;
+    pts += wcKoMatchPickPoints(stageId, i, guesses[i]);
   });
   return pts;
 }
@@ -11631,6 +11659,12 @@ function wcRenderGroupsForm() {
   const cards = WC_GROUPS.map(g => {
     const picks = (wcState.draft.groups[g.id] || []).filter(Boolean);
     const complete = picks.length === 2;
+    const actual = (wcState.results.groups || {})[g.id] || [];
+    const hasActual = actual.length === 2;
+    const livePts = hasActual ? wcGroupPickPoints(g.id, picks) : null;
+    const ptsBadge = (hasActual && picks.length)
+      ? `<div class="wc-group-pts ${livePts > 0 ? 'pos' : 'zero'}">${livePts > 0 ? '+' : ''}${livePts} ${t('wc.lb.point')}</div>`
+      : '';
     return `
       <div class="wc-group ${complete?'complete':''}">
         <div class="wc-group-header">
@@ -11649,6 +11683,7 @@ function wcRenderGroupsForm() {
               <span class="wc-team-check">✓</span>
             </div>`;
         }).join('')}
+        ${ptsBadge}
       </div>`;
   }).join('');
   return `<div class="wc-groups-grid">${cards}</div>
@@ -11668,6 +11703,10 @@ function wcRenderKOForm(stage) {
     const resultIn = hasOfficial && !wcState.editTargetId;
     const home = m.home ? WC_TEAM_MAP[m.home] : null;
     const away = m.away ? WC_TEAM_MAP[m.away] : null;
+    const livePts = hasOfficial ? wcKoMatchPickPoints(stage.id, i, d) : null;
+    const ptsBadge = hasOfficial
+      ? `<div class="wc-match-pts ${livePts > 0 ? 'pos' : 'zero'}" data-wckopts="${stage.id}|${i}">${livePts > 0 ? '+' : ''}${livePts} ${t('wc.lb.point')}</div>`
+      : '';
     return `
       <div class="wc-match-card" data-wcstage="${stage.id}" data-wcidx="${i}">
         <div class="wc-match-row">
@@ -11688,6 +11727,7 @@ function wcRenderKOForm(stage) {
         ${wcRenderPensRow('draft', stage.id, i, home, away, d, resultIn)}
         ${hasOfficial ? `<div style="text-align:center;font-size:11px;color:var(--green-dark);margin-top:6px;font-weight:600">
             ${t('wc.match.official')}: ${m.homeScore} − ${m.awayScore}${wcKoIsTied(m) && m.penWinner ? ` · <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span>` : ''}</div>` : ''}
+        ${ptsBadge}
       </div>`;
   }).join('');
 
@@ -12191,9 +12231,9 @@ function wcWireEvents() {
     };
   });
 
-  // KO inputs
+  // KO inputs — 'input' fires per keystroke so the points badge updates instantly
   document.querySelectorAll('[data-wci]').forEach(inp => {
-    inp.onchange = () => {
+    inp.oninput = () => {
       const card = inp.closest('[data-wcstage]');
       if (!card) return;
       const stage = card.getAttribute('data-wcstage');
@@ -12205,6 +12245,7 @@ function wcWireEvents() {
       wcState.draft.knockout[stage][idx][field === 'home' ? 'homeScore' : 'awayScore'] = v;
       // Show/hide the penalty winner picker inside this card.
       wcTogglePensRow(card, wcState.draft.knockout[stage][idx], 'draft', stage, idx);
+      wcUpdateKoMatchPtsBadge(stage, idx);
     };
   });
 
@@ -12234,6 +12275,7 @@ function wcWireEvents() {
       }
       // Visual toggle (draft path)
       row.querySelectorAll('.wc-pens-btn').forEach(b => b.classList.toggle('selected', b === btn));
+      wcUpdateKoMatchPtsBadge(stage, idx);
     };
   });
 
@@ -12350,6 +12392,20 @@ function wcTogglePensRow(card, obj, scope, stageId, idx) {
     row.style.display = 'none';
     row.querySelectorAll('.wc-pens-btn').forEach(b => b.classList.remove('selected'));
   }
+}
+
+// Recompute and patch ONE match's live points badge directly in the DOM —
+// called after every score keystroke / penalty pick so the participant's
+// point gain shows instantly, without a full re-render that would steal
+// focus away from whichever input the admin/participant is still typing in.
+function wcUpdateKoMatchPtsBadge(stageId, idx) {
+  const badge = document.querySelector(`[data-wckopts="${stageId}|${idx}"]`);
+  if (!badge) return;
+  const guess = (wcState.draft.knockout && wcState.draft.knockout[stageId] && wcState.draft.knockout[stageId][idx]) || {};
+  const pts = wcKoMatchPickPoints(stageId, idx, guess);
+  badge.textContent = `${pts > 0 ? '+' : ''}${pts} ${t('wc.lb.point')}`;
+  badge.classList.toggle('pos', pts > 0);
+  badge.classList.toggle('zero', pts <= 0);
 }
 
 window.wcLogout = function() {
