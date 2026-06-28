@@ -2711,12 +2711,14 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-match-row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center; gap: 10px;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+  align-items: center; gap: 6px;
 }
 .wc-match-team {
   display: flex; align-items: center; gap: 6px;
   font-size: 13px; color: var(--text);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .wc-match-team.home { justify-content: flex-end; }
 .wc-match-team.away { justify-content: flex-start; }
@@ -3210,6 +3212,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   .wc-section { padding: 16px 14px 20px; }
   .wc-groups-grid { grid-template-columns: 1fr; }
   .wc-title { font-size: 19px; }
+  .wc-match-row { gap: 4px; }
   .wc-match-score input { width: 34px; }
   .wc-lb-header, .wc-lb-row { grid-template-columns: 40px 1fr 80px 38px; padding: 9px 10px; }
   .wc-submit-row { margin: 16px -14px -20px; padding: 12px 14px 14px; }
