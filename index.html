@@ -10808,7 +10808,14 @@ function wcSubscribe() {
 function wcMaybeRender(source) {
   if (wcState.tab !== 'predict') { wcRender(); return; }
   // On predict tab: skip re-render on other people's predictions to preserve input focus
-  if (source === 'predictions') return;
+  if (source === 'predictions') {
+    // Still refresh the name autocomplete list live while on the registration screen.
+    if (!wcState.myName) {
+      const dl = document.getElementById('wcNameSuggestions');
+      if (dl) dl.innerHTML = wcNameDatalistOptions();
+    }
+    return;
+  }
   wcRender();
 }
 
@@ -11305,6 +11312,19 @@ function wcScrollBracketIntoView() {
   target.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
 }
 
+// Build <option> entries (unique, sorted) from existing players' names for the
+// registration name field's autocomplete <datalist> — typing the first letters
+// suggests already-registered names.
+function wcNameDatalistOptions() {
+  const seen = new Set();
+  return (wcState.predictions || [])
+    .map(p => String(p.name || '').trim())
+    .filter(n => n && !seen.has(n.toLowerCase()) && seen.add(n.toLowerCase()))
+    .sort((a, b) => a.localeCompare(b))
+    .map(n => `<option value="${wcEsc(n)}"></option>`)
+    .join('');
+}
+
 // ────────────────────────────────────────────────────────────────
 // Predict tab — stage cards
 // ────────────────────────────────────────────────────────────────
@@ -11317,7 +11337,8 @@ function wcRenderPredict() {
       <div class="wc-register">
         <div class="wc-register-title">${t('wc.register.title')}</div>
         <div class="wc-register-row">
-          <input type="text" class="form-control" id="wcNameInput" placeholder="${t('wc.register.placeholder')}" maxlength="40" />
+          <input type="text" class="form-control" id="wcNameInput" placeholder="${t('wc.register.placeholder')}" maxlength="40" list="wcNameSuggestions" autocomplete="off" />
+          <datalist id="wcNameSuggestions">${wcNameDatalistOptions()}</datalist>
           <button class="btn btn-primary" id="wcRegBtn">${t('wc.register.start')}</button>
         </div>
         <div style="font-size:11.5px;color:var(--text-mute);margin-top:8px">
