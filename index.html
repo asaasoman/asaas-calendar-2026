@@ -3199,6 +3199,22 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-admin-edit-exit:hover { background: #264d31; }
 
+/* ─── Live running-total bar (predict tab) ───────────────────────── */
+.wc-live-total {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+  background: var(--green-tint); border: 1px solid var(--green-light);
+  border-radius: 10px; padding: 10px 16px; margin-bottom: 14px;
+}
+.wc-live-total-label {
+  font-size: 12.5px; font-weight: 600; color: var(--green-dark);
+}
+.wc-live-total-value {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 19px; font-weight: 700; color: var(--green-dark);
+  font-variant-numeric: tabular-nums;
+}
+
 
 .wc-admin-section {
   background: var(--card-2);
@@ -11495,6 +11511,18 @@ function wcRenderPredict() {
   }
   if (!wcState.draft) wcInitDraft();
 
+  // Live running total — recomputed from the current draft vs. whatever
+  // actual results already exist. Shown as a persistent bar so it's always
+  // visible while picking, and patched directly (without a full re-render)
+  // whenever a knockout score/penalty changes so it never loses input focus.
+  const liveTotalPts = wcTotal({ groups: wcState.draft.groups || {}, knockout: wcState.draft.knockout || {} });
+  const liveTotalLabel = (CURRENT_LANG === 'en') ? 'Current total' : 'الإجمالي الحالي';
+  const liveTotalBar = `
+    <div class="wc-live-total" id="wcLiveTotalBadge">
+      <span class="wc-live-total-label">🧮 ${liveTotalLabel}</span>
+      <span class="wc-live-total-value">${liveTotalPts} ${t('wc.lb.point')}</span>
+    </div>`;
+
   const adminBanner = adminEdit ? `
     <div class="wc-admin-edit-banner">
       <div class="wc-admin-edit-banner-text">
@@ -11570,7 +11598,7 @@ function wcRenderPredict() {
       </div>`;
   }
 
-  return adminBanner + wcRenderCurrentStageBadge() + wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
+  return adminBanner + liveTotalBar + wcRenderCurrentStageBadge() + wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
 }
 
 function wcRenderStageOverview() {
@@ -12246,6 +12274,7 @@ function wcWireEvents() {
       // Show/hide the penalty winner picker inside this card.
       wcTogglePensRow(card, wcState.draft.knockout[stage][idx], 'draft', stage, idx);
       wcUpdateKoMatchPtsBadge(stage, idx);
+      wcUpdateLiveTotalBadge();
     };
   });
 
@@ -12276,6 +12305,7 @@ function wcWireEvents() {
       // Visual toggle (draft path)
       row.querySelectorAll('.wc-pens-btn').forEach(b => b.classList.toggle('selected', b === btn));
       wcUpdateKoMatchPtsBadge(stage, idx);
+      wcUpdateLiveTotalBadge();
     };
   });
 
@@ -12406,6 +12436,16 @@ function wcUpdateKoMatchPtsBadge(stageId, idx) {
   badge.textContent = `${pts > 0 ? '+' : ''}${pts} ${t('wc.lb.point')}`;
   badge.classList.toggle('pos', pts > 0);
   badge.classList.toggle('zero', pts <= 0);
+}
+
+// Recompute and patch the running-total bar directly in the DOM — same
+// reasoning as the per-match badge above: stays live without a full
+// re-render so typed-in scores keep their focus.
+function wcUpdateLiveTotalBadge() {
+  const valEl = document.querySelector('#wcLiveTotalBadge .wc-live-total-value');
+  if (!valEl || !wcState.draft) return;
+  const pts = wcTotal({ groups: wcState.draft.groups || {}, knockout: wcState.draft.knockout || {} });
+  valEl.textContent = `${pts} ${t('wc.lb.point')}`;
 }
 
 window.wcLogout = function() {
