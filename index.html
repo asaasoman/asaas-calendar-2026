@@ -4123,7 +4123,14 @@ html.view-wc.wc-dark .wc-cs-leading {
 }
 .wc-view-toggle-btn:hover:not(.active) { color: var(--text); }
 
-@media (max-width: 720px) {
+/* Small & medium screens (phones + tablets): stack the bracket into
+   full-width columns instead of a horizontally-scrolled row, so the
+   prediction/result inputs are always visible without needing to
+   drag any scrollbar. */
+@media (max-width: 1024px) {
+  .wc-bracket-scroll {
+    overflow-x: hidden;
+  }
   .wc-bracket-grid {
     flex-direction: column-reverse;
     min-width: 100%;
@@ -4135,6 +4142,20 @@ html.view-wc.wc-dark .wc-cs-leading {
   .wc-bracket-trophy-col { min-width: 100%; order: -1; }
   .wc-bracket-trophy { margin: 0 0 4px; }
   .wc-bm-side-input { width: 38px; font-size: 14px; }
+}
+
+/* Tablet fine-tuning within the stacked range */
+@media (max-width: 1024px) and (min-width: 721px) {
+  .wc-bracket-col { max-width: 480px; margin: 0 auto; }
+  .wc-bracket-trophy-col { max-width: 480px; margin: 0 auto 4px; }
+}
+
+/* Large screens: keep the horizontal tree/bracket view, but make sure
+   it can still breathe on narrower laptop widths before the column
+   layout kicks in above. */
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .wc-bracket-col { min-width: 200px; }
+  .wc-bracket-grid { gap: 10px; }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -11244,6 +11265,28 @@ function wcRender() {
   else if (wcState.tab === 'leaderboard') c.innerHTML = wcRenderLeaderboard();
   else if (wcState.tab === 'admin')       c.innerHTML = wcRenderAdmin();
   wcWireEvents();
+  // Make sure the bracket's open (editable) stage — the one with the
+  // prediction/result inputs — is visible right away, without requiring
+  // the user to drag the horizontal scrollbar first.
+  requestAnimationFrame(wcScrollBracketIntoView);
+}
+
+// On wide screens the knockout tree (.wc-bracket-wrap) scrolls
+// horizontally through R32 → ... → Final. Right after render, bring the
+// currently-open stage (the one whose match cells have editable
+// prediction inputs) into view automatically. On small/medium screens
+// the bracket stacks vertically instead (see CSS), so there's nothing
+// to scroll and this becomes a no-op.
+function wcScrollBracketIntoView() {
+  const scrollEl = document.querySelector('#wcTabContent .wc-bracket-scroll');
+  if (!scrollEl) return;
+  // Only act if the bracket is actually overflowing horizontally.
+  if (scrollEl.scrollWidth <= scrollEl.clientWidth + 1) return;
+  const target = scrollEl.querySelector('.wc-bracket-col.col-open')
+              || scrollEl.querySelector('.wc-bracket-col.col-upcoming')
+              || scrollEl.querySelector('.wc-bracket-col');
+  if (!target) return;
+  target.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -12871,6 +12914,13 @@ function initWorldCup() {
     const newStatuses = WC_STAGES.map(s => wcStageStatus(s)).join(',');
     if (oldStatuses !== newStatuses) wcRender();
   }, 60000);
+  // Keep the bracket's open stage in view when the viewport size changes
+  // (e.g. rotating a tablet, resizing a browser window).
+  let wcResizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(wcResizeTimer);
+    wcResizeTimer = setTimeout(wcScrollBracketIntoView, 150);
+  });
 }
 initWorldCup();
 
