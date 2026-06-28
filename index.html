@@ -3119,7 +3119,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-prog-table { min-width: max-content; }
 .wc-prog-row {
   display: grid;
-  grid-template-columns: 130px repeat(5, 64px);
+  grid-template-columns: 130px repeat(6, 64px);
   gap: 6px;
   align-items: center;
   padding: 6px 0;
@@ -3150,7 +3150,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-prog-cell.partial { background: var(--gold-tint); color: var(--clay); }
 .wc-prog-cell.none    { background: var(--bg-2); color: var(--text-mute); }
 @media (max-width: 600px) {
-  .wc-prog-row { grid-template-columns: 100px repeat(5, 56px); }
+  .wc-prog-row { grid-template-columns: 100px repeat(6, 56px); }
 }
 
 .wc-admin-section {
@@ -5593,7 +5593,7 @@ const I18N = {
     // admin
     'wc.admin.warn':          '⚠️ <strong>تنبيه:</strong> أي تعديل هنا يُحدّث نقاط جميع المشاركين تلقائياً. تأكّد من الأرقام قبل الإدخال.',
     'wc.admin.progress.title':      '👥 حالة توقعات المشاركين',
-    'wc.admin.progress.hint':       'عدد المباريات التي أدخل كل مشارك توقعاً لنتيجتها حتى الآن في كل دور إقصائي.',
+    'wc.admin.progress.hint':       'تقدّم كل مشارك حتى الآن: عدد المجموعات المكتملة (متأهلَين) في دور المجموعات، وعدد المباريات المتوقَّعة في كل دور إقصائي.',
     'wc.admin.progress.empty':      'لا يوجد مشاركون مسجَّلون حتى الآن.',
     'wc.admin.progress.participant':'المشارك',
     'wc.admin.gates.title':   '🔓 إدارة فتح وإغلاق التوقعات',
@@ -5891,7 +5891,7 @@ const I18N = {
     'wc.lb.scoring.bonus':    'bonus',
     'wc.admin.warn':          '⚠️ <strong>Notice:</strong> any change here updates points for all participants automatically. Verify numbers before entering.',
     'wc.admin.progress.title':      '👥 Participants\' Prediction Progress',
-    'wc.admin.progress.hint':       'Number of matches each participant has predicted so far, per knockout stage.',
+    'wc.admin.progress.hint':       'Each participant\'s progress so far: completed groups (2 qualifiers picked) in the group stage, and predicted matches in each knockout stage.',
     'wc.admin.progress.empty':      'No participants have registered yet.',
     'wc.admin.progress.participant':'Participant',
     'wc.admin.gates.title':   '🔓 Open / Close Predictions',
@@ -11771,11 +11771,24 @@ function wcKoFilledCount(pred, stageId, matchCount) {
   }
   return n;
 }
+// Count how many groups this participant has fully picked (both qualifiers chosen).
+function wcGroupsFilledCount(pred) {
+  const g = (pred && pred.groups) || {};
+  return WC_GROUPS.filter(grp => ((g[grp.id] || []).filter(Boolean).length) === 2).length;
+}
+// Unified "filled / total" for any stage (groups stage counts completed
+// groups out of 12; knockout stages count completed matches out of matchCount).
+function wcStageFilledCount(pred, stage) {
+  return stage.id === 'groups' ? wcGroupsFilledCount(pred) : wcKoFilledCount(pred, stage.id, stage.matchCount);
+}
+function wcStageTotalCount(stage) {
+  return stage.id === 'groups' ? WC_GROUPS.length : stage.matchCount;
+}
 
-// Admin overview: for every registered participant, show how many matches
-// they've predicted so far in each knockout stage (R32 → Final).
+// Admin overview: for every registered participant, show how much they've
+// predicted so far in every stage — group stage included — through the final.
 function wcRenderAdminParticipantsProgress() {
-  const koStages = WC_STAGES.filter(s => s.id !== 'groups');
+  const allStages = WC_STAGES; // groups, r32, r16, qf, sf, final
   const players = (wcState.predictions || [])
     .slice()
     .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
@@ -11791,14 +11804,15 @@ function wcRenderAdminParticipantsProgress() {
   const headRow = `
     <div class="wc-prog-row wc-prog-head">
       <div>${t('wc.admin.progress.participant')}</div>
-      ${koStages.map(s => `<div class="wc-prog-cell head">${s.icon}<br>${t('wc.stage.'+s.id)}</div>`).join('')}
+      ${allStages.map(s => `<div class="wc-prog-cell head">${s.icon}<br>${t('wc.stage.'+s.id)}</div>`).join('')}
     </div>`;
 
   const rows = players.map(p => {
-    const cells = koStages.map(s => {
-      const filled = wcKoFilledCount(p, s.id, s.matchCount);
-      const cls = filled === s.matchCount ? 'done' : (filled > 0 ? 'partial' : 'none');
-      return `<div class="wc-prog-cell ${cls}">${filled}/${s.matchCount}</div>`;
+    const cells = allStages.map(s => {
+      const filled = wcStageFilledCount(p, s);
+      const total = wcStageTotalCount(s);
+      const cls = filled === total ? 'done' : (filled > 0 ? 'partial' : 'none');
+      return `<div class="wc-prog-cell ${cls}">${filled}/${total}</div>`;
     }).join('');
     return `
       <div class="wc-prog-row">
