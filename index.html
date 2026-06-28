@@ -11563,30 +11563,33 @@ function wcRenderPredict() {
   }
   const stageCards = groupsCard + qualifiersBracket + koSection;
 
-  // Compute groups completion (only matters when groups stage is open)
-  const groupsStage = WC_STAGES.find(s => s.id === 'groups');
-  const groupsOpen = adminEdit || (groupsStage && wcStageStatus(groupsStage) === 'open');
-  const completed = WC_GROUPS.filter(g => (wcState.draft.groups[g.id] || []).length === 2).length;
-  const total = WC_GROUPS.length;
-  const allGroupsDone = completed === total;
-  const remaining = total - completed;
+  // Completion check for every currently-open stage — the participant can't
+  // submit until each one is fully predicted (all 12 groups picked, or every
+  // match of an open knockout round scored). Admin-edit mode bypasses this
+  // entirely so an admin can save a partial correction.
+  const openStages = adminEdit ? [] : WC_STAGES.filter(s => wcStageStatus(s) === 'open');
+  const stageProgress = openStages
+    .map(s => ({ stage: s, completed: wcStageFilledCount(wcState.draft, s), total: wcStageTotalCount(s) }))
+    .filter(p => p.total > 0); // a KO stage whose matchups aren't determined yet has nothing to require
+  const incompleteStages = stageProgress.filter(p => p.completed < p.total);
+  const blockSubmit = incompleteStages.length > 0;
+  const allOpenDone = stageProgress.length > 0 && incompleteStages.length === 0;
+  const remainingTotal = incompleteStages.reduce((sum, p) => sum + (p.total - p.completed), 0);
 
   // Submit button (only if any open stage exists — always shown in admin-edit mode)
   const anyOpen = adminEdit || WC_STAGES.some(s => wcStageStatus(s) === 'open');
-
-  // Block submit when groups stage is open and not yet complete
-  const blockSubmit = groupsOpen && !allGroupsDone;
 
   let submitRow = '';
   if (anyOpen) {
     let helperText = '';
     if (blockSubmit) {
+      const perStage = incompleteStages.map(p => `${t('wc.stage.'+p.stage.id)} ${p.completed}/${p.total}`).join(' · ');
       helperText = `
         <div class="wc-submit-helper warn">
-          <span class="wc-submit-progress">${completed} / ${total} ${t('wc.submit.progress')}</span>
-          <span class="wc-submit-msg">${t('wc.submit.remaining')} ${remaining}</span>
+          <span class="wc-submit-progress">${perStage}</span>
+          <span class="wc-submit-msg">${t('wc.submit.remaining')} ${remainingTotal}</span>
         </div>`;
-    } else if (groupsOpen && allGroupsDone) {
+    } else if (allOpenDone) {
       helperText = `<div class="wc-submit-helper ok">${t('wc.submit.allDone')}</div>`;
     }
     submitRow = `
@@ -12317,13 +12320,16 @@ function wcWireEvents() {
       // Block submit if no stage is open (admin-edit mode always allows saving)
       const anyOpen = adminEdit || WC_STAGES.some(s => wcStageStatus(s) === 'open');
       if (!anyOpen) { alert(t('wc.noOpen')); return; }
-      // Block submit if groups stage is open but not all 12 groups filled
-      const groupsStage = WC_STAGES.find(s => s.id === 'groups');
-      const groupsOpen = adminEdit || (groupsStage && wcStageStatus(groupsStage) === 'open');
-      if (groupsOpen) {
-        const incomplete = WC_GROUPS.filter(g => (wcState.draft.groups[g.id] || []).length !== 2).length;
-        if (incomplete > 0) {
-          alert(t('wc.submit.remaining') + ' ' + incomplete);
+      // Block submit if any currently-open stage (groups or a knockout round)
+      // isn't fully predicted yet.
+      if (!adminEdit) {
+        const incomplete = WC_STAGES
+          .filter(s => wcStageStatus(s) === 'open')
+          .map(s => ({ stage: s, completed: wcStageFilledCount(wcState.draft, s), total: wcStageTotalCount(s) }))
+          .filter(p => p.total > 0 && p.completed < p.total);
+        if (incomplete.length) {
+          const lines = incomplete.map(p => `${t('wc.stage.'+p.stage.id)}: ${p.completed}/${p.total}`);
+          alert(t('wc.submit.remaining') + ' ' + incomplete.reduce((s,p)=>s+(p.total-p.completed),0) + '\n• ' + lines.join('\n• '));
           return;
         }
       }
