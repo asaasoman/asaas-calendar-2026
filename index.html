@@ -3119,7 +3119,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-prog-table { min-width: max-content; }
 .wc-prog-row {
   display: grid;
-  grid-template-columns: 130px repeat(6, 64px);
+  grid-template-columns: 180px repeat(6, 64px) 100px;
   gap: 6px;
   align-items: center;
   padding: 6px 0;
@@ -3133,7 +3133,8 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-prog-name {
   font-size: 12.5px; font-weight: 600; color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  white-space: normal; overflow: visible; word-break: break-word;
+  line-height: 1.3;
 }
 .wc-prog-cell {
   text-align: center;
@@ -3149,9 +3150,41 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-prog-cell.done    { background: var(--green-tint); color: var(--green); }
 .wc-prog-cell.partial { background: var(--gold-tint); color: var(--clay); }
 .wc-prog-cell.none    { background: var(--bg-2); color: var(--text-mute); }
-@media (max-width: 600px) {
-  .wc-prog-row { grid-template-columns: 100px repeat(6, 56px); }
+.wc-prog-actions {
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px;
 }
+.wc-prog-act-btn {
+  background: var(--bg-2); border: 1px solid var(--border-soft);
+  border-radius: 7px; cursor: pointer;
+  font-size: 13px; line-height: 1; padding: 5px 7px;
+  transition: background .15s, border-color .15s, transform .1s;
+}
+.wc-prog-act-btn:hover { background: var(--card); transform: translateY(-1px); }
+.wc-prog-act-btn.del:hover { background: #FBE8E5; border-color: #E3A99B; }
+@media (max-width: 600px) {
+  .wc-prog-row { grid-template-columns: 130px repeat(6, 56px) 88px; }
+  .wc-prog-act-btn { padding: 4px 5px; font-size: 12px; }
+}
+
+/* ─── Admin edit-on-behalf-of banner (predict tab, admin mode) ───── */
+.wc-admin-edit-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  background: var(--gold-tint); border: 1px solid var(--gold-soft);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
+}
+.wc-admin-edit-banner-text {
+  font-size: 12.5px; color: var(--clay); line-height: 1.6; flex: 1;
+}
+.wc-admin-edit-exit {
+  background: var(--green); color: #FFFDF8; border: none;
+  border-radius: 8px; padding: 7px 14px; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  transition: background .2s;
+}
+.wc-admin-edit-exit:hover { background: #264d31; }
+
 
 .wc-admin-section {
   background: var(--card-2);
@@ -10634,6 +10667,8 @@ function wcFlagImg(code, h) {
 const wcState = {
   myId: null,
   myName: '',
+  editTargetId: null,      // when set (admin mode), the predict tab edits THIS participant's record instead of "my" own
+  editTargetName: '',
   predictions: [],
   results: { groups: {}, groupStats: {}, knockout: { r32:[], r16:[], qf:[], sf:[], final:[] } },
   tab: 'predict',          // predict | leaderboard | admin
@@ -10684,6 +10719,37 @@ function wcClearIdentity() {
   localStorage.removeItem(WC_LS_PLAYER);
   wcState.myId = null; wcState.myName = ''; wcState.draft = null;
 }
+
+// When an admin is editing another participant's predictions on their behalf,
+// every place that normally reads "my" identity should read the edit target's
+// identity instead. Outside of admin-edit mode these just fall back to "me".
+function wcEffectiveId()   { return wcState.editTargetId || wcState.myId; }
+function wcEffectiveName() { return wcState.editTargetId ? wcState.editTargetName : wcState.myName; }
+
+// Admin-only: open the predict tab pre-loaded with this participant's existing
+// picks so the admin can view AND edit their predictions across every round —
+// including rounds that are already closed for everyone else.
+function wcAdminEditParticipant(participantId) {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  const pred = wcState.predictions.find(p => p.id === participantId);
+  if (!pred) return;
+  wcState.editTargetId = participantId;
+  wcState.editTargetName = pred.name;
+  wcState.draft = null; // force a fresh draft built from this participant's saved picks
+  wcState.tab = 'predict';
+  wcRender();
+}
+window.wcAdminEditParticipant = wcAdminEditParticipant;
+
+// Leave admin edit-on-behalf-of mode and return to the admin tab.
+function wcExitAdminEdit() {
+  wcState.editTargetId = null;
+  wcState.editTargetName = '';
+  wcState.draft = null;
+  wcState.tab = 'admin';
+  wcRender();
+}
+window.wcExitAdminEdit = wcExitAdminEdit;
 
 // ────────────────────────────────────────────────────────────────
 // Stage status
@@ -10867,10 +10933,12 @@ function wcMaybeRender(source) {
 }
 
 async function wcSaveMyPrediction() {
-  if (!wcState.myId || !wcState.myName || !wcState.draft) return;
+  const targetId = wcEffectiveId();
+  const targetName = wcEffectiveName();
+  if (!targetId || !targetName || !wcState.draft) return;
   const myPred = {
-    id: wcState.myId,
-    name: wcState.myName,
+    id: targetId,
+    name: targetName,
     ts: Date.now(),
     groups: { ...(wcState.draft.groups || {}) },
     knockout: {
@@ -10882,7 +10950,7 @@ async function wcSaveMyPrediction() {
     }
   };
   const arr = [...wcState.predictions];
-  const idx = arr.findIndex(p => p.id === wcState.myId);
+  const idx = arr.findIndex(p => p.id === targetId);
   if (idx >= 0) arr[idx] = myPred; else arr.push(myPred);
   await WC_PRED_DOC.set({ value: arr, updatedAt: Date.now() });
 }
@@ -11295,7 +11363,7 @@ function wcTotal(pred) {
 // Draft init
 // ────────────────────────────────────────────────────────────────
 function wcInitDraft() {
-  const mine = wcState.predictions.find(p => p.id === wcState.myId);
+  const mine = wcState.predictions.find(p => p.id === wcEffectiveId());
   wcState.draft = {
     groups: mine ? { ...(mine.groups || {}) } : {},
     knockout: mine ? {
@@ -11376,7 +11444,9 @@ function wcNameDatalistOptions() {
 // Predict tab — stage cards
 // ────────────────────────────────────────────────────────────────
 function wcRenderPredict() {
-  if (!wcState.myName) {
+  const adminEdit = !!wcState.editTargetId;
+
+  if (!adminEdit && !wcState.myName) {
     return `
       ${wcRenderCurrentStageBadge()}
       ${wcGroupsNotice()}
@@ -11397,6 +11467,16 @@ function wcRenderPredict() {
   }
   if (!wcState.draft) wcInitDraft();
 
+  const adminBanner = adminEdit ? `
+    <div class="wc-admin-edit-banner">
+      <div class="wc-admin-edit-banner-text">
+        🔧 ${(CURRENT_LANG === 'en')
+          ? `Admin mode — editing predictions for <strong>${wcEsc(wcState.editTargetName)}</strong>. Every round is unlocked here, even closed ones.`
+          : `وضع المسؤول — تعديل توقعات <strong>${wcEsc(wcState.editTargetName)}</strong>. كل الأدوار مفتوحة للتعديل هنا، حتى المغلقة منها.`}
+      </div>
+      <button class="wc-admin-edit-exit" onclick="wcExitAdminEdit()">✕ ${(CURRENT_LANG === 'en') ? 'Exit edit mode' : 'إنهاء وضع التعديل'}</button>
+    </div>` : '';
+
   // Separate groups stage card from knockout stages
   const groupsStageObj = WC_STAGES.find(s => s.id === 'groups');
   const koStages = WC_STAGES.filter(s => s.id !== 'groups');
@@ -11409,27 +11489,34 @@ function wcRenderPredict() {
 
   // Knockout section: bracket or list depending on koView
   let koSection = '';
-  const anyKOTouched = koStages.some(s =>
-    ((wcState.results.knockout && wcState.results.knockout[s.id]) || []).some(m => m && (m.home || m.away))
-  );
-  if (anyKOTouched) {
-    koSection = wcRenderViewToggle() + (wcState.koView === 'bracket' ? wcRenderBracket() : koStages.map(s => wcRenderStageCard(s)).join(''));
-  } else {
-    // No matchups announced yet — fall back to stage list (which shows empty/upcoming states)
+  if (adminEdit) {
+    // Admin override: always use the per-stage editable list form (not the
+    // read-mostly bracket view) so every round — open or closed — stays
+    // editable while editing on a participant's behalf.
     koSection = koStages.map(s => wcRenderStageCard(s)).join('');
+  } else {
+    const anyKOTouched = koStages.some(s =>
+      ((wcState.results.knockout && wcState.results.knockout[s.id]) || []).some(m => m && (m.home || m.away))
+    );
+    if (anyKOTouched) {
+      koSection = wcRenderViewToggle() + (wcState.koView === 'bracket' ? wcRenderBracket() : koStages.map(s => wcRenderStageCard(s)).join(''));
+    } else {
+      // No matchups announced yet — fall back to stage list (which shows empty/upcoming states)
+      koSection = koStages.map(s => wcRenderStageCard(s)).join('');
+    }
   }
   const stageCards = groupsCard + qualifiersBracket + koSection;
 
   // Compute groups completion (only matters when groups stage is open)
   const groupsStage = WC_STAGES.find(s => s.id === 'groups');
-  const groupsOpen = groupsStage && wcStageStatus(groupsStage) === 'open';
+  const groupsOpen = adminEdit || (groupsStage && wcStageStatus(groupsStage) === 'open');
   const completed = WC_GROUPS.filter(g => (wcState.draft.groups[g.id] || []).length === 2).length;
   const total = WC_GROUPS.length;
   const allGroupsDone = completed === total;
   const remaining = total - completed;
 
-  // Submit button (only if any open stage exists)
-  const anyOpen = WC_STAGES.some(s => wcStageStatus(s) === 'open');
+  // Submit button (only if any open stage exists — always shown in admin-edit mode)
+  const anyOpen = adminEdit || WC_STAGES.some(s => wcStageStatus(s) === 'open');
 
   // Block submit when groups stage is open and not yet complete
   const blockSubmit = groupsOpen && !allGroupsDone;
@@ -11455,7 +11542,7 @@ function wcRenderPredict() {
       </div>`;
   }
 
-  return wcRenderCurrentStageBadge() + wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
+  return adminBanner + wcRenderCurrentStageBadge() + wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
 }
 
 function wcRenderStageOverview() {
@@ -11480,8 +11567,13 @@ function wcRenderStageOverview() {
 }
 
 function wcRenderStageCard(stage) {
-  const status = wcStageStatus(stage);
-  const myPred = wcState.predictions.find(p => p.id === wcState.myId);
+  const realStatus = wcStageStatus(stage);
+  const adminEdit = !!wcState.editTargetId;
+  // While an admin is editing a participant on their behalf, treat every
+  // stage as editable regardless of its real open/closed/upcoming status —
+  // that's the whole point of the override. The badge still shows the truth.
+  const status = adminEdit ? 'open' : realStatus;
+  const myPred = wcState.predictions.find(p => p.id === wcEffectiveId());
   const myPts  = myPred ? wcPointsByStage(myPred)[stage.id] : 0;
   const hasResults = stage.id === 'groups'
     ? Object.keys(wcState.results.groups || {}).length > 0
@@ -11491,7 +11583,7 @@ function wcRenderStageCard(stage) {
   const header = `
     <div class="wc-stage-card-header">
       <div class="wc-stage-card-title"><span>${stage.icon}</span> ${t('wc.stage.'+stage.id)}</div>
-      ${wcStatusBadge(status)}
+      ${wcStatusBadge(realStatus)}
     </div>
   `;
 
@@ -11572,7 +11664,8 @@ function wcRenderKOForm(stage) {
 
   const rows = matchups.map((m, i) => {
     const d = draftArr[i] || {};
-    const resultIn = (m.homeScore != null && m.awayScore != null);
+    const hasOfficial = (m.homeScore != null && m.awayScore != null);
+    const resultIn = hasOfficial && !wcState.editTargetId;
     const home = m.home ? WC_TEAM_MAP[m.home] : null;
     const away = m.away ? WC_TEAM_MAP[m.away] : null;
     return `
@@ -11593,7 +11686,7 @@ function wcRenderKOForm(stage) {
           </div>
         </div>
         ${wcRenderPensRow('draft', stage.id, i, home, away, d, resultIn)}
-        ${resultIn ? `<div style="text-align:center;font-size:11px;color:var(--green-dark);margin-top:6px;font-weight:600">
+        ${hasOfficial ? `<div style="text-align:center;font-size:11px;color:var(--green-dark);margin-top:6px;font-weight:600">
             ${t('wc.match.official')}: ${m.homeScore} − ${m.awayScore}${wcKoIsTied(m) && m.penWinner ? ` · <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span>` : ''}</div>` : ''}
       </div>`;
   }).join('');
@@ -11801,10 +11894,15 @@ function wcRenderAdminParticipantsProgress() {
       </div>`;
   }
 
+  const viewLabel = (CURRENT_LANG === 'en') ? 'View predictions' : 'عرض التوقعات';
+  const editLabel = (CURRENT_LANG === 'en') ? 'Edit predictions (all rounds)' : 'تعديل التوقعات (كل الأدوار)';
+  const delLabel  = (CURRENT_LANG === 'en') ? 'Delete participant' : 'حذف المشارك';
+
   const headRow = `
     <div class="wc-prog-row wc-prog-head">
       <div>${t('wc.admin.progress.participant')}</div>
       ${allStages.map(s => `<div class="wc-prog-cell head">${s.icon}<br>${t('wc.stage.'+s.id)}</div>`).join('')}
+      <div></div>
     </div>`;
 
   const rows = players.map(p => {
@@ -11816,8 +11914,13 @@ function wcRenderAdminParticipantsProgress() {
     }).join('');
     return `
       <div class="wc-prog-row">
-        <div class="wc-prog-name">${wcEsc(p.name || '')}</div>
+        <div class="wc-prog-name" title="${wcEsc(p.name || '')}">${wcEsc(p.name || '')}</div>
         ${cells}
+        <div class="wc-prog-actions">
+          <button class="wc-prog-act-btn" onclick="wcViewParticipant('${wcEsc(p.id)}')" title="${wcEsc(viewLabel)}" aria-label="${wcEsc(viewLabel)}">👁</button>
+          <button class="wc-prog-act-btn" onclick="wcAdminEditParticipant('${wcEsc(p.id)}')" title="${wcEsc(editLabel)}" aria-label="${wcEsc(editLabel)}">✏️</button>
+          <button class="wc-prog-act-btn del" onclick="wcDeleteParticipant('${wcEsc(p.id)}')" title="${wcEsc(delLabel)}" aria-label="${wcEsc(delLabel)}">🗑</button>
+        </div>
       </div>`;
   }).join('');
 
@@ -12138,12 +12241,13 @@ function wcWireEvents() {
   const submitBtn = document.getElementById('wcSubmitBtn');
   if (submitBtn) {
     submitBtn.onclick = async () => {
-      // Block submit if no stage is open
-      const anyOpen = WC_STAGES.some(s => wcStageStatus(s) === 'open');
+      const adminEdit = !!wcState.editTargetId;
+      // Block submit if no stage is open (admin-edit mode always allows saving)
+      const anyOpen = adminEdit || WC_STAGES.some(s => wcStageStatus(s) === 'open');
       if (!anyOpen) { alert(t('wc.noOpen')); return; }
       // Block submit if groups stage is open but not all 12 groups filled
       const groupsStage = WC_STAGES.find(s => s.id === 'groups');
-      const groupsOpen = groupsStage && wcStageStatus(groupsStage) === 'open';
+      const groupsOpen = adminEdit || (groupsStage && wcStageStatus(groupsStage) === 'open');
       if (groupsOpen) {
         const incomplete = WC_GROUPS.filter(g => (wcState.draft.groups[g.id] || []).length !== 2).length;
         if (incomplete > 0) {
