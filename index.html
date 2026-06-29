@@ -11143,17 +11143,30 @@ const WC_KO_ORDER = ['r32', 'r16', 'qf', 'sf', 'final'];
 
 // Real official FIFA World Cup 2026 knockout feed map: for each round,
 // which TWO array indices of the PREVIOUS round feed each slot's
-// [home, away] side. This is NOT simply [idx*2, idx*2+1] — FIFA's
-// Round-of-32 seeding deliberately interleaves the draw (so that teams
-// from the same group stay apart as long as possible), e.g. R16 slot 0
-// (Match 89) is fed by R32 matches 74 and 77, not 73 and 74. Verified
-// directly against FIFA.com's published Match 73–104 knockout schedule:
+// [home, away] side.
+//
+// IMPORTANT: this is keyed to how matches are actually entered in the
+// Admin tab, which is NOT [idx*2, idx*2+1] and also NOT simply
+// "official match number − first number of that round". Round of 32 is
+// entered in real chronological kickoff order, which itself doesn't run
+// in step with FIFA's official Match 73–88 numbering (e.g. Match 76,
+// Brazil v Japan, actually kicks off before Match 74, Germany v
+// Paraguay). Verified directly against the live Admin tab's Round-of-32
+// list (array index → official match):
+//   idx  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
+//   M#   73 76 74 75 78 77 79 80 82 81 84 83 85 88 86 87
+// Round of 16 (and onward) IS entered in plain ascending official-number
+// order (89→96, 97→100, 101→102) since those slots get pre-created as a
+// template before kickoff, with no chronological reordering yet — confirmed
+// by the live Admin tab (Match 89's slot empty, Match 90's "Canada" side
+// already filled in, consistent only with ascending order).
+// Official R16/QF/SF schedule (FIFA.com, Match 73–104):
 //   R16  M89=W74+W77  M90=W73+W75  M91=W76+W78  M92=W79+W80
 //        M93=W83+W84  M94=W81+W82  M95=W86+W88  M96=W85+W87
 //   QF   M97=W89+W90  M98=W93+W94  M99=W91+W92  M100=W95+W96
-//   SF   M101=W97+W98 M102=W99+W100   (R32 array index = Match# − 73)
+//   SF   M101=W97+W98 M102=W99+W100
 const WC_KO_FEED = {
-  r16:   [[1, 4], [0, 2], [3, 5], [6, 7], [10, 11], [8, 9], [13, 15], [12, 14]],
+  r16:   [[2, 5], [0, 3], [1, 4], [6, 7], [11, 10], [9, 8], [14, 13], [12, 15]],
   qf:    [[0, 1], [4, 5], [2, 3], [6, 7]],
   sf:    [[0, 1], [2, 3]],
   final: [[0, 1]],
@@ -13727,21 +13740,26 @@ function wcRenderBracket() {
 //   the centre, à la a classic World Cup bracket graphic.
 // ════════════════════════════════════════════════════════════════
 
-// The real official bracket: for each knockout round, the match-array
+// The real bracket structure: for each knockout round, the match-array
 // indices belonging to each half of the draw, listed in RENDER ORDER so
 // that every adjacent pair are true bracket siblings (their winners meet
-// in the next round). This is NOT simple ascending order — FIFA's
-// Round-of-32 seeding deliberately interleaves it (to keep same-group
-// teams apart as long as possible), so e.g. R32 index 3 (Brazil v Japan)
-// sits on the opposite half from index 2 (Netherlands v Morocco) even
-// though they're numerically adjacent. Verified against FIFA's published
-// Match 73–104 knockout schedule:
+// in the next round).
+//
+// R32's order here matches how matches are actually entered in the Admin
+// tab — real chronological kickoff order, which runs out of step with
+// FIFA's official Match 73–88 numbering partway through (confirmed
+// directly against the live Admin tab):
+//   idx  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
+//   M#   73 76 74 75 78 77 79 80 82 81 84 83 85 88 86 87
+// R16/QF/SF are entered in plain ascending official-number order (no
+// chronological reordering yet, since those rounds are still pre-kickoff
+// templates) — confirmed the same way. Official schedule (FIFA.com):
 //   R16  M89=W74+W77  M90=W73+W75  M91=W76+W78  M92=W79+W80
 //        M93=W83+W84  M94=W81+W82  M95=W86+W88  M96=W85+W87
 //   QF   M97=W89+W90  M98=W93+W94  M99=W91+W92  M100=W95+W96
-//   SF   M101=W97+W98 M102=W99+W100   (R32 index = Match# − 73)
+//   SF   M101=W97+W98 M102=W99+W100
 const WCBT_HALF_ORDER = {
-  r32: { left: [1, 4, 0, 2, 10, 11, 8, 9], right: [3, 5, 6, 7, 13, 15, 12, 14] },
+  r32: { left: [2, 5, 0, 3, 11, 10, 9, 8], right: [1, 4, 6, 7, 14, 13, 12, 15] },
   r16: { left: [0, 1, 4, 5],               right: [2, 3, 6, 7] },
   qf:  { left: [0, 1],                     right: [2, 3] },
   sf:  { left: [0],                        right: [1] },
