@@ -14355,18 +14355,29 @@ function wcRenderQualifiersBracket() {
   };
 
   // ---- Step 5: assemble columns ----
-  const leftR32  = r32.slice(0, 8).map(matchCell).join('');
-  const rightR32 = r32.slice(8).map(matchCell).join('');
+  // Visual-order note: for the connecting lines to line up, every adjacent
+  // PAIR of boxes in a column must be the two matches that actually feed the
+  // same next-round slot. The official bracket does NOT pair R32 matches in
+  // simple numeric order (e.g. Match 74's winner meets Match 77's winner,
+  // not Match 73's) — so the lists below reorder cells for *display only*;
+  // the underlying r32/r16/qf data stays in official Match-number order
+  // (required for the identity-matching used by wcAutoAdvanceKnockout).
+  const LEFT_R32_ORDER  = [0, 2, 1, 4, 3, 5, 6, 7];        // → Matches 73,75,74,77,76,78,79,80
+  const RIGHT_R32_ORDER = [8, 9, 10, 11, 12, 14, 13, 15];  // → Matches 81,82,83,84,85,87,86,88
+  const LEFT_R16_ORDER  = [1, 0, 2, 3];                    // → Matches 90,89,91,92
+  const RIGHT_R16_ORDER = [5, 4, 7, 6];                    // → Matches 94,93,96,95
+
+  const leftR32  = LEFT_R32_ORDER.map(i => matchCell(r32[i])).join('');
+  const rightR32 = RIGHT_R32_ORDER.map(i => matchCell(r32[i])).join('');
 
   // R16/QF are read straight from the real, already-advanced bracket
   // (wcState.results.knockout.r16/.qf) rather than re-derived here, so this
   // preview always matches what wcAutoAdvanceKnockout has resolved from
-  // actual entered results. Index grouping mirrors which R32 matches feed
-  // which side (left: Matches 73–80 / right: Matches 81–88).
+  // actual entered results.
   const r16Arr = (wcState.results.knockout && wcState.results.knockout.r16) || [];
   const qfArr  = (wcState.results.knockout && wcState.results.knockout.qf)  || [];
-  const r16Cells      = [0, 1, 2, 3].map(i => koCell(r16Arr[i])).join('');
-  const r16CellsRight = [4, 5, 6, 7].map(i => koCell(r16Arr[i])).join('');
+  const r16Cells      = LEFT_R16_ORDER.map(i => koCell(r16Arr[i])).join('');
+  const r16CellsRight = RIGHT_R16_ORDER.map(i => koCell(r16Arr[i])).join('');
   const qfCells      = [0, 2].map(i => koCell(qfArr[i])).join('');
   const qfCellsRight = [1, 3].map(i => koCell(qfArr[i])).join('');
   // Semi-finals each combine one quarter from the left side with one from
