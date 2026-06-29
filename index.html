@@ -5284,6 +5284,62 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
 .wc-crowd-legend .dot.draw { background: var(--gold); }
 .wc-crowd-legend .dot.away { background: var(--clay); }
 
+/* Last-result strip — shown right under the "next match" countdown */
+.wc-last-result {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.wc-last-result-head {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+}
+.wc-last-result-score {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.wc-last-result-side {
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.wc-last-result-side strong {
+  font-size: 17px;
+  color: var(--green-dark);
+  font-variant-numeric: tabular-nums;
+}
+.wc-last-result-sep {
+  color: var(--text-mute);
+  font-weight: 400;
+}
+.wc-last-result .wc-crowd { margin-top: 0; margin-bottom: 12px; }
+.wc-last-result-btn {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 9px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.wc-last-result-btn:hover {
+  background: var(--green-tint);
+  border-color: var(--green-light);
+  color: var(--green-dark);
+}
+
 /* ════════════════════════════════════════════════════════════════
    Admin: results update log ("سجل تحديث النتائج")
    ════════════════════════════════════════════════════════════════ */
@@ -6134,6 +6190,8 @@ const I18N = {
     'wc.bracket.status.open':     'مفتوح',
     'wc.bracket.status.closed':   'مغلق',
     'wc.bracket.status.upcoming': 'قريباً',
+    'wc.lastResult.label':    'آخر نتيجة',
+    'wc.lastResult.viewBtn':  'شاهد توقعات المشاركين في المباريات السابقة',
     'wc.view.bracket':        'شكل البراكت',
     'wc.view.list':           'قائمة',
 
@@ -6436,6 +6494,8 @@ const I18N = {
     'wc.bracket.status.open':     'Open',
     'wc.bracket.status.closed':   'Closed',
     'wc.bracket.status.upcoming': 'Soon',
+    'wc.lastResult.label':    'Last result',
+    'wc.lastResult.viewBtn':  "View participants' predictions in past matches",
     'wc.view.bracket':        'Bracket',
     'wc.view.list':           'List',
 
@@ -12306,7 +12366,7 @@ function wcRenderPredict() {
   // already a no-op for them (it returns '' without a registered name) —
   // so skip the completion-check/submit-row machinery entirely for guests.
   if (guest) {
-    return guestBanner + wcGroupsNotice() + wcRenderBigCountdown() + stageCards;
+    return guestBanner + wcGroupsNotice() + wcRenderBigCountdown() + wcRenderLastResultStrip() + stageCards;
   }
 
   // Completion check for every currently-open stage — the participant can't
@@ -12365,7 +12425,7 @@ function wcRenderPredict() {
       </div>`;
   }
 
-  return adminBanner + wcRenderOpportunityCard() + liveTotalBar + wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
+  return adminBanner + wcRenderOpportunityCard() + liveTotalBar + wcGroupsNotice() + wcRenderBigCountdown() + wcRenderLastResultStrip() + stageCards + submitRow;
 }
 
 function wcRenderStageOverview() {
@@ -12569,7 +12629,7 @@ function wcRenderKOForm(stage, isGuest) {
 // "توقع الجمهور" — percentage breakdown of how every participant who has
 // SAVED a pick for this match predicted it (home win / draw / away win).
 // Only called once the viewer's own saved guess for this match exists.
-function wcRenderCrowdBreakdown(stageId, idx, home, away) {
+function wcRenderCrowdBreakdown(stageId, idx, home, away, forceOpen) {
   const all = wcState.predictions || [];
   let h = 0, dCount = 0, a = 0;
   all.forEach(p => {
@@ -12591,7 +12651,7 @@ function wcRenderCrowdBreakdown(stageId, idx, home, away) {
   const drawLbl = isEn ? 'Draw' : 'التعادل';
   const awayLbl = isEn ? `${awayName} win` : `فوز ${awayName}`;
   return `
-    <details class="wc-crowd">
+    <details class="wc-crowd"${forceOpen ? ' open' : ''}>
       <summary class="wc-crowd-title"><span>👥 ${title} <span class="wc-crowd-count">(${countLabel})</span></span></summary>
       <div class="wc-crowd-body">
         <div class="wc-crowd-bar">
@@ -13601,6 +13661,75 @@ function wcNextUpcomingMatch() {
   }
   return best;
 }
+
+// ── Last-result strip (shows under the "next match" countdown) ────
+// Mirrors wcNextUpcomingMatch but looks backward: the most recently
+// played (officially decided) match across every knockout round, judged
+// by kickoff time. Used to surface "how did that go, and what did
+// everyone predict?" right where people are already looking for "what's
+// next?" — the two questions people actually have on results day.
+function wcLastCompletedMatch() {
+  let best = null;
+  WC_STAGES.forEach(stage => {
+    if (stage.id === 'groups') return; // groups has no per-match data
+    const matches = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
+    matches.forEach((m, idx) => {
+      if (!m || m.homeScore == null || m.awayScore == null) return;
+      const time = m.kickoffAt ? new Date(m.kickoffAt).getTime() : 0;
+      if (!best || time >= best.time) {
+        best = { time, match: m, stage, idx };
+      }
+    });
+  });
+  return best;
+}
+
+function wcRenderLastResultStrip() {
+  const last = wcLastCompletedMatch();
+  if (!last) return '';
+  const { match: m, stage, idx } = last;
+  const home = m.home ? WC_TEAM_MAP[m.home] : null;
+  const away = m.away ? WC_TEAM_MAP[m.away] : null;
+  if (!home || !away) return '';
+  const crowdHtml = wcRenderCrowdBreakdown(stage.id, idx, home, away, true);
+  if (!crowdHtml) return ''; // no predictions logged for it — nothing useful to show yet
+  const pensNote = (wcKoIsTied(m) && m.penWinner)
+    ? ` <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner === 'home' ? home.name : away.name)}</span>`
+    : '';
+  return `
+    <div class="wc-last-result">
+      <div class="wc-last-result-head">🏁 ${wcEsc(t('wc.lastResult.label'))} · ${wcEsc(stage.icon)} ${wcEsc(t('wc.stage.' + stage.id))}</div>
+      <div class="wc-last-result-score">
+        <span class="wc-last-result-side">${wcFlagImg(home.code, 18)}<span>${wcEsc(home.name)}</span><strong>${m.homeScore}</strong></span>
+        <span class="wc-last-result-sep">–</span>
+        <span class="wc-last-result-side"><strong>${m.awayScore}</strong><span>${wcEsc(away.name)}</span>${wcFlagImg(away.code, 18)}</span>
+        ${pensNote}
+      </div>
+      ${crowdHtml}
+      <button class="wc-last-result-btn" type="button" onclick="wcOpenPastPredictions('${stage.id}')">📂 ${wcEsc(t('wc.lastResult.viewBtn'))}</button>
+    </div>`;
+}
+
+// The strip's button: jump straight to that round's card in the list view
+// AND pop its standings/picks panel open (closed stages keep that
+// collapsed by default — see wcToggleStageDetails), instead of leaving the
+// participant to find and expand it themselves.
+window.wcOpenPastPredictions = function(stageId) {
+  wcState.tab = 'predict';
+  wcState.stageDetailsOpen[stageId] = true;
+  if (stageId !== 'groups' && wcState.koView !== 'list') {
+    wcState.koView = 'list';
+    try { localStorage.setItem('asaas_wc_koView', 'list'); } catch (e) {}
+  }
+  wcRender();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const el = document.getElementById('wcStageCard-' + stageId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.classList.add('wc-stage-card-flash');
+    setTimeout(() => el.classList.remove('wc-stage-card-flash'), 1200);
+  }));
+};
 
 function wcRenderBigCountdown() {
   const now = Date.now();
