@@ -4181,6 +4181,10 @@ html.view-wc.wc-dark .wc-cs-leading {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
+.wc-bracket-scroll::-webkit-scrollbar { height: 5px; }
+.wc-bracket-scroll::-webkit-scrollbar-track { background: transparent; }
+.wc-bracket-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.wc-bracket-scroll::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
 .wc-bracket-grid {
   display: flex;
   flex-direction: row-reverse; /* RTL: R32 → ... → Final from right to left */
@@ -4494,6 +4498,10 @@ html.view-wc.wc-dark .wc-cs-leading {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
+.wcbt-scroll::-webkit-scrollbar { height: 5px; }
+.wcbt-scroll::-webkit-scrollbar-track { background: transparent; }
+.wcbt-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.wcbt-scroll::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
 .wcbt-tree {
   display: flex;
   direction: ltr; /* purely spatial layout: left half → final → right half,
@@ -5122,6 +5130,12 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
   font-size: 11px; font-weight: 600; white-space: nowrap;
   font-variant-numeric: tabular-nums;
   opacity: .9;
+}
+.wc-spb-missing {
+  grid-column: 1 / -1;
+  font-size: 10.5px;
+  opacity: .8;
+  line-height: 1.5;
 }
 .wc-submit-msg.ok-msg { font-size: 12.5px; }
 
@@ -6013,7 +6027,7 @@ const I18N = {
     'wc.submit.error':        'حدث خطأ أثناء الحفظ. حاول مرة أخرى.',
     'wc.submit.incomplete':   'أكمل توقعات كل المجموعات أولاً',
     'wc.submit.progress':     'مجموعات مكتملة',
-    'wc.submit.remaining':    'لا يمكن حفظ التوقعات حتى تكمل اختيار متأهلَين من كل مجموعة. المتبقي:',
+    'wc.submit.remaining':    'لا يمكن حفظ التوقعات قبل إكمالها. الناقص:',
     'wc.submit.allDone':      '✓ كل المجموعات مكتملة — يمكنك الحفظ الآن',
     'wc.logout.confirm':      'هل تريد تسجيل الخروج من تحدّي التوقعات؟ سيُحتفظ بتوقعاتك في القائمة.',
     'wc.logout.title':        'تسجيل خروج',
@@ -6323,7 +6337,7 @@ const I18N = {
     'wc.submit.error':        'An error occurred while saving. Please try again.',
     'wc.submit.incomplete':   'Complete all group predictions first',
     'wc.submit.progress':     'groups complete',
-    'wc.submit.remaining':    'You can\'t save until you pick two qualifiers from every group. Remaining:',
+    'wc.submit.remaining':    'You can\'t save your predictions until they\'re complete. Missing:',
     'wc.submit.allDone':      '✓ All groups complete — you can save now',
     'wc.logout.confirm':      'Do you want to sign out of the prediction challenge? Your saved predictions will remain in the leaderboard.',
     'wc.logout.title':        'Sign out',
@@ -12321,11 +12335,16 @@ function wcRenderPredict() {
         const done = p.completed >= p.total;
         const unit = p.stage.id === 'groups' ? (isEn ? 'groups' : 'مجموعة') : (isEn ? 'matches' : 'مباراة');
         const countText = isEn ? `${p.completed}/${p.total}` : `أكملت ${p.completed} من ${p.total} ${unit}`;
+        const missing = done ? [] : wcStageMissingItems(wcState.draft, p.stage);
+        const missingLine = missing.length
+          ? `<div class="wc-spb-missing">${isEn ? 'Missing' : 'الناقص'}: ${missing.map(wcEsc).join('، ')}</div>`
+          : '';
         return `
           <div class="wc-spb-row ${done ? 'done' : ''}">
             <div class="wc-spb-label">${p.stage.icon} ${t('wc.stage.'+p.stage.id)}</div>
             <div class="wc-spb-track"><div class="wc-spb-fill" style="width:${pct}%"></div></div>
             <div class="wc-spb-count">${countText}</div>
+            ${missingLine}
           </div>`;
       }).join('');
       const topMsg = blockSubmit
@@ -12918,6 +12937,31 @@ function wcStageSubmitProgress(pred, stage) {
   return wcKoStageSubmitProgress(stage);
 }
 
+// Human-readable labels for exactly which groups/matches in a stage are
+// still missing a pick, so the submit gate can point a participant at the
+// precise gap ("Group C", "Germany × Paraguay") instead of a bare count.
+function wcStageMissingItems(pred, stage) {
+  if (stage.id === 'groups') {
+    const g = (pred && pred.groups) || {};
+    return WC_GROUPS
+      .filter(grp => ((g[grp.id] || []).filter(Boolean).length) !== 2)
+      .map(grp => `${t('wc.group')} ${grp.id}`);
+  }
+  const matches = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
+  const draftArr = (wcState.draft && wcState.draft.knockout && wcState.draft.knockout[stage.id]) || [];
+  const out = [];
+  matches.forEach((m, i) => {
+    if (!m || !m.home || !m.away) return;               // matchup not determined yet — nothing required
+    const hasOfficial = (m.homeScore != null && m.awayScore != null);
+    if (hasOfficial || wcKoMatchKickedOff(m)) return;    // already locked — no longer required
+    const d = draftArr[i];
+    if (d && d.homeScore != null && d.awayScore != null) return; // already filled in
+    const home = WC_TEAM_MAP[m.home], away = WC_TEAM_MAP[m.away];
+    out.push((home && away) ? `${home.name} × ${away.name}` : t('wc.match.tbd'));
+  });
+  return out;
+}
+
 // Admin overview: for every registered participant, show how much they've
 // predicted so far in every stage — group stage included — through the final.
 function wcRenderAdminParticipantsProgress() {
@@ -13367,11 +13411,16 @@ function wcWireEvents() {
       if (!adminEdit) {
         const incomplete = WC_STAGES
           .filter(s => wcStageStatus(s) === 'open')
-          .map(s => ({ stage: s, ...wcStageSubmitProgress(wcState.draft, s) }))
+          .map(s => ({ stage: s, ...wcStageSubmitProgress(wcState.draft, s), missing: wcStageMissingItems(wcState.draft, s) }))
           .filter(p => p.total > 0 && p.completed < p.total);
         if (incomplete.length) {
-          const lines = incomplete.map(p => `${t('wc.stage.'+p.stage.id)}: ${p.completed}/${p.total}`);
-          alert(t('wc.submit.remaining') + ' ' + incomplete.reduce((s,p)=>s+(p.total-p.completed),0) + '\n• ' + lines.join('\n• '));
+          const totalMissing = incomplete.reduce((s,p)=>s+(p.total-p.completed),0);
+          const blocks = incomplete.map(p => {
+            const header = `${t('wc.stage.'+p.stage.id)} (${p.completed}/${p.total})`;
+            const items = p.missing.map(label => `   – ${label}`).join('\n');
+            return items ? `${header}:\n${items}` : header;
+          });
+          alert(t('wc.submit.remaining') + ' ' + totalMissing + '\n\n' + blocks.join('\n\n'));
           return;
         }
       }
