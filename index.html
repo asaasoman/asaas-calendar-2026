@@ -2480,6 +2480,84 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   padding: 22px 22px 26px;
   box-shadow: var(--shadow-sm);
 }
+
+/* ─── Illustrated hero banner — inner predictions page ───────────────
+   Painted-style stadium/floodlights/player-silhouettes artwork with a
+   title overlay, plus a row of clickable "stage" capsules peeking off
+   its lower edge — mirrors the app.thmanyah.com hero + match-thumbnail
+   treatment, redone in an illustrated (not photographic) style. */
+.wc-hero {
+  position: relative;
+  margin: 16px 0 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 220px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.wc-hero-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wc-hero-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(15,26,18,0) 35%, rgba(15,26,18,.55) 78%, rgba(15,26,18,.78) 100%);
+}
+.wc-hero-content {
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end;
+  text-align: right;
+  padding: 18px 24px 22px;
+}
+.wc-hero-eyebrow {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; letter-spacing: 2.2px; text-transform: uppercase;
+  color: #F5EBC9;
+  margin-bottom: 6px;
+}
+.wc-hero-emblem { width: 18px; height: 18px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.5)); }
+.wc-hero-title {
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+  font-size: 26px; font-weight: 800; color: #FFFDF8;
+  letter-spacing: -.4px; line-height: 1.22;
+  text-shadow: 0 2px 12px rgba(0,0,0,.45);
+}
+.wc-hero-sub {
+  margin-top: 5px; font-size: 12.5px; color: rgba(255,253,248,.85);
+  text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  max-width: 460px;
+}
+
+/* Stage capsules — overlap the hero's bottom edge like match thumbnails */
+.wc-hero-stages {
+  display: flex; gap: 10px;
+  margin: -28px 4px 0;
+  padding: 0 2px 4px;
+  position: relative; z-index: 2;
+  overflow-x: auto; scrollbar-width: thin;
+}
+.wc-hero-stage-chip {
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 7px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.wc-hero-stage-chip:hover { border-color: var(--green-light); color: var(--green-dark); transform: translateY(-1px); }
+.wc-hero-stage-chip .ico { font-size: 14px; line-height: 1; }
+
+@media (max-width: 720px) {
+  .wc-hero { height: 176px; }
+  .wc-hero-title { font-size: 19px; }
+  .wc-hero-sub { font-size: 11.5px; }
+  .wc-hero-stages { margin-top: -22px; }
+  .wc-hero-stage-chip { padding: 7px 11px; font-size: 11.5px; }
+}
+
 .wc-header {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: 12px; flex-wrap: wrap; margin-bottom: 18px;
@@ -2525,11 +2603,21 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-family: inherit; font-size: 13px; font-weight: 600;
   color: var(--text-soft); cursor: pointer;
   transition: all .15s; white-space: nowrap;
+  position: relative;
 }
 .wc-tab:hover { color: var(--text); }
 .wc-tab.active {
   background: var(--card); color: var(--green-dark);
+  font-size: 13.5px; font-weight: 800;
   box-shadow: var(--shadow-sm);
+}
+.wc-tab.active::after {
+  content: "";
+  position: absolute; bottom: 3px; left: 50%;
+  width: 20px; height: 3px;
+  border-radius: 99px;
+  background: var(--gold);
+  transform: translateX(-50%);
 }
 
 .wc-register {
@@ -3199,20 +3287,30 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-admin-edit-exit:hover { background: #264d31; }
 
-/* ─── Live running-total bar (predict tab) ───────────────────────── */
+/* ─── Live running-total — achievement card (predict tab) ───────── */
 .wc-live-total {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px;
-  background: var(--green-tint); border: 1px solid var(--green-light);
-  border-radius: 10px; padding: 10px 16px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 13px;
+  background: linear-gradient(135deg, var(--gold-tint) 0%, var(--card) 100%);
+  border: 1.5px solid var(--gold-soft);
+  border-radius: var(--radius); padding: 12px 16px; margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
 }
+.wc-live-total-ico {
+  width: 42px; height: 42px; flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 3px 9px rgba(0,0,0,.14), inset 0 -2px 5px rgba(0,0,0,.1);
+}
+.wc-live-total-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .wc-live-total-label {
-  font-size: 12.5px; font-weight: 600; color: var(--green-dark);
+  font-size: 11.5px; font-weight: 700; color: var(--clay);
 }
 .wc-live-total-value {
   font-family: 'Co Headline', 'Tajawal', sans-serif;
-  font-size: 19px; font-weight: 700; color: var(--green-dark);
-  font-variant-numeric: tabular-nums;
+  font-size: 22px; font-weight: 800; color: var(--green-dark);
+  font-variant-numeric: tabular-nums; line-height: 1.2;
 }
 
 
@@ -3523,13 +3621,17 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 html:not(.view-wc) .show-on-wc { display: none !important; }
 html.view-wc .hide-on-wc { display: none !important; }
 
-/* ─── WC Launcher card on main page ─────────────────────────── */
+/* ─── WC Launcher card on main page ─────────────────────────────────
+   Full-bleed real-player photo collage on one side, fading into a
+   dark green overlay that carries the headline + CTA — mirrors the
+   "بطولات الكرة السعودية" hero banner format used on thmanyah.com. */
 .wc-launcher {
   display: block;
   text-decoration: none;
   color: inherit;
   margin: 32px 0 0;
   position: relative;
+  min-height: 250px;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 45%, #1a3520 100%);
@@ -3543,56 +3645,77 @@ html.view-wc .hide-on-wc { display: none !important; }
   box-shadow: 0 16px 48px rgba(49,92,59,.28), 0 4px 14px rgba(58,42,29,.10);
 }
 .wc-launcher:active { transform: translateY(0); }
-.wc-launcher-inner {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 22px;
-  align-items: center;
-  padding: 22px 26px;
-  position: relative;
-  z-index: 1;
+
+/* Real player photo strip (left side), faded toward the text side */
+.wc-launcher-photos {
+  position: absolute; inset: 0; left: 0; width: 72%; height: 100%;
+  display: flex;
+  -webkit-mask-image: linear-gradient(to left, #000 48%, transparent 97%);
+  mask-image: linear-gradient(to left, #000 48%, transparent 97%);
 }
-/* Decorative pattern */
-.wc-launcher::before {
-  content: ""; position: absolute; inset: 0;
+.wc-launcher-photos img {
+  flex: 1 1 0; min-width: 0; height: 100%;
+  object-fit: cover; object-position: top center;
+  filter: grayscale(.05) contrast(1.08) brightness(.9) saturate(1.15);
+  display: block;
+  background: var(--green-dark); /* shows while loading / if a photo 404s */
+  transition: transform .5s ease, filter .5s ease;
+  /* soft feathered edges so adjacent photos blend instead of meeting at a hard seam */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+}
+.wc-launcher:hover .wc-launcher-photos img {
+  transform: scale(1.04);
+  filter: grayscale(0) contrast(1.1) brightness(.96) saturate(1.25);
+}
+/* Unifying duotone wash so photos shot in different lighting read as one set */
+.wc-launcher-duotone {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(160deg, rgba(46,98,56,.30) 0%, rgba(15,42,24,.18) 55%, rgba(201,166,70,.12) 100%);
+  mix-blend-mode: color;
+}
+/* Overlay: solid on the text side, see-through over the photos */
+.wc-launcher-overlay {
+  position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(circle at 12% 30%, rgba(201,166,70,.18) 0%, transparent 28%),
-    radial-gradient(circle at 88% 70%, rgba(255,253,248,.06) 0%, transparent 32%);
-  pointer-events: none;
+    linear-gradient(to left, var(--green-dark) 34%, rgba(26,53,32,.6) 54%, transparent 88%),
+    radial-gradient(circle at 90% 18%, rgba(201,166,70,.20) 0%, transparent 38%),
+    radial-gradient(circle at 8% 88%, rgba(201,166,70,.12) 0%, transparent 30%);
 }
-.wc-launcher-logo {
-  width: 78px; height: 78px;
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
-  border-radius: 50%;
-  display: grid; place-items: center;
-  font-size: 44px;
-  box-shadow: 0 6px 16px rgba(0,0,0,.18), inset 0 -2px 6px rgba(0,0,0,.12);
-  flex-shrink: 0;
-  position: relative;
+
+.wc-launcher-inner {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: flex-end;
+  min-height: 250px;
+  padding: 24px 28px;
 }
-.wc-launcher-logo img {
-  width: 100%; height: 100%;
-  object-fit: contain;
-  border-radius: 50%;
-}
-.wc-launcher-text { min-width: 0; }
+.wc-launcher-content { max-width: 400px; text-align: right; min-width: 0; }
+
 .wc-launcher-eyebrow {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
   font-size: 11px; font-weight: 700;
   color: var(--gold-soft); letter-spacing: 2.5px;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+}
+.wc-launcher-emblem {
+  width: 20px; height: 20px; object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.45));
 }
 .wc-launcher-title {
   font-family: 'Co Headline', 'Tajawal', sans-serif;
-  font-size: 24px; font-weight: 700;
+  font-size: 27px; font-weight: 800;
   color: #FFFDF8;
-  letter-spacing: -.3px;
-  line-height: 1.25;
-  margin-bottom: 4px;
+  letter-spacing: -.4px;
+  line-height: 1.24;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 12px rgba(0,0,0,.35);
 }
 .wc-launcher-sub {
-  font-size: 13px; color: rgba(255,253,248,.78);
-  line-height: 1.5;
+  font-size: 13px; color: rgba(255,253,248,.84);
+  line-height: 1.55;
+  margin-bottom: 16px;
+  text-shadow: 0 1px 8px rgba(0,0,0,.3);
 }
 .wc-launcher-cta {
   display: inline-flex; align-items: center; gap: 8px;
@@ -3613,16 +3736,13 @@ html.view-wc .hide-on-wc { display: none !important; }
 }
 
 @media (max-width: 720px) {
-  .wc-launcher-inner { grid-template-columns: auto 1fr; gap: 14px; padding: 16px 18px; }
-  .wc-launcher-logo { width: 56px; height: 56px; font-size: 32px; }
-  .wc-launcher-title { font-size: 18px; }
-  .wc-launcher-sub { font-size: 12px; }
-  .wc-launcher-cta {
-    grid-column: 1 / -1;
-    justify-content: center;
-    margin-top: 6px;
-    padding: 9px 16px; font-size: 12.5px;
-  }
+  .wc-launcher { min-height: 260px; }
+  .wc-launcher-photos { width: 82%; }
+  .wc-launcher-inner { min-height: 260px; padding: 18px 18px; }
+  .wc-launcher-content { max-width: 100%; }
+  .wc-launcher-title { font-size: 20px; }
+  .wc-launcher-sub { font-size: 12px; margin-bottom: 12px; }
+  .wc-launcher-cta { padding: 9px 16px; font-size: 12.5px; }
 }
 
 /* ─── Back button in WC view ────────────────────────────────── */
@@ -3736,6 +3856,9 @@ html.view-wc.wc-dark .modal-header,
 html.view-wc.wc-dark .modal-footer { border-color: var(--border); }
 /* Subtle scrollbar nudge to match dark palette */
 html.view-wc.wc-dark { color-scheme: dark; }
+/* Hero illustration reads slightly brighter on the dark WC theme */
+html.view-wc.wc-dark .wc-hero-art { filter: brightness(1.06) saturate(1.05); }
+html.view-wc.wc-dark .wc-hero-stage-chip { background: var(--card-2); }
 
 /* ─── Group stage deadline notice ───────────────────────────── */
 .wc-notice {
@@ -4281,308 +4404,6 @@ html.view-wc.wc-dark .wc-cs-leading {
   .wc-bracket-grid { gap: 10px; }
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   ── Qualifiers Bracket (visual projection of group qualifiers
-   into the knockout tree, FIFA-poster inspired) ──────────────── */
-.qb-wrap {
-  margin: 18px 0 14px;
-  background:
-    radial-gradient(120% 80% at 50% -10%, rgba(201,166,70,.12) 0%, transparent 60%),
-    linear-gradient(180deg, #14211C 0%, #0D1714 100%);
-  border: 1px solid rgba(201,166,70,.45);
-  border-radius: 16px;
-  padding: 22px 18px 18px;
-  color: #EEE6D2;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(13,23,20,.25);
-}
-.qb-wrap::before,
-.qb-wrap::after {
-  content: '';
-  position: absolute;
-  width: 180px; height: 180px;
-  background: radial-gradient(circle, rgba(201,166,70,.10) 0%, transparent 70%);
-  pointer-events: none;
-}
-.qb-wrap::before { top: -60px; right: -60px; }
-.qb-wrap::after  { bottom: -60px; left: -60px; }
-
-.qb-header {
-  text-align: center;
-  margin-bottom: 22px;
-  position: relative;
-  z-index: 1;
-}
-.qb-title {
-  color: var(--gold);
-  font-family: 'Co Headline', 'Tajawal', sans-serif;
-  font-size: 19px;
-  font-weight: 800;
-  letter-spacing: -.2px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.qb-title::before, .qb-title::after {
-  content: '';
-  display: inline-block;
-  width: 36px; height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--gold) 100%);
-  vertical-align: middle;
-  opacity: .6;
-}
-.qb-title::after { background: linear-gradient(90deg, var(--gold) 0%, transparent 100%); }
-.qb-subtitle {
-  color: rgba(238,230,210,.6);
-  font-size: 12px;
-  margin-top: 6px;
-  font-family: 'Co Headline', 'Tajawal', sans-serif;
-}
-
-.qb-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  margin: 0 -10px;
-  padding: 0 10px 6px;
-  position: relative;
-  z-index: 1;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(201,166,70,.4) transparent;
-}
-.qb-scroll::-webkit-scrollbar { height: 6px; }
-.qb-scroll::-webkit-scrollbar-track { background: transparent; }
-.qb-scroll::-webkit-scrollbar-thumb { background: rgba(201,166,70,.35); border-radius: 3px; }
-
-.qb-grid {
-  display: grid;
-  grid-template-columns: 138px 86px 86px 86px auto 86px 86px 86px 138px;
-  gap: 4px;
-  align-items: stretch;
-  min-width: 880px;
-  direction: ltr; /* keep bracket structure direction-stable (R32 on edges → final in center) */
-}
-.qb-col {
-  display: flex;
-  flex-direction: column;
-}
-.qb-col-label {
-  text-align: center;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  color: var(--gold);
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(201,166,70,.22);
-  white-space: nowrap;
-  font-family: 'Co Headline', 'Tajawal', sans-serif;
-  direction: rtl;
-}
-.qb-col-cells {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  gap: 6px;
-}
-.qb-match {
-  background: rgba(255,253,248,.035);
-  border: 1px solid rgba(201,166,70,.32);
-  border-radius: 6px;
-  padding: 4px 6px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 46px;
-  transition: all .18s;
-  direction: rtl; /* team rows are Arabic */
-}
-.qb-match:hover {
-  border-color: rgba(201,166,70,.6);
-  background: rgba(255,253,248,.06);
-  transform: translateY(-1px);
-}
-.qb-match.filled {
-  background: linear-gradient(180deg, rgba(201,166,70,.06) 0%, rgba(255,253,248,.04) 100%);
-}
-.qb-team {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 0;
-  line-height: 1.25;
-  min-width: 0;
-}
-.qb-team + .qb-team { border-top: 1px dashed rgba(201,166,70,.15); padding-top: 3px; margin-top: 1px; }
-.qb-team-label {
-  font-size: 8.5px;
-  font-weight: 700;
-  color: var(--gold);
-  background: rgba(201,166,70,.14);
-  border: 1px solid rgba(201,166,70,.25);
-  padding: 1px 4px;
-  border-radius: 3px;
-  flex-shrink: 0;
-  letter-spacing: .3px;
-  font-family: 'Co Headline', 'Tajawal', sans-serif;
-}
-.qb-team-flag {
-  flex-shrink: 0;
-  display: inline-flex;
-}
-.qb-team-flag img {
-  height: 12px !important;
-  border-radius: 1px;
-  display: block;
-}
-.qb-team-flag.tbd {
-  width: 16px; height: 12px;
-  background: rgba(201,166,70,.12);
-  border: 1px dashed rgba(201,166,70,.25);
-  border-radius: 1px;
-}
-.qb-team-name {
-  flex: 1;
-  font-size: 10.5px;
-  color: #EEE6D2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-family: 'Co Headline', 'Tajawal', sans-serif;
-  min-width: 0;
-}
-.qb-team.tbd .qb-team-name {
-  color: rgba(238,230,210,.42);
-  font-style: italic;
-  font-size: 10px;
-}
-
-/* Bracket connector stems (gold hairlines) on each match cell.
-   These chain match cells across columns into the classic bracket tree. */
-.qb-match::before,
-.qb-match::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 6px;
-  height: 1px;
-  background: rgba(201,166,70,.45);
-}
-.qb-match::before { right: 100%; }
-.qb-match::after  { left: 100%; }
-/* Outer R32 columns only need an inner-facing stem */
-.qb-col-left.qb-col-r32 .qb-match::before { display: none; }
-.qb-col-right.qb-col-r32 .qb-match::after { display: none; }
-.qb-col-final .qb-match::before,
-.qb-col-final .qb-match::after { display: none; }
-
-/* Final / Champion centerpiece */
-.qb-col-final {
-  align-self: center;
-  justify-content: center;
-  min-width: 168px;
-}
-.qb-final-card {
-  background:
-    radial-gradient(circle at 50% 0%, rgba(201,166,70,.22) 0%, transparent 70%),
-    linear-gradient(180deg, rgba(201,166,70,.08) 0%, rgba(0,0,0,.18) 100%);
-  border: 1.5px solid var(--gold);
-  border-radius: 14px;
-  padding: 14px 12px 12px;
-  text-align: center;
-  position: relative;
-  box-shadow: 0 0 32px rgba(201,166,70,.18), inset 0 1px 0 rgba(255,253,248,.06);
-}
-.qb-final-card::before,
-.qb-final-card::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 10px;
-  height: 1px;
-  background: rgba(201,166,70,.55);
-}
-.qb-final-card::before { right: 100%; }
-.qb-final-card::after  { left: 100%; }
-.qb-trophy-icon {
-  font-size: 38px;
-  line-height: 1;
-  margin-bottom: 4px;
-  filter: drop-shadow(0 0 10px rgba(201,166,70,.45));
-}
-.qb-final-label {
-  color: var(--gold);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 2.5px;
-  margin: 4px 0 10px;
-  font-family: 'Co Headline', 'Tajawal', sans-serif;
-}
-.qb-final-match {
-  background: rgba(0,0,0,.30);
-  border: 1px solid rgba(201,166,70,.25);
-  border-radius: 8px;
-  padding: 7px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  direction: rtl;
-}
-.qb-vs {
-  font-size: 9px;
-  color: rgba(201,166,70,.65);
-  text-align: center;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  padding: 1px 0;
-}
-
-/* Footer caption (legend) */
-.qb-foot {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(201,166,70,.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-size: 11px;
-  color: rgba(238,230,210,.55);
-  position: relative;
-  z-index: 1;
-  font-family: 'Co Headline', 'Tajawal', sans-serif;
-  direction: rtl;
-}
-.qb-foot-item { display: inline-flex; align-items: center; gap: 6px; }
-.qb-foot-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 6px rgba(201,166,70,.6);
-}
-.qb-foot-dot.tbd {
-  background: transparent;
-  border: 1px dashed rgba(238,230,210,.4);
-  box-shadow: none;
-}
-
-@media (max-width: 720px) {
-  .qb-wrap { padding: 18px 12px 14px; }
-  .qb-title { font-size: 17px; }
-  .qb-title::before, .qb-title::after { width: 22px; }
-  .qb-subtitle { font-size: 11.5px; }
-  .qb-grid {
-    grid-template-columns: 128px 78px 78px 78px auto 78px 78px 78px 128px;
-    min-width: 820px;
-  }
-  .qb-col-final { min-width: 152px; }
-  .qb-team-name { font-size: 10px; }
-  .qb-foot { font-size: 10.5px; gap: 10px; }
-}
-
 /* ── 4) Big countdown banner ─────────────────────────────────── */
 .wc-big-countdown {
   background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
@@ -4601,9 +4422,9 @@ html.view-wc.wc-dark .wc-cs-leading {
 .wc-big-countdown::before {
   content: "";
   position: absolute;
-  top: -40%; inset-inline-start: -10%;
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(255,253,248,.12) 0%, transparent 65%);
+  top: -60%; inset-inline-start: -12%;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(255,253,248,.09) 0%, transparent 70%);
   pointer-events: none;
 }
 .wc-bcd-left {
@@ -4641,7 +4462,8 @@ html.view-wc.wc-dark .wc-cs-leading {
   align-items: center;
   min-width: 56px;
   padding: 7px 8px 6px;
-  background: rgba(255,253,248,.16);
+  background: rgba(255,253,248,.20);
+  border: 1px solid rgba(255,253,248,.16);
   border-radius: 10px;
 }
 .wc-bcd-num {
@@ -4651,6 +4473,7 @@ html.view-wc.wc-dark .wc-cs-leading {
   font-variant-numeric: tabular-nums;
   line-height: 1;
   letter-spacing: 1px;
+  text-shadow: 0 1px 4px rgba(0,0,0,.25);
 }
 .wc-bcd-lbl {
   font-size: 9.5px;
@@ -4996,8 +4819,8 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
   background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
   color: #FFFDF8;
   border-radius: var(--radius-lg, 18px);
-  padding: 18px 20px;
-  margin-bottom: 16px;
+  padding: 15px 18px;
+  margin-bottom: 10px;
   box-shadow: 0 6px 20px rgba(49,92,59,.22);
   position: relative;
   overflow: hidden;
@@ -5005,9 +4828,9 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
 .wc-opportunity::before {
   content: "";
   position: absolute;
-  top: -50%; inset-inline-end: -8%;
-  width: 240px; height: 240px;
-  background: radial-gradient(circle, rgba(255,253,248,.14) 0%, transparent 65%);
+  top: -65%; inset-inline-end: -15%;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(255,253,248,.10) 0%, transparent 70%);
   pointer-events: none;
 }
 .wc-opportunity.waiting,
@@ -5020,11 +4843,11 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
 .wc-oc-top {
   display: flex; align-items: center; gap: 12px;
   position: relative; z-index: 1;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .wc-oc-ico {
-  font-size: 26px; line-height: 1;
-  width: 44px; height: 44px;
+  font-size: 24px; line-height: 1;
+  width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
   background: rgba(255,253,248,.16);
   border-radius: 12px;
@@ -5037,7 +4860,7 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
 }
 .wc-oc-title {
   font-family: 'Co Headline', 'Tajawal', sans-serif;
-  font-size: 18px; font-weight: 700; line-height: 1.3;
+  font-size: 17px; font-weight: 700; line-height: 1.3;
 }
 .wc-oc-check {
   width: 30px; height: 30px; border-radius: 50%;
@@ -5049,52 +4872,38 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
   position: relative; z-index: 1;
   font-size: 13px; opacity: .92; line-height: 1.6;
 }
-.wc-oc-stats {
+/* Compact status chips — replace the old stretched stat rows + progress bar */
+.wc-oc-chips {
   position: relative; z-index: 1;
-  display: flex; flex-wrap: wrap; gap: 8px 18px;
-  margin-bottom: 14px;
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin-bottom: 12px;
 }
-.wc-oc-stat {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 13px; font-weight: 600;
+.wc-oc-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,253,248,.16);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px; font-weight: 700;
+  white-space: nowrap;
 }
-.wc-oc-stat-ico { font-size: 15px; line-height: 1; }
-.wc-oc-progress {
-  position: relative; z-index: 1;
-  margin-bottom: 14px;
-}
-.wc-oc-progress-track {
-  height: 8px; border-radius: 99px;
-  background: rgba(255,253,248,.22);
-  overflow: hidden;
-}
-.wc-oc-progress-fill {
-  height: 100%; border-radius: 99px;
-  background: #FFFDF8;
-  transition: width .3s ease;
-}
-.wc-oc-progress-label {
-  margin-top: 6px;
-  font-size: 11.5px; opacity: .85;
-  font-variant-numeric: tabular-nums;
-}
+.wc-oc-chip .ico { font-size: 13px; line-height: 1; }
+.wc-oc-chip.ok { background: rgba(255,253,248,.26); }
 .wc-oc-btn {
   position: relative; z-index: 1;
-  display: inline-flex; align-items: center; gap: 8px;
+  display: flex; width: 100%; align-items: center; justify-content: center; gap: 8px;
   background: #FFFDF8; color: var(--green-dark);
-  border: 0; border-radius: 99px;
-  padding: 10px 22px;
+  border: 0; border-radius: 999px;
+  padding: 12px 22px;
   font-family: 'Co Headline', 'Tajawal', sans-serif;
-  font-size: 14px; font-weight: 700;
+  font-size: 14.5px; font-weight: 700;
   cursor: pointer; transition: all .15s;
   box-shadow: 0 3px 10px rgba(0,0,0,.12);
 }
 .wc-oc-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(0,0,0,.18); }
 @media (max-width: 560px) {
-  .wc-opportunity { padding: 15px 16px; }
-  .wc-oc-title { font-size: 16px; }
-  .wc-oc-stat { font-size: 12px; }
-  .wc-oc-btn { width: 100%; justify-content: center; }
+  .wc-opportunity { padding: 13px 14px; }
+  .wc-oc-title { font-size: 15.5px; }
+  .wc-oc-chip { font-size: 11px; padding: 5px 10px; }
 }
 
 /* ─── Per-stage visual progress rows (replaces plain submit-helper text) ─── */
@@ -5324,16 +5133,25 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
 
   <!-- ========= World Cup Launcher (clickable card) ========= -->
   <a href="#predictions" class="wc-launcher hide-on-wc" id="wcLauncher" aria-label="افتح صفحة تحدّي توقعات كأس العالم">
+    <div class="wc-launcher-photos" aria-hidden="true">
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Cristiano%20Ronaldo%20WC2022%20-%2001.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Vinicius%20Jr%202018%20%28cropped%29.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Kylian%20Mbapp%C3%A9%202018.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Erling%20Haaland%202023%20%28cropped%20square%29.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Lionel%20Messi%20at%20Bernabeu.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
+      <div class="wc-launcher-duotone" aria-hidden="true"></div>
+    </div>
+    <div class="wc-launcher-overlay" aria-hidden="true"></div>
     <div class="wc-launcher-inner">
-      <div class="wc-launcher-logo">
-        <img src="/images/world-cup-2026.png" alt="" onerror="this.style.display='none';this.parentElement.innerHTML='⚽';" />
-      </div>
-      <div class="wc-launcher-text">
-        <div class="wc-launcher-eyebrow" data-i18n="wc.launcher.eyebrow">FIFA WORLD CUP · 2026</div>
+      <div class="wc-launcher-content">
+        <div class="wc-launcher-eyebrow">
+          <img class="wc-launcher-emblem" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026%20FIFA%20World%20Cup%20emblem.svg" alt="" loading="lazy" onerror="this.style.display='none'" />
+          <span data-i18n="wc.launcher.eyebrow">FIFA WORLD CUP · 2026</span>
+        </div>
         <div class="wc-launcher-title" data-i18n="wc.launcher.title">تحدّي توقعات كأس العالم</div>
         <div class="wc-launcher-sub" data-i18n="wc.launcher.sub">توقّع المتأهّلين من المجموعات ونتائج الأدوار الإقصائية · نافِس على أعلى نقاط</div>
+        <span class="wc-launcher-cta" data-i18n="wc.launcher.cta">شارك الآن</span>
       </div>
-      <span class="wc-launcher-cta" data-i18n="wc.launcher.cta">شارك الآن</span>
     </div>
   </a>
 
@@ -5586,6 +5404,114 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
         <span class="wc-theme-icon-light">☀️</span>
       </button>
     </div>
+
+    <!-- Illustrated hero — themed like the app.thmanyah.com page header -->
+    <div class="wc-hero" id="wcHero">
+      <svg class="wc-hero-art" viewBox="0 0 1600 460" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+        <defs>
+          <linearGradient id="wcHeroSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#0F2A18"/>
+            <stop offset="55%" stop-color="#1C4628"/>
+            <stop offset="100%" stop-color="#2E6238"/>
+          </linearGradient>
+          <radialGradient id="wcHeroGlowGold" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#F3D98A" stop-opacity=".55"/>
+            <stop offset="100%" stop-color="#F3D98A" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="wcHeroPitch" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1B3A22"/>
+            <stop offset="100%" stop-color="#0E2414"/>
+          </linearGradient>
+        </defs>
+
+        <rect width="1600" height="460" fill="url(#wcHeroSky)"/>
+
+        <!-- floodlight glows -->
+        <circle cx="230" cy="90" r="170" fill="url(#wcHeroGlowGold)"/>
+        <circle cx="980" cy="60" r="200" fill="url(#wcHeroGlowGold)"/>
+        <circle cx="1430" cy="110" r="160" fill="url(#wcHeroGlowGold)"/>
+
+        <!-- confetti -->
+        <g opacity=".85">
+          <rect x="120" y="40" width="10" height="4" fill="#E0C77A" transform="rotate(20 120 40)"/>
+          <rect x="300" y="20" width="8" height="8" fill="#FFFDF8" transform="rotate(45 300 20)"/>
+          <rect x="460" y="55" width="9" height="4" fill="#C9503A" transform="rotate(-15 460 55)"/>
+          <circle cx="620" cy="30" r="4" fill="#E0C77A"/>
+          <rect x="760" y="15" width="8" height="8" fill="#4A7A55" transform="rotate(30 760 15)"/>
+          <rect x="900" y="45" width="9" height="4" fill="#FFFDF8" transform="rotate(-25 900 45)"/>
+          <circle cx="1080" cy="25" r="4" fill="#C9A646"/>
+          <rect x="1220" y="50" width="8" height="8" fill="#E0C77A" transform="rotate(15 1220 50)"/>
+          <rect x="1360" y="22" width="9" height="4" fill="#FFFDF8" transform="rotate(-35 1360 22)"/>
+          <circle cx="1500" cy="48" r="4" fill="#C9503A"/>
+        </g>
+
+        <!-- floodlight poles -->
+        <g stroke="#13301B" stroke-width="6">
+          <line x1="230" y1="95" x2="230" y2="300"/>
+          <line x1="980" y1="65" x2="980" y2="300"/>
+          <line x1="1430" y1="115" x2="1430" y2="300"/>
+        </g>
+        <g fill="#F3D98A" opacity=".18">
+          <polygon points="230,95 90,300 370,300"/>
+          <polygon points="980,65 800,300 1160,300"/>
+          <polygon points="1430,115 1280,300 1580,300"/>
+        </g>
+
+        <!-- stadium roof silhouette -->
+        <path d="M0,300 Q100,250 200,300 T400,300 T600,300 T800,300 T1000,300 T1200,300 T1400,300 T1600,300 L1600,340 L0,340 Z" fill="#0F2415"/>
+
+        <!-- pitch -->
+        <rect x="0" y="330" width="1600" height="130" fill="url(#wcHeroPitch)"/>
+        <g stroke="rgba(255,253,248,.10)" stroke-width="3" fill="none">
+          <line x1="0" y1="385" x2="1600" y2="385"/>
+          <circle cx="800" cy="385" r="46"/>
+        </g>
+
+        <!-- abstract player silhouettes (generic, non-specific figures) -->
+        <g transform="translate(560,300)">
+          <ellipse cx="0" cy="150" rx="34" ry="10" fill="#000" opacity=".18"/>
+          <path d="M8,40 C26,46 34,66 30,92 L22,150 L8,150 L10,98 L-4,98 L-10,150 L-24,150 L-20,88 C-24,64 -10,46 8,40 Z" fill="#B36A3C"/>
+          <circle cx="6" cy="24" r="16" fill="#B36A3C"/>
+        </g>
+        <g transform="translate(760,318) scale(1.05)">
+          <ellipse cx="0" cy="150" rx="36" ry="10" fill="#000" opacity=".2"/>
+          <path d="M0,38 C24,40 40,58 36,96 C34,116 30,134 26,150 L10,150 L16,100 C0,108 -16,104 -30,92 C-22,68 -16,46 0,38 Z" fill="#4A7A55"/>
+          <circle cx="2" cy="22" r="17" fill="#4A7A55"/>
+        </g>
+        <g transform="translate(960,300)">
+          <ellipse cx="0" cy="150" rx="34" ry="10" fill="#000" opacity=".18"/>
+          <path d="M-6,40 C-26,48 -34,68 -28,94 L-18,150 L-4,150 L-8,100 L6,100 L12,150 L26,150 L20,90 C22,64 10,46 -6,40 Z" fill="#C9A646"/>
+          <circle cx="-4" cy="24" r="16" fill="#C9A646"/>
+        </g>
+        <!-- ball + motion arcs -->
+        <g transform="translate(845,420)">
+          <circle r="14" fill="#FFFDF8"/>
+          <path d="M0,-14 L5,-4 L-5,-4 Z M0,14 L5,4 L-5,4 Z M-14,0 L-4,5 L-4,-5 Z M14,0 L4,5 L4,-5 Z" fill="#244229"/>
+          <path d="M-46,-6 Q-26,-22 -8,-10" stroke="#FFFDF8" stroke-width="3" fill="none" opacity=".55"/>
+          <path d="M-58,4 Q-34,-14 -14,2" stroke="#FFFDF8" stroke-width="2" fill="none" opacity=".3"/>
+        </g>
+      </svg>
+      <div class="wc-hero-overlay" aria-hidden="true"></div>
+      <div class="wc-hero-content">
+        <div class="wc-hero-eyebrow">
+          <img class="wc-hero-emblem" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026%20FIFA%20World%20Cup%20emblem.svg" alt="" loading="lazy" onerror="this.style.display='none'" />
+          <span data-i18n="wc.launcher.eyebrow">FIFA WORLD CUP · 2026</span>
+        </div>
+        <div class="wc-hero-title" data-i18n="wc.title">تحدّي توقعات كأس العالم 2026</div>
+        <div class="wc-hero-sub" data-i18n="wc.subtitle">توقع نتائج المباريات، اجمع النقاط، وتابع ترتيبك بين المشاركين</div>
+      </div>
+    </div>
+
+    <!-- Stage capsules — tap to jump straight to that round -->
+    <div class="wc-hero-stages" id="wcHeroStages">
+      <button type="button" class="wc-hero-stage-chip" onclick="wcScrollToStage('groups')"><span class="ico">📋</span><span data-i18n="wc.stage.groups">دور المجموعات</span></button>
+      <button type="button" class="wc-hero-stage-chip" onclick="wcScrollToStage('r32')"><span class="ico">⚔️</span><span data-i18n="wc.stage.r32">دور الـ32</span></button>
+      <button type="button" class="wc-hero-stage-chip" onclick="wcScrollToStage('r16')"><span class="ico">🛡️</span><span data-i18n="wc.stage.r16">دور الـ16</span></button>
+      <button type="button" class="wc-hero-stage-chip" onclick="wcScrollToStage('qf')"><span class="ico">⚡</span><span data-i18n="wc.stage.qf">ربع النهائي</span></button>
+      <button type="button" class="wc-hero-stage-chip" onclick="wcScrollToStage('sf')"><span class="ico">🔥</span><span data-i18n="wc.stage.sf">نصف النهائي</span></button>
+      <button type="button" class="wc-hero-stage-chip" onclick="wcScrollToStage('final')"><span class="ico">🏆</span><span data-i18n="wc.stage.final">النهائي</span></button>
+    </div>
+
     <div class="wc-section" id="wcSection">
     <div class="wc-header">
       <div class="wc-title-wrap">
@@ -5593,7 +5519,7 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
           <span class="wc-title-ico">⚽</span>
           <span data-i18n="wc.title">تحدّي توقعات كأس العالم 2026</span>
         </div>
-        <div class="wc-subtitle" data-i18n="wc.subtitle">شارك في التحدّي — توقّع المتأهلين، تابع ترتيبك في القائمة العامة</div>
+        <div class="wc-subtitle" data-i18n="wc.subtitle">توقع نتائج المباريات، اجمع النقاط، وتابع ترتيبك بين المشاركين</div>
       </div>
       <div id="wcUserSlot"></div>
     </div>
@@ -5875,7 +5801,7 @@ const I18N = {
 
     // ── WC section ─────────────────────────────────────────────
     'wc.title':               'تحدّي توقعات كأس العالم 2026',
-    'wc.subtitle':            'شارك في التحدّي — توقّع المتأهلين، تابع ترتيبك في القائمة العامة',
+    'wc.subtitle':            'توقع نتائج المباريات، اجمع النقاط، وتابع ترتيبك بين المشاركين',
     'wc.tab.predict':         '🎯 توقعاتي',
     'wc.tab.leaderboard':     '🏆 المتصدّرون',
     'wc.tab.admin':           '⚙ إدارة النتائج',
@@ -5973,8 +5899,6 @@ const I18N = {
     'wc.admin.groups':        '🏁 ترتيب المجموعات (يُحدَّث تلقائياً حسب نتائج المباريات)',
     'wc.gs.publicTitle':       'الترتيب الحالي للمجموعات',
     'wc.gs.publicHint':        'يُحدَّث الجدول مباشرةً بعد كل مباراة. المنتخبات الخضراء (✓) تأهّلت لدور الـ32.',
-    'wc.gs.show':              '📊 عرض ترتيب المجموعات',
-    'wc.gs.hide':              '🔼 إخفاء ترتيب المجموعات',
     'wc.gs.hint':              'أدخل عدد مباريات الفوز والتعادل والخسارة وعدد الأهداف له/عليه لكل منتخب — يُحسَب الترتيب والمتأهلان (أول فريقين) تلقائياً، وتتحدّث نقاط جميع المشاركين فوراً.',
     'wc.gs.w':                 'فاز',
     'wc.gs.d':                 'تعادل',
@@ -6183,7 +6107,7 @@ const I18N = {
     'wc.theme.toDark':        'Switch to dark mode',
 
     'wc.title':               'FIFA World Cup 2026 Prediction Challenge',
-    'wc.subtitle':            'Join the challenge — predict qualifiers and track your rank on the global leaderboard',
+    'wc.subtitle':            'Predict match results, earn points, and track your rank among participants',
     'wc.tab.predict':         '🎯 My Predictions',
     'wc.tab.leaderboard':     '🏆 Leaderboard',
     'wc.tab.admin':           '⚙ Manage Results',
@@ -6273,8 +6197,6 @@ const I18N = {
     'wc.admin.groups':        '🏁 Group standings (updates automatically from match results)',
     'wc.gs.publicTitle':       'Current group standings',
     'wc.gs.publicHint':        'The table updates live after every match. Teams highlighted in green (✓) have qualified for the Round of 32.',
-    'wc.gs.show':              '📊 Show group standings',
-    'wc.gs.hide':              '🔼 Hide group standings',
     'wc.gs.hint':              'Enter each team\'s wins, draws, losses, and goals for/against — the table and the two qualifiers are calculated automatically, and every participant\'s points update instantly.',
     'wc.gs.w':                 'W',
     'wc.gs.d':                 'D',
@@ -10986,513 +10908,6 @@ WC_GROUPS.forEach(g => g.teams.forEach(tm => {
   WC_TEAM_MAP[tm[0]] = { code: tm[0], flag: tm[1], name: tm[2], group: g.id };
 }));
 
-// ── Official Round of 32 "3rd-placed qualifier" combination table ──
-// Source: FIFA 2026 World Cup Regulations, Annex C (as published on the
-// tournament's official knockout-stage schedule). Whenever exactly 8 of
-// the 12 groups' 3rd-place finishers qualify, this table says — for each
-// of the 8 fixed bracket slots that needs a 3rd-place opponent (the
-// winners of Groups A, B, D, E, G, I, K, L) — which group's 3rd-place
-// team fills it. Key = the 8 qualifying groups' letters, sorted
-// alphabetically and joined (e.g. "BDEFIJKL"). Value = the 8 group
-// letters to use, in the fixed column order [A, B, D, E, G, I, K, L].
-const WC_THIRD_PLACE_TABLE = {
-  ABCDEFGH: ["H", "G", "B", "C", "A", "F", "D", "E"],
-  ABCDEFGI: ["C", "G", "B", "D", "A", "F", "E", "I"],
-  ABCDEFGJ: ["C", "G", "B", "D", "A", "F", "E", "J"],
-  ABCDEFGK: ["C", "G", "B", "D", "A", "F", "E", "K"],
-  ABCDEFGL: ["C", "G", "B", "D", "A", "F", "L", "E"],
-  ABCDEFHI: ["H", "E", "B", "C", "A", "F", "D", "I"],
-  ABCDEFHJ: ["H", "J", "B", "C", "A", "F", "D", "E"],
-  ABCDEFHK: ["H", "E", "B", "C", "A", "F", "D", "K"],
-  ABCDEFHL: ["H", "F", "B", "C", "A", "D", "L", "E"],
-  ABCDEFIJ: ["C", "J", "B", "D", "A", "F", "E", "I"],
-  ABCDEFIK: ["C", "E", "B", "D", "A", "F", "I", "K"],
-  ABCDEFIL: ["C", "E", "B", "D", "A", "F", "L", "I"],
-  ABCDEFJK: ["C", "J", "B", "D", "A", "F", "E", "K"],
-  ABCDEFJL: ["C", "J", "B", "D", "A", "F", "L", "E"],
-  ABCDEFKL: ["C", "E", "B", "D", "A", "F", "L", "K"],
-  ABCDEGHI: ["H", "G", "B", "C", "A", "D", "E", "I"],
-  ABCDEGHJ: ["H", "G", "B", "C", "A", "D", "E", "J"],
-  ABCDEGHK: ["H", "G", "B", "C", "A", "D", "E", "K"],
-  ABCDEGHL: ["H", "G", "B", "C", "A", "D", "L", "E"],
-  ABCDEGIJ: ["E", "G", "B", "C", "A", "D", "I", "J"],
-  ABCDEGIK: ["E", "G", "B", "C", "A", "D", "I", "K"],
-  ABCDEGIL: ["E", "G", "B", "C", "A", "D", "L", "I"],
-  ABCDEGJK: ["E", "G", "B", "C", "A", "D", "J", "K"],
-  ABCDEGJL: ["E", "G", "B", "C", "A", "D", "L", "J"],
-  ABCDEGKL: ["E", "G", "B", "C", "A", "D", "L", "K"],
-  ABCDEHIJ: ["H", "J", "B", "C", "A", "D", "E", "I"],
-  ABCDEHIK: ["H", "E", "B", "C", "A", "D", "I", "K"],
-  ABCDEHIL: ["H", "E", "B", "C", "A", "D", "L", "I"],
-  ABCDEHJK: ["H", "J", "B", "C", "A", "D", "E", "K"],
-  ABCDEHJL: ["H", "J", "B", "C", "A", "D", "L", "E"],
-  ABCDEHKL: ["H", "E", "B", "C", "A", "D", "L", "K"],
-  ABCDEIJK: ["E", "J", "B", "C", "A", "D", "I", "K"],
-  ABCDEIJL: ["E", "J", "B", "C", "A", "D", "L", "I"],
-  ABCDEIKL: ["E", "I", "B", "C", "A", "D", "L", "K"],
-  ABCDEJKL: ["E", "J", "B", "C", "A", "D", "L", "K"],
-  ABCDFGHI: ["H", "G", "B", "C", "A", "F", "D", "I"],
-  ABCDFGHJ: ["H", "G", "B", "C", "A", "F", "D", "J"],
-  ABCDFGHK: ["H", "G", "B", "C", "A", "F", "D", "K"],
-  ABCDFGHL: ["C", "G", "B", "D", "A", "F", "L", "H"],
-  ABCDFGIJ: ["C", "G", "B", "D", "A", "F", "I", "J"],
-  ABCDFGIK: ["C", "G", "B", "D", "A", "F", "I", "K"],
-  ABCDFGIL: ["C", "G", "B", "D", "A", "F", "L", "I"],
-  ABCDFGJK: ["C", "G", "B", "D", "A", "F", "J", "K"],
-  ABCDFGJL: ["C", "G", "B", "D", "A", "F", "L", "J"],
-  ABCDFGKL: ["C", "G", "B", "D", "A", "F", "L", "K"],
-  ABCDFHIJ: ["H", "J", "B", "C", "A", "F", "D", "I"],
-  ABCDFHIK: ["H", "F", "B", "C", "A", "D", "I", "K"],
-  ABCDFHIL: ["H", "F", "B", "C", "A", "D", "L", "I"],
-  ABCDFHJK: ["H", "J", "B", "C", "A", "F", "D", "K"],
-  ABCDFHJL: ["C", "J", "B", "D", "A", "F", "L", "H"],
-  ABCDFHKL: ["H", "F", "B", "C", "A", "D", "L", "K"],
-  ABCDFIJK: ["C", "J", "B", "D", "A", "F", "I", "K"],
-  ABCDFIJL: ["C", "J", "B", "D", "A", "F", "L", "I"],
-  ABCDFIKL: ["C", "I", "B", "D", "A", "F", "L", "K"],
-  ABCDFJKL: ["C", "J", "B", "D", "A", "F", "L", "K"],
-  ABCDGHIJ: ["H", "G", "B", "C", "A", "D", "I", "J"],
-  ABCDGHIK: ["H", "G", "B", "C", "A", "D", "I", "K"],
-  ABCDGHIL: ["H", "G", "B", "C", "A", "D", "L", "I"],
-  ABCDGHJK: ["H", "G", "B", "C", "A", "D", "J", "K"],
-  ABCDGHJL: ["H", "G", "B", "C", "A", "D", "L", "J"],
-  ABCDGHKL: ["H", "G", "B", "C", "A", "D", "L", "K"],
-  ABCDGIJK: ["C", "J", "B", "D", "A", "G", "I", "K"],
-  ABCDGIJL: ["C", "J", "B", "D", "A", "G", "L", "I"],
-  ABCDGIKL: ["I", "G", "B", "C", "A", "D", "L", "K"],
-  ABCDGJKL: ["C", "J", "B", "D", "A", "G", "L", "K"],
-  ABCDHIJK: ["H", "J", "B", "C", "A", "D", "I", "K"],
-  ABCDHIJL: ["H", "J", "B", "C", "A", "D", "L", "I"],
-  ABCDHIKL: ["H", "I", "B", "C", "A", "D", "L", "K"],
-  ABCDHJKL: ["H", "J", "B", "C", "A", "D", "L", "K"],
-  ABCDIJKL: ["I", "J", "B", "C", "A", "D", "L", "K"],
-  ABCEFGHI: ["H", "G", "B", "C", "A", "F", "E", "I"],
-  ABCEFGHJ: ["H", "G", "B", "C", "A", "F", "E", "J"],
-  ABCEFGHK: ["H", "G", "B", "C", "A", "F", "E", "K"],
-  ABCEFGHL: ["H", "G", "B", "C", "A", "F", "L", "E"],
-  ABCEFGIJ: ["E", "G", "B", "C", "A", "F", "I", "J"],
-  ABCEFGIK: ["E", "G", "B", "C", "A", "F", "I", "K"],
-  ABCEFGIL: ["E", "G", "B", "C", "A", "F", "L", "I"],
-  ABCEFGJK: ["E", "G", "B", "C", "A", "F", "J", "K"],
-  ABCEFGJL: ["E", "G", "B", "C", "A", "F", "L", "J"],
-  ABCEFGKL: ["E", "G", "B", "C", "A", "F", "L", "K"],
-  ABCEFHIJ: ["H", "J", "B", "C", "A", "F", "E", "I"],
-  ABCEFHIK: ["H", "E", "B", "C", "A", "F", "I", "K"],
-  ABCEFHIL: ["H", "E", "B", "C", "A", "F", "L", "I"],
-  ABCEFHJK: ["H", "J", "B", "C", "A", "F", "E", "K"],
-  ABCEFHJL: ["H", "J", "B", "C", "A", "F", "L", "E"],
-  ABCEFHKL: ["H", "E", "B", "C", "A", "F", "L", "K"],
-  ABCEFIJK: ["E", "J", "B", "C", "A", "F", "I", "K"],
-  ABCEFIJL: ["E", "J", "B", "C", "A", "F", "L", "I"],
-  ABCEFIKL: ["E", "I", "B", "C", "A", "F", "L", "K"],
-  ABCEFJKL: ["E", "J", "B", "C", "A", "F", "L", "K"],
-  ABCEGHIJ: ["H", "J", "B", "C", "A", "G", "E", "I"],
-  ABCEGHIK: ["E", "G", "B", "C", "A", "H", "I", "K"],
-  ABCEGHIL: ["E", "G", "B", "C", "A", "H", "L", "I"],
-  ABCEGHJK: ["H", "J", "B", "C", "A", "G", "E", "K"],
-  ABCEGHJL: ["H", "J", "B", "C", "A", "G", "L", "E"],
-  ABCEGHKL: ["E", "G", "B", "C", "A", "H", "L", "K"],
-  ABCEGIJK: ["E", "J", "B", "C", "A", "G", "I", "K"],
-  ABCEGIJL: ["E", "J", "B", "C", "A", "G", "L", "I"],
-  ABCEGIKL: ["E", "G", "B", "A", "I", "C", "L", "K"],
-  ABCEGJKL: ["E", "J", "B", "C", "A", "G", "L", "K"],
-  ABCEHIJK: ["E", "J", "B", "C", "A", "H", "I", "K"],
-  ABCEHIJL: ["E", "J", "B", "C", "A", "H", "L", "I"],
-  ABCEHIKL: ["E", "I", "B", "C", "A", "H", "L", "K"],
-  ABCEHJKL: ["E", "J", "B", "C", "A", "H", "L", "K"],
-  ABCEIJKL: ["E", "J", "B", "A", "I", "C", "L", "K"],
-  ABCFGHIJ: ["H", "G", "B", "C", "A", "F", "I", "J"],
-  ABCFGHIK: ["H", "G", "B", "C", "A", "F", "I", "K"],
-  ABCFGHIL: ["H", "G", "B", "C", "A", "F", "L", "I"],
-  ABCFGHJK: ["H", "G", "B", "C", "A", "F", "J", "K"],
-  ABCFGHJL: ["H", "G", "B", "C", "A", "F", "L", "J"],
-  ABCFGHKL: ["H", "G", "B", "C", "A", "F", "L", "K"],
-  ABCFGIJK: ["C", "J", "B", "F", "A", "G", "I", "K"],
-  ABCFGIJL: ["C", "J", "B", "F", "A", "G", "L", "I"],
-  ABCFGIKL: ["I", "G", "B", "C", "A", "F", "L", "K"],
-  ABCFGJKL: ["C", "J", "B", "F", "A", "G", "L", "K"],
-  ABCFHIJK: ["H", "J", "B", "C", "A", "F", "I", "K"],
-  ABCFHIJL: ["H", "J", "B", "C", "A", "F", "L", "I"],
-  ABCFHIKL: ["H", "I", "B", "C", "A", "F", "L", "K"],
-  ABCFHJKL: ["H", "J", "B", "C", "A", "F", "L", "K"],
-  ABCFIJKL: ["I", "J", "B", "C", "A", "F", "L", "K"],
-  ABCGHIJK: ["H", "J", "B", "C", "A", "G", "I", "K"],
-  ABCGHIJL: ["H", "J", "B", "C", "A", "G", "L", "I"],
-  ABCGHIKL: ["I", "G", "B", "C", "A", "H", "L", "K"],
-  ABCGHJKL: ["H", "J", "B", "C", "A", "G", "L", "K"],
-  ABCGIJKL: ["I", "J", "B", "C", "A", "G", "L", "K"],
-  ABCHIJKL: ["I", "J", "B", "C", "A", "H", "L", "K"],
-  ABDEFGHI: ["H", "G", "B", "D", "A", "F", "E", "I"],
-  ABDEFGHJ: ["H", "G", "B", "D", "A", "F", "E", "J"],
-  ABDEFGHK: ["H", "G", "B", "D", "A", "F", "E", "K"],
-  ABDEFGHL: ["H", "G", "B", "D", "A", "F", "L", "E"],
-  ABDEFGIJ: ["E", "G", "B", "D", "A", "F", "I", "J"],
-  ABDEFGIK: ["E", "G", "B", "D", "A", "F", "I", "K"],
-  ABDEFGIL: ["E", "G", "B", "D", "A", "F", "L", "I"],
-  ABDEFGJK: ["E", "G", "B", "D", "A", "F", "J", "K"],
-  ABDEFGJL: ["E", "G", "B", "D", "A", "F", "L", "J"],
-  ABDEFGKL: ["E", "G", "B", "D", "A", "F", "L", "K"],
-  ABDEFHIJ: ["H", "J", "B", "D", "A", "F", "E", "I"],
-  ABDEFHIK: ["H", "E", "B", "D", "A", "F", "I", "K"],
-  ABDEFHIL: ["H", "E", "B", "D", "A", "F", "L", "I"],
-  ABDEFHJK: ["H", "J", "B", "D", "A", "F", "E", "K"],
-  ABDEFHJL: ["H", "J", "B", "D", "A", "F", "L", "E"],
-  ABDEFHKL: ["H", "E", "B", "D", "A", "F", "L", "K"],
-  ABDEFIJK: ["E", "J", "B", "D", "A", "F", "I", "K"],
-  ABDEFIJL: ["E", "J", "B", "D", "A", "F", "L", "I"],
-  ABDEFIKL: ["E", "I", "B", "D", "A", "F", "L", "K"],
-  ABDEFJKL: ["E", "J", "B", "D", "A", "F", "L", "K"],
-  ABDEGHIJ: ["H", "J", "B", "D", "A", "G", "E", "I"],
-  ABDEGHIK: ["E", "G", "B", "D", "A", "H", "I", "K"],
-  ABDEGHIL: ["E", "G", "B", "D", "A", "H", "L", "I"],
-  ABDEGHJK: ["H", "J", "B", "D", "A", "G", "E", "K"],
-  ABDEGHJL: ["H", "J", "B", "D", "A", "G", "L", "E"],
-  ABDEGHKL: ["E", "G", "B", "D", "A", "H", "L", "K"],
-  ABDEGIJK: ["E", "J", "B", "D", "A", "G", "I", "K"],
-  ABDEGIJL: ["E", "J", "B", "D", "A", "G", "L", "I"],
-  ABDEGIKL: ["E", "G", "B", "A", "I", "D", "L", "K"],
-  ABDEGJKL: ["E", "J", "B", "D", "A", "G", "L", "K"],
-  ABDEHIJK: ["E", "J", "B", "D", "A", "H", "I", "K"],
-  ABDEHIJL: ["E", "J", "B", "D", "A", "H", "L", "I"],
-  ABDEHIKL: ["E", "I", "B", "D", "A", "H", "L", "K"],
-  ABDEHJKL: ["E", "J", "B", "D", "A", "H", "L", "K"],
-  ABDEIJKL: ["E", "J", "B", "A", "I", "D", "L", "K"],
-  ABDFGHIJ: ["H", "G", "B", "D", "A", "F", "I", "J"],
-  ABDFGHIK: ["H", "G", "B", "D", "A", "F", "I", "K"],
-  ABDFGHIL: ["H", "G", "B", "D", "A", "F", "L", "I"],
-  ABDFGHJK: ["H", "G", "B", "D", "A", "F", "J", "K"],
-  ABDFGHJL: ["H", "G", "B", "D", "A", "F", "L", "J"],
-  ABDFGHKL: ["H", "G", "B", "D", "A", "F", "L", "K"],
-  ABDFGIJK: ["F", "J", "B", "D", "A", "G", "I", "K"],
-  ABDFGIJL: ["F", "J", "B", "D", "A", "G", "L", "I"],
-  ABDFGIKL: ["I", "G", "B", "D", "A", "F", "L", "K"],
-  ABDFGJKL: ["F", "J", "B", "D", "A", "G", "L", "K"],
-  ABDFHIJK: ["H", "J", "B", "D", "A", "F", "I", "K"],
-  ABDFHIJL: ["H", "J", "B", "D", "A", "F", "L", "I"],
-  ABDFHIKL: ["H", "I", "B", "D", "A", "F", "L", "K"],
-  ABDFHJKL: ["H", "J", "B", "D", "A", "F", "L", "K"],
-  ABDFIJKL: ["I", "J", "B", "D", "A", "F", "L", "K"],
-  ABDGHIJK: ["H", "J", "B", "D", "A", "G", "I", "K"],
-  ABDGHIJL: ["H", "J", "B", "D", "A", "G", "L", "I"],
-  ABDGHIKL: ["I", "G", "B", "D", "A", "H", "L", "K"],
-  ABDGHJKL: ["H", "J", "B", "D", "A", "G", "L", "K"],
-  ABDGIJKL: ["I", "J", "B", "D", "A", "G", "L", "K"],
-  ABDHIJKL: ["I", "J", "B", "D", "A", "H", "L", "K"],
-  ABEFGHIJ: ["H", "J", "B", "F", "A", "G", "E", "I"],
-  ABEFGHIK: ["E", "G", "B", "F", "A", "H", "I", "K"],
-  ABEFGHIL: ["E", "G", "B", "F", "A", "H", "L", "I"],
-  ABEFGHJK: ["H", "J", "B", "F", "A", "G", "E", "K"],
-  ABEFGHJL: ["H", "J", "B", "F", "A", "G", "L", "E"],
-  ABEFGHKL: ["E", "G", "B", "F", "A", "H", "L", "K"],
-  ABEFGIJK: ["E", "J", "B", "F", "A", "G", "I", "K"],
-  ABEFGIJL: ["E", "J", "B", "F", "A", "G", "L", "I"],
-  ABEFGIKL: ["E", "G", "B", "A", "I", "F", "L", "K"],
-  ABEFGJKL: ["E", "J", "B", "F", "A", "G", "L", "K"],
-  ABEFHIJK: ["E", "J", "B", "F", "A", "H", "I", "K"],
-  ABEFHIJL: ["E", "J", "B", "F", "A", "H", "L", "I"],
-  ABEFHIKL: ["E", "I", "B", "F", "A", "H", "L", "K"],
-  ABEFHJKL: ["E", "J", "B", "F", "A", "H", "L", "K"],
-  ABEFIJKL: ["E", "J", "B", "A", "I", "F", "L", "K"],
-  ABEGHIJK: ["E", "J", "B", "A", "H", "G", "I", "K"],
-  ABEGHIJL: ["E", "J", "B", "A", "H", "G", "L", "I"],
-  ABEGHIKL: ["E", "G", "B", "A", "I", "H", "L", "K"],
-  ABEGHJKL: ["E", "J", "B", "A", "H", "G", "L", "K"],
-  ABEGIJKL: ["E", "J", "B", "A", "I", "G", "L", "K"],
-  ABEHIJKL: ["E", "J", "B", "A", "I", "H", "L", "K"],
-  ABFGHIJK: ["H", "J", "B", "F", "A", "G", "I", "K"],
-  ABFGHIJL: ["H", "J", "B", "F", "A", "G", "L", "I"],
-  ABFGHIKL: ["H", "G", "B", "A", "I", "F", "L", "K"],
-  ABFGHJKL: ["H", "J", "B", "F", "A", "G", "L", "K"],
-  ABFGIJKL: ["I", "J", "B", "F", "A", "G", "L", "K"],
-  ABFHIJKL: ["H", "J", "B", "A", "I", "F", "L", "K"],
-  ABGHIJKL: ["H", "J", "B", "A", "I", "G", "L", "K"],
-  ACDEFGHI: ["H", "G", "E", "C", "A", "F", "D", "I"],
-  ACDEFGHJ: ["H", "G", "J", "C", "A", "F", "D", "E"],
-  ACDEFGHK: ["H", "G", "E", "C", "A", "F", "D", "K"],
-  ACDEFGHL: ["H", "G", "F", "C", "A", "D", "L", "E"],
-  ACDEFGIJ: ["C", "G", "J", "D", "A", "F", "E", "I"],
-  ACDEFGIK: ["C", "G", "E", "D", "A", "F", "I", "K"],
-  ACDEFGIL: ["C", "G", "E", "D", "A", "F", "L", "I"],
-  ACDEFGJK: ["C", "G", "J", "D", "A", "F", "E", "K"],
-  ACDEFGJL: ["C", "G", "J", "D", "A", "F", "L", "E"],
-  ACDEFGKL: ["C", "G", "E", "D", "A", "F", "L", "K"],
-  ACDEFHIJ: ["H", "J", "E", "C", "A", "F", "D", "I"],
-  ACDEFHIK: ["H", "E", "F", "C", "A", "D", "I", "K"],
-  ACDEFHIL: ["H", "E", "F", "C", "A", "D", "L", "I"],
-  ACDEFHJK: ["H", "J", "E", "C", "A", "F", "D", "K"],
-  ACDEFHJL: ["H", "J", "F", "C", "A", "D", "L", "E"],
-  ACDEFHKL: ["H", "E", "F", "C", "A", "D", "L", "K"],
-  ACDEFIJK: ["C", "J", "E", "D", "A", "F", "I", "K"],
-  ACDEFIJL: ["C", "J", "E", "D", "A", "F", "L", "I"],
-  ACDEFIKL: ["C", "E", "I", "D", "A", "F", "L", "K"],
-  ACDEFJKL: ["C", "J", "E", "D", "A", "F", "L", "K"],
-  ACDEGHIJ: ["H", "G", "J", "C", "A", "D", "E", "I"],
-  ACDEGHIK: ["H", "G", "E", "C", "A", "D", "I", "K"],
-  ACDEGHIL: ["H", "G", "E", "C", "A", "D", "L", "I"],
-  ACDEGHJK: ["H", "G", "J", "C", "A", "D", "E", "K"],
-  ACDEGHJL: ["H", "G", "J", "C", "A", "D", "L", "E"],
-  ACDEGHKL: ["H", "G", "E", "C", "A", "D", "L", "K"],
-  ACDEGIJK: ["E", "G", "J", "C", "A", "D", "I", "K"],
-  ACDEGIJL: ["E", "G", "J", "C", "A", "D", "L", "I"],
-  ACDEGIKL: ["E", "G", "I", "C", "A", "D", "L", "K"],
-  ACDEGJKL: ["E", "G", "J", "C", "A", "D", "L", "K"],
-  ACDEHIJK: ["H", "J", "E", "C", "A", "D", "I", "K"],
-  ACDEHIJL: ["H", "J", "E", "C", "A", "D", "L", "I"],
-  ACDEHIKL: ["H", "E", "I", "C", "A", "D", "L", "K"],
-  ACDEHJKL: ["H", "J", "E", "C", "A", "D", "L", "K"],
-  ACDEIJKL: ["E", "J", "I", "C", "A", "D", "L", "K"],
-  ACDFGHIJ: ["H", "G", "J", "C", "A", "F", "D", "I"],
-  ACDFGHIK: ["H", "G", "F", "C", "A", "D", "I", "K"],
-  ACDFGHIL: ["H", "G", "F", "C", "A", "D", "L", "I"],
-  ACDFGHJK: ["H", "G", "J", "C", "A", "F", "D", "K"],
-  ACDFGHJL: ["C", "G", "J", "D", "A", "F", "L", "H"],
-  ACDFGHKL: ["H", "G", "F", "C", "A", "D", "L", "K"],
-  ACDFGIJK: ["C", "G", "J", "D", "A", "F", "I", "K"],
-  ACDFGIJL: ["C", "G", "J", "D", "A", "F", "L", "I"],
-  ACDFGIKL: ["C", "G", "I", "D", "A", "F", "L", "K"],
-  ACDFGJKL: ["C", "G", "J", "D", "A", "F", "L", "K"],
-  ACDFHIJK: ["H", "J", "F", "C", "A", "D", "I", "K"],
-  ACDFHIJL: ["H", "J", "F", "C", "A", "D", "L", "I"],
-  ACDFHIKL: ["H", "F", "I", "C", "A", "D", "L", "K"],
-  ACDFHJKL: ["H", "J", "F", "C", "A", "D", "L", "K"],
-  ACDFIJKL: ["C", "J", "I", "D", "A", "F", "L", "K"],
-  ACDGHIJK: ["H", "G", "J", "C", "A", "D", "I", "K"],
-  ACDGHIJL: ["H", "G", "J", "C", "A", "D", "L", "I"],
-  ACDGHIKL: ["H", "G", "I", "C", "A", "D", "L", "K"],
-  ACDGHJKL: ["H", "G", "J", "C", "A", "D", "L", "K"],
-  ACDGIJKL: ["I", "G", "J", "C", "A", "D", "L", "K"],
-  ACDHIJKL: ["H", "J", "I", "C", "A", "D", "L", "K"],
-  ACEFGHIJ: ["H", "G", "J", "C", "A", "F", "E", "I"],
-  ACEFGHIK: ["H", "G", "E", "C", "A", "F", "I", "K"],
-  ACEFGHIL: ["H", "G", "E", "C", "A", "F", "L", "I"],
-  ACEFGHJK: ["H", "G", "J", "C", "A", "F", "E", "K"],
-  ACEFGHJL: ["H", "G", "J", "C", "A", "F", "L", "E"],
-  ACEFGHKL: ["H", "G", "E", "C", "A", "F", "L", "K"],
-  ACEFGIJK: ["E", "G", "J", "C", "A", "F", "I", "K"],
-  ACEFGIJL: ["E", "G", "J", "C", "A", "F", "L", "I"],
-  ACEFGIKL: ["E", "G", "I", "C", "A", "F", "L", "K"],
-  ACEFGJKL: ["E", "G", "J", "C", "A", "F", "L", "K"],
-  ACEFHIJK: ["H", "J", "E", "C", "A", "F", "I", "K"],
-  ACEFHIJL: ["H", "J", "E", "C", "A", "F", "L", "I"],
-  ACEFHIKL: ["H", "E", "I", "C", "A", "F", "L", "K"],
-  ACEFHJKL: ["H", "J", "E", "C", "A", "F", "L", "K"],
-  ACEFIJKL: ["E", "J", "I", "C", "A", "F", "L", "K"],
-  ACEGHIJK: ["E", "G", "J", "C", "A", "H", "I", "K"],
-  ACEGHIJL: ["E", "G", "J", "C", "A", "H", "L", "I"],
-  ACEGHIKL: ["E", "G", "I", "C", "A", "H", "L", "K"],
-  ACEGHJKL: ["E", "G", "J", "C", "A", "H", "L", "K"],
-  ACEGIJKL: ["E", "J", "I", "C", "A", "G", "L", "K"],
-  ACEHIJKL: ["E", "J", "I", "C", "A", "H", "L", "K"],
-  ACFGHIJK: ["H", "G", "J", "C", "A", "F", "I", "K"],
-  ACFGHIJL: ["H", "G", "J", "C", "A", "F", "L", "I"],
-  ACFGHIKL: ["H", "G", "I", "C", "A", "F", "L", "K"],
-  ACFGHJKL: ["H", "G", "J", "C", "A", "F", "L", "K"],
-  ACFGIJKL: ["I", "G", "J", "C", "A", "F", "L", "K"],
-  ACFHIJKL: ["H", "J", "I", "C", "A", "F", "L", "K"],
-  ACGHIJKL: ["H", "J", "I", "C", "A", "G", "L", "K"],
-  ADEFGHIJ: ["H", "G", "J", "D", "A", "F", "E", "I"],
-  ADEFGHIK: ["H", "G", "E", "D", "A", "F", "I", "K"],
-  ADEFGHIL: ["H", "G", "E", "D", "A", "F", "L", "I"],
-  ADEFGHJK: ["H", "G", "J", "D", "A", "F", "E", "K"],
-  ADEFGHJL: ["H", "G", "J", "D", "A", "F", "L", "E"],
-  ADEFGHKL: ["H", "G", "E", "D", "A", "F", "L", "K"],
-  ADEFGIJK: ["E", "G", "J", "D", "A", "F", "I", "K"],
-  ADEFGIJL: ["E", "G", "J", "D", "A", "F", "L", "I"],
-  ADEFGIKL: ["E", "G", "I", "D", "A", "F", "L", "K"],
-  ADEFGJKL: ["E", "G", "J", "D", "A", "F", "L", "K"],
-  ADEFHIJK: ["H", "J", "E", "D", "A", "F", "I", "K"],
-  ADEFHIJL: ["H", "J", "E", "D", "A", "F", "L", "I"],
-  ADEFHIKL: ["H", "E", "I", "D", "A", "F", "L", "K"],
-  ADEFHJKL: ["H", "J", "E", "D", "A", "F", "L", "K"],
-  ADEFIJKL: ["E", "J", "I", "D", "A", "F", "L", "K"],
-  ADEGHIJK: ["E", "G", "J", "D", "A", "H", "I", "K"],
-  ADEGHIJL: ["E", "G", "J", "D", "A", "H", "L", "I"],
-  ADEGHIKL: ["E", "G", "I", "D", "A", "H", "L", "K"],
-  ADEGHJKL: ["E", "G", "J", "D", "A", "H", "L", "K"],
-  ADEGIJKL: ["E", "J", "I", "D", "A", "G", "L", "K"],
-  ADEHIJKL: ["E", "J", "I", "D", "A", "H", "L", "K"],
-  ADFGHIJK: ["H", "G", "J", "D", "A", "F", "I", "K"],
-  ADFGHIJL: ["H", "G", "J", "D", "A", "F", "L", "I"],
-  ADFGHIKL: ["H", "G", "I", "D", "A", "F", "L", "K"],
-  ADFGHJKL: ["H", "G", "J", "D", "A", "F", "L", "K"],
-  ADFGIJKL: ["I", "G", "J", "D", "A", "F", "L", "K"],
-  ADFHIJKL: ["H", "J", "I", "D", "A", "F", "L", "K"],
-  ADGHIJKL: ["H", "J", "I", "D", "A", "G", "L", "K"],
-  AEFGHIJK: ["E", "G", "J", "F", "A", "H", "I", "K"],
-  AEFGHIJL: ["E", "G", "J", "F", "A", "H", "L", "I"],
-  AEFGHIKL: ["E", "G", "I", "F", "A", "H", "L", "K"],
-  AEFGHJKL: ["E", "G", "J", "F", "A", "H", "L", "K"],
-  AEFGIJKL: ["E", "J", "I", "F", "A", "G", "L", "K"],
-  AEFHIJKL: ["E", "J", "I", "F", "A", "H", "L", "K"],
-  AEGHIJKL: ["E", "J", "I", "A", "H", "G", "L", "K"],
-  AFGHIJKL: ["H", "J", "I", "F", "A", "G", "L", "K"],
-  BCDEFGHI: ["C", "G", "B", "D", "H", "F", "E", "I"],
-  BCDEFGHJ: ["H", "G", "B", "C", "J", "F", "D", "E"],
-  BCDEFGHK: ["C", "G", "B", "D", "H", "F", "E", "K"],
-  BCDEFGHL: ["C", "G", "B", "D", "H", "F", "L", "E"],
-  BCDEFGIJ: ["C", "G", "B", "D", "J", "F", "E", "I"],
-  BCDEFGIK: ["C", "G", "B", "D", "E", "F", "I", "K"],
-  BCDEFGIL: ["C", "G", "B", "D", "E", "F", "L", "I"],
-  BCDEFGJK: ["C", "G", "B", "D", "J", "F", "E", "K"],
-  BCDEFGJL: ["C", "G", "B", "D", "J", "F", "L", "E"],
-  BCDEFGKL: ["C", "G", "B", "D", "E", "F", "L", "K"],
-  BCDEFHIJ: ["C", "J", "B", "D", "H", "F", "E", "I"],
-  BCDEFHIK: ["C", "E", "B", "D", "H", "F", "I", "K"],
-  BCDEFHIL: ["C", "E", "B", "D", "H", "F", "L", "I"],
-  BCDEFHJK: ["C", "J", "B", "D", "H", "F", "E", "K"],
-  BCDEFHJL: ["C", "J", "B", "D", "H", "F", "L", "E"],
-  BCDEFHKL: ["C", "E", "B", "D", "H", "F", "L", "K"],
-  BCDEFIJK: ["C", "J", "B", "D", "E", "F", "I", "K"],
-  BCDEFIJL: ["C", "J", "B", "D", "E", "F", "L", "I"],
-  BCDEFIKL: ["C", "E", "B", "D", "I", "F", "L", "K"],
-  BCDEFJKL: ["C", "J", "B", "D", "E", "F", "L", "K"],
-  BCDEGHIJ: ["H", "G", "B", "C", "J", "D", "E", "I"],
-  BCDEGHIK: ["E", "G", "B", "C", "H", "D", "I", "K"],
-  BCDEGHIL: ["E", "G", "B", "C", "H", "D", "L", "I"],
-  BCDEGHJK: ["H", "G", "B", "C", "J", "D", "E", "K"],
-  BCDEGHJL: ["H", "G", "B", "C", "J", "D", "L", "E"],
-  BCDEGHKL: ["E", "G", "B", "C", "H", "D", "L", "K"],
-  BCDEGIJK: ["E", "G", "B", "C", "J", "D", "I", "K"],
-  BCDEGIJL: ["E", "G", "B", "C", "J", "D", "L", "I"],
-  BCDEGIKL: ["E", "G", "B", "C", "I", "D", "L", "K"],
-  BCDEGJKL: ["E", "G", "B", "C", "J", "D", "L", "K"],
-  BCDEHIJK: ["E", "J", "B", "C", "H", "D", "I", "K"],
-  BCDEHIJL: ["E", "J", "B", "C", "H", "D", "L", "I"],
-  BCDEHIKL: ["E", "I", "B", "C", "H", "D", "L", "K"],
-  BCDEHJKL: ["E", "J", "B", "C", "H", "D", "L", "K"],
-  BCDEIJKL: ["E", "J", "B", "C", "I", "D", "L", "K"],
-  BCDFGHIJ: ["H", "G", "B", "C", "J", "F", "D", "I"],
-  BCDFGHIK: ["C", "G", "B", "D", "H", "F", "I", "K"],
-  BCDFGHIL: ["C", "G", "B", "D", "H", "F", "L", "I"],
-  BCDFGHJK: ["H", "G", "B", "C", "J", "F", "D", "K"],
-  BCDFGHJL: ["C", "G", "B", "D", "H", "F", "L", "J"],
-  BCDFGHKL: ["C", "G", "B", "D", "H", "F", "L", "K"],
-  BCDFGIJK: ["C", "G", "B", "D", "J", "F", "I", "K"],
-  BCDFGIJL: ["C", "G", "B", "D", "J", "F", "L", "I"],
-  BCDFGIKL: ["C", "G", "B", "D", "I", "F", "L", "K"],
-  BCDFGJKL: ["C", "G", "B", "D", "J", "F", "L", "K"],
-  BCDFHIJK: ["C", "J", "B", "D", "H", "F", "I", "K"],
-  BCDFHIJL: ["C", "J", "B", "D", "H", "F", "L", "I"],
-  BCDFHIKL: ["C", "I", "B", "D", "H", "F", "L", "K"],
-  BCDFHJKL: ["C", "J", "B", "D", "H", "F", "L", "K"],
-  BCDFIJKL: ["C", "J", "B", "D", "I", "F", "L", "K"],
-  BCDGHIJK: ["H", "G", "B", "C", "J", "D", "I", "K"],
-  BCDGHIJL: ["H", "G", "B", "C", "J", "D", "L", "I"],
-  BCDGHIKL: ["H", "G", "B", "C", "I", "D", "L", "K"],
-  BCDGHJKL: ["H", "G", "B", "C", "J", "D", "L", "K"],
-  BCDGIJKL: ["I", "G", "B", "C", "J", "D", "L", "K"],
-  BCDHIJKL: ["H", "J", "B", "C", "I", "D", "L", "K"],
-  BCEFGHIJ: ["H", "G", "B", "C", "J", "F", "E", "I"],
-  BCEFGHIK: ["E", "G", "B", "C", "H", "F", "I", "K"],
-  BCEFGHIL: ["E", "G", "B", "C", "H", "F", "L", "I"],
-  BCEFGHJK: ["H", "G", "B", "C", "J", "F", "E", "K"],
-  BCEFGHJL: ["H", "G", "B", "C", "J", "F", "L", "E"],
-  BCEFGHKL: ["E", "G", "B", "C", "H", "F", "L", "K"],
-  BCEFGIJK: ["E", "G", "B", "C", "J", "F", "I", "K"],
-  BCEFGIJL: ["E", "G", "B", "C", "J", "F", "L", "I"],
-  BCEFGIKL: ["E", "G", "B", "C", "I", "F", "L", "K"],
-  BCEFGJKL: ["E", "G", "B", "C", "J", "F", "L", "K"],
-  BCEFHIJK: ["E", "J", "B", "C", "H", "F", "I", "K"],
-  BCEFHIJL: ["E", "J", "B", "C", "H", "F", "L", "I"],
-  BCEFHIKL: ["E", "I", "B", "C", "H", "F", "L", "K"],
-  BCEFHJKL: ["E", "J", "B", "C", "H", "F", "L", "K"],
-  BCEFIJKL: ["E", "J", "B", "C", "I", "F", "L", "K"],
-  BCEGHIJK: ["E", "J", "B", "C", "H", "G", "I", "K"],
-  BCEGHIJL: ["E", "J", "B", "C", "H", "G", "L", "I"],
-  BCEGHIKL: ["E", "G", "B", "C", "I", "H", "L", "K"],
-  BCEGHJKL: ["E", "J", "B", "C", "H", "G", "L", "K"],
-  BCEGIJKL: ["E", "J", "B", "C", "I", "G", "L", "K"],
-  BCEHIJKL: ["E", "J", "B", "C", "I", "H", "L", "K"],
-  BCFGHIJK: ["H", "G", "B", "C", "J", "F", "I", "K"],
-  BCFGHIJL: ["H", "G", "B", "C", "J", "F", "L", "I"],
-  BCFGHIKL: ["H", "G", "B", "C", "I", "F", "L", "K"],
-  BCFGHJKL: ["H", "G", "B", "C", "J", "F", "L", "K"],
-  BCFGIJKL: ["I", "G", "B", "C", "J", "F", "L", "K"],
-  BCFHIJKL: ["H", "J", "B", "C", "I", "F", "L", "K"],
-  BCGHIJKL: ["H", "J", "B", "C", "I", "G", "L", "K"],
-  BDEFGHIJ: ["H", "G", "B", "D", "J", "F", "E", "I"],
-  BDEFGHIK: ["E", "G", "B", "D", "H", "F", "I", "K"],
-  BDEFGHIL: ["E", "G", "B", "D", "H", "F", "L", "I"],
-  BDEFGHJK: ["H", "G", "B", "D", "J", "F", "E", "K"],
-  BDEFGHJL: ["H", "G", "B", "D", "J", "F", "L", "E"],
-  BDEFGHKL: ["E", "G", "B", "D", "H", "F", "L", "K"],
-  BDEFGIJK: ["E", "G", "B", "D", "J", "F", "I", "K"],
-  BDEFGIJL: ["E", "G", "B", "D", "J", "F", "L", "I"],
-  BDEFGIKL: ["E", "G", "B", "D", "I", "F", "L", "K"],
-  BDEFGJKL: ["E", "G", "B", "D", "J", "F", "L", "K"],
-  BDEFHIJK: ["E", "J", "B", "D", "H", "F", "I", "K"],
-  BDEFHIJL: ["E", "J", "B", "D", "H", "F", "L", "I"],
-  BDEFHIKL: ["E", "I", "B", "D", "H", "F", "L", "K"],
-  BDEFHJKL: ["E", "J", "B", "D", "H", "F", "L", "K"],
-  BDEFIJKL: ["E", "J", "B", "D", "I", "F", "L", "K"],
-  BDEGHIJK: ["E", "J", "B", "D", "H", "G", "I", "K"],
-  BDEGHIJL: ["E", "J", "B", "D", "H", "G", "L", "I"],
-  BDEGHIKL: ["E", "G", "B", "D", "I", "H", "L", "K"],
-  BDEGHJKL: ["E", "J", "B", "D", "H", "G", "L", "K"],
-  BDEGIJKL: ["E", "J", "B", "D", "I", "G", "L", "K"],
-  BDEHIJKL: ["E", "J", "B", "D", "I", "H", "L", "K"],
-  BDFGHIJK: ["H", "G", "B", "D", "J", "F", "I", "K"],
-  BDFGHIJL: ["H", "G", "B", "D", "J", "F", "L", "I"],
-  BDFGHIKL: ["H", "G", "B", "D", "I", "F", "L", "K"],
-  BDFGHJKL: ["H", "G", "B", "D", "J", "F", "L", "K"],
-  BDFGIJKL: ["I", "G", "B", "D", "J", "F", "L", "K"],
-  BDFHIJKL: ["H", "J", "B", "D", "I", "F", "L", "K"],
-  BDGHIJKL: ["H", "J", "B", "D", "I", "G", "L", "K"],
-  BEFGHIJK: ["E", "J", "B", "F", "H", "G", "I", "K"],
-  BEFGHIJL: ["E", "J", "B", "F", "H", "G", "L", "I"],
-  BEFGHIKL: ["E", "G", "B", "F", "I", "H", "L", "K"],
-  BEFGHJKL: ["E", "J", "B", "F", "H", "G", "L", "K"],
-  BEFGIJKL: ["E", "J", "B", "F", "I", "G", "L", "K"],
-  BEFHIJKL: ["E", "J", "B", "F", "I", "H", "L", "K"],
-  BEGHIJKL: ["E", "J", "I", "B", "H", "G", "L", "K"],
-  BFGHIJKL: ["H", "J", "B", "F", "I", "G", "L", "K"],
-  CDEFGHIJ: ["C", "G", "J", "D", "H", "F", "E", "I"],
-  CDEFGHIK: ["C", "G", "E", "D", "H", "F", "I", "K"],
-  CDEFGHIL: ["C", "G", "E", "D", "H", "F", "L", "I"],
-  CDEFGHJK: ["C", "G", "J", "D", "H", "F", "E", "K"],
-  CDEFGHJL: ["C", "G", "J", "D", "H", "F", "L", "E"],
-  CDEFGHKL: ["C", "G", "E", "D", "H", "F", "L", "K"],
-  CDEFGIJK: ["C", "G", "E", "D", "J", "F", "I", "K"],
-  CDEFGIJL: ["C", "G", "E", "D", "J", "F", "L", "I"],
-  CDEFGIKL: ["C", "G", "E", "D", "I", "F", "L", "K"],
-  CDEFGJKL: ["C", "G", "E", "D", "J", "F", "L", "K"],
-  CDEFHIJK: ["C", "J", "E", "D", "H", "F", "I", "K"],
-  CDEFHIJL: ["C", "J", "E", "D", "H", "F", "L", "I"],
-  CDEFHIKL: ["C", "E", "I", "D", "H", "F", "L", "K"],
-  CDEFHJKL: ["C", "J", "E", "D", "H", "F", "L", "K"],
-  CDEFIJKL: ["C", "J", "E", "D", "I", "F", "L", "K"],
-  CDEGHIJK: ["E", "G", "J", "C", "H", "D", "I", "K"],
-  CDEGHIJL: ["E", "G", "J", "C", "H", "D", "L", "I"],
-  CDEGHIKL: ["E", "G", "I", "C", "H", "D", "L", "K"],
-  CDEGHJKL: ["E", "G", "J", "C", "H", "D", "L", "K"],
-  CDEGIJKL: ["E", "G", "I", "C", "J", "D", "L", "K"],
-  CDEHIJKL: ["E", "J", "I", "C", "H", "D", "L", "K"],
-  CDFGHIJK: ["C", "G", "J", "D", "H", "F", "I", "K"],
-  CDFGHIJL: ["C", "G", "J", "D", "H", "F", "L", "I"],
-  CDFGHIKL: ["C", "G", "I", "D", "H", "F", "L", "K"],
-  CDFGHJKL: ["C", "G", "J", "D", "H", "F", "L", "K"],
-  CDFGIJKL: ["C", "G", "I", "D", "J", "F", "L", "K"],
-  CDFHIJKL: ["C", "J", "I", "D", "H", "F", "L", "K"],
-  CDGHIJKL: ["H", "G", "I", "C", "J", "D", "L", "K"],
-  CEFGHIJK: ["E", "G", "J", "C", "H", "F", "I", "K"],
-  CEFGHIJL: ["E", "G", "J", "C", "H", "F", "L", "I"],
-  CEFGHIKL: ["E", "G", "I", "C", "H", "F", "L", "K"],
-  CEFGHJKL: ["E", "G", "J", "C", "H", "F", "L", "K"],
-  CEFGIJKL: ["E", "G", "I", "C", "J", "F", "L", "K"],
-  CEFHIJKL: ["E", "J", "I", "C", "H", "F", "L", "K"],
-  CEGHIJKL: ["E", "J", "I", "C", "H", "G", "L", "K"],
-  CFGHIJKL: ["H", "G", "I", "C", "J", "F", "L", "K"],
-  DEFGHIJK: ["E", "G", "J", "D", "H", "F", "I", "K"],
-  DEFGHIJL: ["E", "G", "J", "D", "H", "F", "L", "I"],
-  DEFGHIKL: ["E", "G", "I", "D", "H", "F", "L", "K"],
-  DEFGHJKL: ["E", "G", "J", "D", "H", "F", "L", "K"],
-  DEFGIJKL: ["E", "G", "I", "D", "J", "F", "L", "K"],
-  DEFHIJKL: ["E", "J", "I", "D", "H", "F", "L", "K"],
-  DEGHIJKL: ["E", "J", "I", "D", "H", "G", "L", "K"],
-  DFGHIJKL: ["H", "G", "I", "D", "J", "F", "L", "K"],
-  EFGHIJKL: ["E", "J", "I", "F", "H", "G", "L", "K"],
-};
-
 // ── Flag SVG mapping (Windows-compatible: emoji flags don't render on Windows
 //    browsers, so we use SVG flag images from the lipis/flag-icons CDN) ───
 const WC_FLAG_ISO = {
@@ -11531,7 +10946,6 @@ const wcState = {
   lbStage: 'overall',      // overall | groups | r32 | r16 | qf | sf | final
   lbShowMe: false,         // true → leaderboard tab shows the personal contestant card
   koView: 'bracket',       // bracket | list (knockout display mode)
-  showGroupStandings: false, // false → the public group-standings tables start collapsed, behind a "show" button
   prevTotals: null,        // { [playerId]: prevTotalScore }  for + animation
   countdownTimer: null,    // setInterval handle for big countdown
   draft: null,
@@ -11785,9 +11199,9 @@ function wcGroupsNotice() {
       <div class="wc-notice warn">
         <div class="wc-notice-ico">⏰</div>
         <div class="wc-notice-body">
-          <div class="wc-notice-title">تنبيه: موعد إغلاق توقعات دور المجموعات</div>
+          <div class="wc-notice-title">تنبيه: إغلاق توقعات دور المجموعات قريبًا</div>
           <div class="wc-notice-text">
-            تُغلق إمكانية إرسال أو تعديل توقعات دور المجموعات تلقائياً <strong>عند انطلاق أول مباراة في البطولة</strong> (المكسيك × جنوب أفريقيا). تأكّد من حفظ توقعاتك قبل هذا الموعد — لن يُمكن التعديل بعدها.
+            تُغلق توقعات دور المجموعات تلقائيًا <strong>عند انطلاق أول مباراة</strong> (المكسيك × جنوب أفريقيا). احفظ توقعاتك قبل هذا الموعد.
           </div>
           <div class="wc-notice-deadline">📅 ${muscatTime} (${utcTime})</div>
         </div>
@@ -11799,7 +11213,7 @@ function wcGroupsNotice() {
         <div class="wc-notice-body">
           <div class="wc-notice-title">تم إغلاق توقعات دور المجموعات</div>
           <div class="wc-notice-text">
-            انتهى وقت إرسال توقعات دور المجموعات مع انطلاق أول مباراة في البطولة. التوقعات المحفوظة قبل هذا الوقت ثابتة. تابع باقي الأدوار الإقصائية في الأسفل وستفتح توقعاتها قبل بداية كل دور.
+            تم حفظ توقعاتك، ويمكنك الآن متابعة توقعات الأدوار الإقصائية.
           </div>
           <div class="wc-notice-deadline">⏱ أُغلق في: ${muscatTime}</div>
         </div>
@@ -11969,7 +11383,6 @@ async function wcLoadSeedGroupResults() {
     alert(CURRENT_LANG === 'en' ? 'Failed to save. Try again.' : 'تعذّر الحفظ. حاول مرة أخرى.');
     return;
   }
-  try { await wcAutoAdvanceKnockout(); } catch (e) { console.error('[WC] auto-advance:', e); }
   wcRender();
 }
 window.wcLoadSeedGroupResults = wcLoadSeedGroupResults;
@@ -12216,147 +11629,6 @@ function wcKoIsTied(m) {
   return m && m.homeScore != null && m.awayScore != null && m.homeScore === m.awayScore;
 }
 
-// ════════════════════════════════════════════════════════════════
-//   Automatic advancement of knockout winners (R32 → R16 → QF → SF → Final)
-// ────────────────────────────────────────────────────────────────
-// Builds the 16 official Round of 32 slots (FIFA 2026 World Cup Regulations,
-// Matches 73–88) from the CURRENT LIVE group standings only. Unlike the
-// decorative "Path to the Final" preview (wcRenderQualifiersBracket), this
-// never falls back to a participant's draft picks — it only reflects real,
-// admin-entered group results, since it drives the actual official bracket.
-function wcOfficialR32Slots() {
-  const top = (gid) => (wcGroupHasResults(gid) ? wcGroupStandings(gid) : null);
-  const W3 = (gid) => { const s = top(gid); return s ? s[0].code : null; };
-  const R3 = (gid) => { const s = top(gid); return s ? s[1].code : null; };
-  const third = (gid) => { const s = top(gid); return s ? s[2].code : null; };
-
-  const allThirds = [];
-  WC_GROUPS.forEach(g => {
-    const s = top(g.id);
-    if (s) allThirds.push({ code: s[2].code, pts: s[2].pts, gd: s[2].gd, gf: s[2].gf, group: g.id });
-  });
-  allThirds.sort((a, b) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf));
-  const best8 = allThirds.slice(0, 8);
-  const THIRD_SLOT_GROUPS = ['A', 'B', 'D', 'E', 'G', 'I', 'K', 'L'];
-  let thirdRow = null;
-  if (best8.length === 8) {
-    const key = best8.map(t => t.group).sort().join('');
-    thirdRow = WC_THIRD_PLACE_TABLE[key] || null;
-  }
-  const thirdFor = (slotGid) => {
-    if (!thirdRow) return null;
-    const fromGroup = thirdRow[THIRD_SLOT_GROUPS.indexOf(slotGid)];
-    return fromGroup ? third(fromGroup) : null;
-  };
-
-  return [
-    { home: R3('A'), away: R3('B') },           // Match 73
-    { home: W3('E'), away: thirdFor('E') },     // Match 74
-    { home: W3('F'), away: R3('C') },           // Match 75
-    { home: W3('C'), away: R3('F') },           // Match 76
-    { home: W3('I'), away: thirdFor('I') },     // Match 77
-    { home: R3('E'), away: R3('I') },           // Match 78
-    { home: W3('A'), away: thirdFor('A') },     // Match 79
-    { home: W3('L'), away: thirdFor('L') },     // Match 80
-    { home: W3('D'), away: thirdFor('D') },     // Match 81
-    { home: W3('G'), away: thirdFor('G') },     // Match 82
-    { home: R3('K'), away: R3('L') },           // Match 83
-    { home: W3('H'), away: R3('J') },           // Match 84
-    { home: W3('B'), away: thirdFor('B') },     // Match 85
-    { home: W3('J'), away: R3('H') },           // Match 86
-    { home: W3('K'), away: thirdFor('K') },     // Match 87
-    { home: R3('D'), away: R3('G') },           // Match 88
-  ];
-}
-
-// Fixed connectivity for every round AFTER the Round of 32, expressed as
-// [homeSourceIdx, awaySourceIdx] pairs into the PREVIOUS round's match array
-// (0-based, in official Match-number order — e.g. r32 index 0 = Match 73).
-// Source: FIFA 2026 World Cup Regulations knockout-stage bracket (Matches
-// 89–104).
-const WC_KO_LINKS = {
-  r16:   [[1,4], [0,2], [3,5], [6,7], [10,11], [8,9], [13,15], [12,14]], // Matches 89–96
-  qf:    [[0,1], [4,5], [2,3], [6,7]],                                   // Matches 97–100
-  sf:    [[0,1], [2,3]],                                                 // Matches 101–102
-  final: [[0,1]],                                                        // Match 104
-};
-
-// Pushes decided winners forward into the next round's fixed bracket slots.
-// - Round of 32: matched by TEAM IDENTITY against the official slots above
-//   (not by storage order), so it never disturbs however the admin originally
-//   entered/ordered the 16 real R32 matches.
-// - R16 → Final: written at fixed canonical indices, since those rounds only
-//   ever contain auto-derived matchups (no free-form admin team picking).
-// Only writes (and saves) when something actually changed. Admin-only.
-async function wcAutoAdvanceKnockout() {
-  if (!(typeof state !== 'undefined' && state.isAdmin)) return false;
-  if (!wcState.results.knockout) wcState.results.knockout = {};
-  let changed = false;
-
-  const officialR32 = wcOfficialR32Slots();
-  const r32Arr = wcState.results.knockout.r32 || [];
-  let prevWinners = officialR32.map(slot => {
-    if (!slot.home || !slot.away) return null;
-    const entry = r32Arr.find(m => m && m.home && m.away &&
-      ((m.home === slot.home && m.away === slot.away) ||
-       (m.home === slot.away && m.away === slot.home)));
-    return (entry && wcKoMatchComplete(entry)) ? wcKoWinnerCode(entry) : null;
-  });
-
-  ['r16', 'qf', 'sf', 'final'].forEach(stageId => {
-    const links = WC_KO_LINKS[stageId];
-    if (!wcState.results.knockout[stageId]) wcState.results.knockout[stageId] = [];
-    const arr = wcState.results.knockout[stageId];
-    const thisRoundWinners = [];
-    links.forEach(([a, b], i) => {
-      while (arr.length <= i) arr.push({});
-      const homeCode = prevWinners[a] || null;
-      const awayCode = prevWinners[b] || null;
-      const slot = arr[i];
-      if ((slot.home || null) !== homeCode || (slot.away || null) !== awayCode) {
-        if (slot.home || slot.away) {
-          // The matchup is changing (shouldn't normally happen once a
-          // winner is final) — clear any score tied to the old pairing.
-          delete slot.homeScore; delete slot.awayScore; delete slot.penWinner;
-        }
-        slot.home = homeCode;
-        slot.away = awayCode;
-        changed = true;
-      }
-      thisRoundWinners.push(
-        (slot.home && slot.away && wcKoMatchComplete(slot)) ? wcKoWinnerCode(slot) : null
-      );
-    });
-    prevWinners = thisRoundWinners;
-  });
-
-  if (changed) {
-    try { await wcSaveResults(); } catch (e) { console.error('[WC] auto-advance save failed:', e); }
-  }
-  return changed;
-}
-window.wcAutoAdvanceKnockout = wcAutoAdvanceKnockout;
-
-// Manual "re-check now" trigger for the admin button — same logic as the
-// automatic version, with button feedback and a result summary.
-async function wcManualAdvanceKnockout() {
-  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
-  const isEn = (CURRENT_LANG === 'en');
-  const btn = document.getElementById('wcAdvanceBtn');
-  const orig = btn ? btn.textContent : '';
-  try {
-    if (btn) { btn.disabled = true; btn.textContent = isEn ? '⏳ Checking…' : '⏳ جارٍ الفحص…'; }
-    const changed = await wcAutoAdvanceKnockout();
-    alert(changed
-      ? (isEn ? 'Done — winners have been advanced to their next round.' : 'تم — تم نقل الفرق الفائزة إلى أدوارها التالية.')
-      : (isEn ? 'Everything is already in sync — no changes were needed.' : 'كل شيء متزامن بالفعل — لا حاجة لأي تغيير.'));
-    wcRender();
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = orig; }
-  }
-}
-window.wcManualAdvanceKnockout = wcManualAdvanceKnockout;
-
 // Renders the penalty-shootout winner picker (hidden unless tied OR has a penWinner already).
 // `scope` = 'draft' (writes to wcState.draft) or 'admin' (writes to wcState.results) — used by the wiring code.
 function wcRenderPensRow(scope, stageId, idx, home, away, draftOrActual, readOnly) {
@@ -12593,6 +11865,8 @@ function wcRenderOpportunityCard() {
       </div>`;
   }
 
+  const stageName = wcEsc(t('wc.stage.' + stage.id));
+
   // Round is open, but the admin hasn't entered its matchups yet.
   if (stage.id !== 'groups') {
     const matches = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
@@ -12604,7 +11878,7 @@ function wcRenderOpportunityCard() {
             <div class="wc-oc-ico">${stage.icon}</div>
             <div class="wc-oc-head">
               <div class="wc-oc-eyebrow">${isEn ? 'Open now' : 'مفتوح الآن'}</div>
-              <div class="wc-oc-title">${isEn ? `${t('wc.stage.' + stage.id)} round` : `دور ${wcEsc(t('wc.stage.' + stage.id))}`}</div>
+              <div class="wc-oc-title">${stageName}</div>
             </div>
           </div>
           <div class="wc-oc-sub">${wcEsc(t('wc.empty.matchups'))}</div>
@@ -12617,40 +11891,32 @@ function wcRenderOpportunityCard() {
   const remainMs = wcStageEffectiveCloseTime(stage) - wcState.now;
   const remainStr = wcFormatRemaining(remainMs);
   const unit = stage.id === 'groups' ? (isEn ? 'groups' : 'مجموعة') : (isEn ? 'matches' : 'مباريات');
-  const pct = progress.total > 0 ? Math.round(progress.completed * 100 / progress.total) : 100;
   const allDone = remaining === 0;
+
+  const statusChip = allDone
+    ? `<span class="wc-oc-chip ok"><span class="ico">✅</span>${isEn ? 'Complete' : 'مكتملة'}</span>`
+    : `<span class="wc-oc-chip"><span class="ico">🟢</span>${isEn ? 'Open now' : 'مفتوحة الآن'}</span>`;
+  const timeChip = `<span class="wc-oc-chip"><span class="ico">⏰</span>${isEn ? `Closes in ${remainStr}` : `متبقي: ${remainStr}`}</span>`;
+  const countChip = `<span class="wc-oc-chip"><span class="ico">⚽</span>${isEn ? `${progress.completed}/${progress.total} ${unit}` : `أكملت ${progress.completed} من ${progress.total} ${unit}`}</span>`;
+
+  const ctaLabel = isEn
+    ? `⚽ Predict the ${stageName} matches`
+    : `⚽ توقع مباريات ${stageName} الآن`;
 
   return `
     <div class="wc-opportunity ${allDone ? 'done' : ''}" id="wcOpportunityCard">
       <div class="wc-oc-top">
         <div class="wc-oc-ico">${stage.icon}</div>
         <div class="wc-oc-head">
-          <div class="wc-oc-eyebrow">${isEn ? 'Open now' : 'الدور مفتوح الآن'}</div>
-          <div class="wc-oc-title">${isEn ? `${t('wc.stage.' + stage.id)} round` : `دور ${wcEsc(t('wc.stage.' + stage.id))}`}</div>
+          <div class="wc-oc-eyebrow">${isEn ? 'Current round' : 'الدور الحالي'}</div>
+          <div class="wc-oc-title">${stageName}</div>
         </div>
         ${allDone ? `<div class="wc-oc-check">✓</div>` : ''}
       </div>
-      <div class="wc-oc-stats">
-        <div class="wc-oc-stat">
-          <span class="wc-oc-stat-ico">⏰</span>
-          <span class="wc-oc-stat-text">${isEn ? `Closes in ${remainStr}` : `المتبقي للإغلاق: ${remainStr}`}</span>
-        </div>
-        <div class="wc-oc-stat">
-          <span class="wc-oc-stat-ico">⚽</span>
-          <span class="wc-oc-stat-text">${
-            allDone
-              ? (isEn ? 'All your predictions are in!' : 'كل توقعاتك جاهزة!')
-              : (isEn
-                  ? `${remaining} ${unit} still unpredicted`
-                  : `عدد ${stage.id === 'groups' ? 'المجموعات' : 'المباريات'} غير المتوقعة: ${remaining} ${unit}`)
-          }</span>
-        </div>
-      </div>
-      <div class="wc-oc-progress">
-        <div class="wc-oc-progress-track"><div class="wc-oc-progress-fill" style="width:${pct}%"></div></div>
-        <div class="wc-oc-progress-label">${progress.completed} / ${progress.total} ${unit}</div>
-      </div>
-      ${allDone ? '' : `<button type="button" class="wc-oc-btn" onclick="wcScrollToStage('${stage.id}')">🎯 ${isEn ? 'Complete your predictions' : 'كمّل توقعاتك'}</button>`}
+      <div class="wc-oc-chips">${statusChip}${timeChip}${countChip}</div>
+      ${allDone
+        ? `<div class="wc-oc-sub">${isEn ? 'All set — your picks are saved. You can still edit them before the deadline.' : 'جاهز؟ توقعاتك محفوظة ويمكنك تعديلها قبل الإغلاق'}</div>`
+        : `<button type="button" class="wc-oc-btn" onclick="wcScrollToStage('${stage.id}')">${ctaLabel}</button>`}
     </div>`;
 }
 
@@ -12689,8 +11955,11 @@ function wcRenderPredict() {
   const liveTotalLabel = (CURRENT_LANG === 'en') ? 'Current total' : 'الإجمالي الحالي';
   const liveTotalBar = `
     <div class="wc-live-total" id="wcLiveTotalBadge">
-      <span class="wc-live-total-label">🧮 ${liveTotalLabel}</span>
-      <span class="wc-live-total-value">${liveTotalPts} ${t('wc.lb.point')}</span>
+      <div class="wc-live-total-ico">🏆</div>
+      <div class="wc-live-total-body">
+        <span class="wc-live-total-label">${liveTotalLabel}</span>
+        <span class="wc-live-total-value">${liveTotalPts} ${t('wc.lb.point')}</span>
+      </div>
     </div>`;
 
   const adminBanner = adminEdit ? `
@@ -12707,11 +11976,6 @@ function wcRenderPredict() {
   const groupsStageObj = WC_STAGES.find(s => s.id === 'groups');
   const koStages = WC_STAGES.filter(s => s.id !== 'groups');
   const groupsCard = wcRenderStageCard(groupsStageObj);
-
-  // Visual qualifiers bracket — projects the current group qualifiers
-  // (live standings or the user's draft picks) into the knockout tree.
-  // Sits directly below the group standings, above the KO stage cards.
-  const qualifiersBracket = wcRenderQualifiersBracket();
 
   // Knockout section: bracket or list depending on koView
   let koSection = '';
@@ -12731,7 +11995,7 @@ function wcRenderPredict() {
       koSection = koStages.map(s => wcRenderStageCard(s)).join('');
     }
   }
-  const stageCards = groupsCard + qualifiersBracket + koSection;
+  const stageCards = groupsCard + koSection;
 
   // Completion check for every currently-open stage — the participant can't
   // submit until each one is fully predicted: all 12 groups picked, or every
@@ -12784,7 +12048,7 @@ function wcRenderPredict() {
       </div>`;
   }
 
-  return adminBanner + wcRenderOpportunityCard() + liveTotalBar + wcRenderCurrentStageBadge() + wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
+  return adminBanner + wcRenderOpportunityCard() + liveTotalBar + wcGroupsNotice() + wcRenderBigCountdown() + stageCards + submitRow;
 }
 
 function wcRenderStageOverview() {
@@ -13448,105 +12712,6 @@ function wcDescribeGroupUpdate(grp, teamCode) {
   return `${name} (${isEn ? 'Group' : 'المجموعة'} ${grp})`;
 }
 
-// ────────────────────────────────────────────────────────────────
-// Admin: export all participants' predictions to an Excel file
-// ────────────────────────────────────────────────────────────────
-function wcXlsxStageNameAr(id) {
-  const map = { r32: 'دور الـ32', r16: 'دور الـ16', qf: 'ربع النهائي', sf: 'نصف النهائي', final: 'النهائي' };
-  return map[id] || id;
-}
-function wcXlsxTeamName(code) {
-  if (!code) return '';
-  return (WC_TEAM_MAP[code] && WC_TEAM_MAP[code].name) || code;
-}
-function wcLoadScriptOnce(src) {
-  return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error('فشل تحميل مكتبة التصدير. تحقّق من الاتصال بالإنترنت.'));
-    document.head.appendChild(s);
-  });
-}
-async function wcExportPredictionsToExcel() {
-  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
-  const btn = document.getElementById('wcExportBtn');
-  const isEn = (CURRENT_LANG === 'en');
-  try {
-    if (btn) { btn.disabled = true; btn.textContent = isEn ? '⏳ Exporting…' : '⏳ جارٍ التصدير…'; }
-    if (typeof XLSX === 'undefined') {
-      await wcLoadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
-    }
-
-    const preds = (wcState.predictions || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
-    if (!preds.length) {
-      alert(isEn ? 'No predictions have been submitted yet.' : 'لا توجد توقعات محفوظة بعد لأي مشارك.');
-      return;
-    }
-
-    const groupIds = WC_GROUPS.map(g => g.id);
-    const stages = ['r32', 'r16', 'qf', 'sf', 'final'];
-
-    const rows = preds.map(p => {
-      const byStage = wcPointsByStage(p);
-      const row = {
-        'الاسم': p.name || '',
-        'تاريخ ووقت الإرسال': p.ts ? new Date(p.ts).toLocaleString('ar-OM') : '',
-        'إجمالي النقاط': wcTotal(p),
-        'نقاط دور المجموعات': byStage.groups,
-        'نقاط دور الـ32': byStage.r32,
-        'نقاط دور الـ16': byStage.r16,
-        'نقاط ربع النهائي': byStage.qf,
-        'نقاط نصف النهائي': byStage.sf,
-        'نقاط النهائي': byStage.final,
-      };
-
-      groupIds.forEach(gid => {
-        const picks = (p.groups && p.groups[gid]) || [];
-        row[`مجموعة ${gid} - المتأهل الأول`] = wcXlsxTeamName(picks[0]);
-        row[`مجموعة ${gid} - المتأهل الثاني`] = wcXlsxTeamName(picks[1]);
-      });
-
-      stages.forEach(stageId => {
-        const myPicks = (p.knockout && p.knockout[stageId]) || [];
-        const realMatches = (wcState.results.knockout && wcState.results.knockout[stageId]) || [];
-        const len = Math.max(myPicks.length, realMatches.length);
-        for (let idx = 0; idx < len; idx++) {
-          const pick = myPicks[idx] || {};
-          const m = realMatches[idx];
-          const homeName = m ? wcXlsxTeamName(m.home) : '';
-          const awayName = m ? wcXlsxTeamName(m.away) : '';
-          const label = (homeName && awayName) ? `${homeName} × ${awayName}` : `مباراة ${idx + 1}`;
-          let scoreTxt = '';
-          if (pick.homeScore !== undefined && pick.homeScore !== '' && pick.homeScore !== null) {
-            scoreTxt = `${pick.homeScore} - ${pick.awayScore}`;
-            if (pick.homeScore === pick.awayScore && pick.penWinner) {
-              const penName = pick.penWinner === 'home' ? homeName : awayName;
-              scoreTxt += ` (ركلات الترجيح: ${penName || pick.penWinner})`;
-            }
-          }
-          row[`${wcXlsxStageNameAr(stageId)} - ${label}`] = scoreTxt;
-        }
-      });
-
-      return row;
-    });
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-    ws['!cols'] = Object.keys(rows[0] || {}).map(() => ({ wch: 22 }));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, isEn ? 'Predictions' : 'توقعات المشاركين');
-    XLSX.writeFile(wb, 'توقعات_المشاركين_' + new Date().toISOString().slice(0, 10) + '.xlsx');
-  } catch (e) {
-    console.error('[WC] export failed:', e);
-    alert((isEn ? 'Export failed: ' : 'فشل التصدير: ') + (e && e.message ? e.message : e));
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = isEn ? '⬇ Export predictions (Excel)' : '⬇ تصدير بيانات التوقعات (Excel)'; }
-  }
-}
-window.wcExportPredictionsToExcel = wcExportPredictionsToExcel;
-
 function wcRenderAdmin() {
   const r = wcState.results;
   const overrides = r.stageOverrides || {};
@@ -13566,34 +12731,6 @@ function wcRenderAdmin() {
   return `
     <div class="wc-admin-warn">
       ${t('wc.admin.warn')}
-    </div>
-
-    <div class="wc-admin-section" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div>
-        <div class="wc-admin-section-title">${isEn ? 'Export predictions' : 'تصدير بيانات التوقعات'}</div>
-        <div style="font-size:12px;color:var(--text-mute);margin-top:2px;line-height:1.6">
-          ${isEn
-            ? 'Download every participant\'s predictions (group picks, knockout picks, and points) as an Excel file.'
-            : 'تنزيل توقعات جميع المشاركين (توقعات المجموعات والأدوار الإقصائية والنقاط) في ملف إكسل واحد.'}
-        </div>
-      </div>
-      <button id="wcExportBtn" class="wc-gs-seed-btn" onclick="wcExportPredictionsToExcel()">
-        ${isEn ? '⬇ Export predictions (Excel)' : '⬇ تصدير بيانات التوقعات (Excel)'}
-      </button>
-    </div>
-
-    <div class="wc-admin-section" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div>
-        <div class="wc-admin-section-title">${isEn ? 'Advance qualified teams' : 'ترقية الفرق المتأهلة'}</div>
-        <div style="font-size:12px;color:var(--text-mute);margin-top:2px;line-height:1.6">
-          ${isEn
-            ? 'Winners of completed matches move to the next round automatically as soon as you enter a result. Use this button to force a re-check (e.g. right after this update, or if something looks out of sync).'
-            : 'يتم نقل الفريق الفائز من أي مباراة مكتملة إلى الدور التالي تلقائياً بمجرد إدخال نتيجتها. استخدم هذا الزر لإعادة الفحص يدوياً (مثلاً بعد هذا التحديث مباشرة، أو إذا شعرت أن شيئاً غير متزامن).'}
-        </div>
-      </div>
-      <button id="wcAdvanceBtn" class="wc-gs-seed-btn" onclick="wcManualAdvanceKnockout()">
-        ${isEn ? '🔄 Re-check & advance winners' : '🔄 فحص وترقية الفرق الفائزة'}
-      </button>
     </div>
 
     ${updateLogHtml}
@@ -13698,28 +12835,16 @@ function wcRenderGroupStandingsPublic(g) {
 }
 
 // Wraps all 12 group standings tables in a single block for visitors.
-// Collapsed behind a show/hide toggle by default (wcState.showGroupStandings).
 function wcRenderAllGroupStandingsPublic() {
   const anyResults = WC_GROUPS.some(g => wcGroupHasResults(g.id));
   if (!anyResults) return '';
-  const isOpen = !!wcState.showGroupStandings;
   return `
     <div class="wc-gs-public-title">📊 ${t('wc.gs.publicTitle')}</div>
-    <button class="wc-gs-seed-btn" onclick="wcToggleGroupStandings()">
-      ${isOpen ? t('wc.gs.hide') : t('wc.gs.show')}
-    </button>
-    ${isOpen ? `
-      <div class="wc-gs-public-hint">${t('wc.gs.publicHint')}</div>
-      <div class="wc-groups-grid wc-gs-grid">
-        ${WC_GROUPS.map(g => wcRenderGroupStandingsPublic(g)).join('')}
-      </div>` : ''}`;
+    <div class="wc-gs-public-hint">${t('wc.gs.publicHint')}</div>
+    <div class="wc-groups-grid wc-gs-grid">
+      ${WC_GROUPS.map(g => wcRenderGroupStandingsPublic(g)).join('')}
+    </div>`;
 }
-
-function wcToggleGroupStandings() {
-  wcState.showGroupStandings = !wcState.showGroupStandings;
-  wcRender();
-}
-window.wcToggleGroupStandings = wcToggleGroupStandings;
 
 function wcRenderGroupStandingsAdmin(g) {
   const standings = wcGroupStandings(g.id);
@@ -13905,7 +13030,6 @@ function wcWireEvents() {
         const winnerName = winnerTeam ? winnerTeam.name : (side === 'home' ? 'Home' : 'Away');
         wcLogResultUpdate((CURRENT_LANG === 'en' ? 'Penalty shootout winner: ' : 'الفائز بركلات الترجيح: ') + winnerName);
         try { await wcSaveResults(); } catch (err) { console.error('[WC] save pen winner (admin):', err); }
-        try { await wcAutoAdvanceKnockout(); } catch (err) { console.error('[WC] auto-advance:', err); }
         wcRender();
         return;
       }
@@ -13987,7 +13111,6 @@ function wcWireEvents() {
       wcSyncGroupQualifiers(grp);
       wcLogResultUpdate(wcDescribeGroupUpdate(grp, team));
       try { await wcSaveResults(); } catch (e) { console.error(e); }
-      try { await wcAutoAdvanceKnockout(); } catch (e) { console.error('[WC] auto-advance:', e); }
       wcRender();
     };
   });
@@ -14013,15 +13136,12 @@ function wcWireEvents() {
       if (!wcKoIsTied(m) && m.penWinner) delete m.penWinner;
       wcLogResultUpdate(wcDescribeKoUpdate(stage, idx));
       try { await wcSaveResults(); } catch(e){ console.error(e); }
-      try { await wcAutoAdvanceKnockout(); } catch (e) { console.error('[WC] auto-advance:', e); }
       // For team-name or score changes, toggle the pens row visibility inline.
       const card = el.closest('[data-wcadmcard]');
       if (card) wcTogglePensRow(card, m, 'admin', stage, idx);
-      // Setting/changing a kickoff time, or auto-advancing a winner into the
-      // next round, can change visible team names or round open/closed
-      // status — re-render to reflect it without waiting on the Firestore
-      // round-trip.
-      wcRender();
+      // Setting/changing a kickoff time can flip this match's lock state and
+      // the round's overall open/closed status — re-render to reflect both.
+      if (field === 'kickoffAt') wcRender();
     };
   });
 }
@@ -14198,274 +13318,6 @@ window.wcSetKoView = function(mode) {
   try { localStorage.setItem('asaas_wc_koView', wcState.koView); } catch(e){}
   wcRender();
 };
-
-// ──────────────────────────────────────────────────────────────
-// Qualifiers Bracket — visual projection of group qualifiers
-// onto the knockout tree (R32 → R16 → QF → SF → Final).
-//
-// Auto-fill priority for the 24 group winner+runner-up slots:
-//   1. Live group standings (admin-entered match results), if any
-//   2. User's draft picks (their predicted top 2 per group)
-//   3. Empty / TBD placeholder
-//
-// Best-3rd-place slots are derived from live standings only (sorted
-// by pts → GD → GF). When the table is empty, those slots stay TBD.
-// R16, QF, SF, Final cells are intentionally rendered as empty bracket
-// shells — they fill in as the tournament progresses (the existing
-// wcRenderBracket() handles the interactive KO predictions separately).
-// ──────────────────────────────────────────────────────────────
-function wcRenderQualifiersBracket() {
-  // ---- Step 1: derive an ordered list of 4 teams per group ----
-  // ranked[gid] = [team@1, team@2, team@3, team@4] (or nulls if no info)
-  const ranked = {};
-  WC_GROUPS.forEach(g => {
-    const hasRes = wcGroupHasResults(g.id);
-    if (hasRes) {
-      // Live admin-entered standings (sorted by pts → GD → GF)
-      ranked[g.id] = wcGroupStandings(g.id).map(s => ({
-        code: s.code, name: s.name, pts: s.pts, gd: s.gd, gf: s.gf, source: 'live'
-      }));
-    } else if (wcState.draft && wcState.draft.groups && (wcState.draft.groups[g.id] || []).length > 0) {
-      // Fall back to the user's draft picks — first their 2 picks (in order),
-      // then the remaining teams in their original draw order.
-      const picks = (wcState.draft.groups[g.id] || []).filter(Boolean);
-      const ordered = [...picks];
-      g.teams.forEach(tm => { if (!ordered.includes(tm[0])) ordered.push(tm[0]); });
-      ranked[g.id] = ordered.map(code => {
-        const t = WC_TEAM_MAP[code];
-        return { code, name: t ? t.name : code, pts: 0, gd: 0, gf: 0, source: 'draft' };
-      });
-    } else {
-      // Nothing at all — fully empty
-      ranked[g.id] = [null, null, null, null];
-    }
-  });
-
-  // ---- Step 2: derive the 8 best 3rd-placed teams (live data only) and
-  // resolve which group's 3rd-place team fills each "needs a 3rd" slot,
-  // using FIFA's official Annex C combination table (one row per possible
-  // combination of which 8 of the 12 groups' 3rd-place finishers qualify).
-  const allThirds = [];
-  WC_GROUPS.forEach(g => {
-    const third = ranked[g.id][2];
-    if (third && third.source === 'live') {
-      allThirds.push({ ...third, group: g.id });
-    }
-  });
-  allThirds.sort((a, b) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf));
-  const best3 = allThirds.slice(0, 8); // may be shorter than 8 mid-tournament
-
-  // Column order of WC_THIRD_PLACE_TABLE rows: 1A, 1B, 1D, 1E, 1G, 1I, 1K, 1L
-  const THIRD_SLOT_GROUPS = ['A', 'B', 'D', 'E', 'G', 'I', 'K', 'L'];
-  let thirdRow = null;
-  if (best3.length === 8) {
-    const key = best3.map(t => t.group).sort().join('');
-    thirdRow = WC_THIRD_PLACE_TABLE[key] || null;
-  }
-
-  // ---- Step 3: build the 16 R32 matchups ----
-  // Convention: each slot has { team, label } where label is the qualification
-  // slot identifier (e.g. "1A" = winner of Group A). Team is null when unknown.
-  // The pairings below follow FIFA's official, fixed Round of 32 schedule for
-  // the 2026 World Cup (Matches 73–88): 4 winner-vs-runner-up crossovers
-  // (C↔F, H↔J), 8 winner-vs-3rd-place matches (A,B,D,E,G,I,K,L), and 4
-  // runner-up-vs-runner-up matches (A-B, E-I, K-L, D-G).
-  const W = (gid) => ranked[gid] && ranked[gid][0] || null;  // winner
-  const R = (gid) => ranked[gid] && ranked[gid][1] || null;  // runner-up
-
-  // Localization (used for both labels and copy)
-  const lang = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'en') ? 'en' : 'ar';
-  const tr = {
-    title:    lang === 'en' ? 'Path to the Final' : 'مسار التأهل إلى النهائي',
-    subtitle: lang === 'en'
-              ? 'Qualifiers fill in automatically based on the current group standings'
-              : 'تُعبَّأ المنتخبات تلقائياً بناءً على ترتيب المجموعات الحالي',
-    r32:      lang === 'en' ? 'Round of 32'    : 'دور الـ32',
-    r16:      lang === 'en' ? 'Round of 16'    : 'دور الـ16',
-    qf:       lang === 'en' ? 'Quarter-Finals' : 'ربع النهائي',
-    sf:       lang === 'en' ? 'Semi-Finals'    : 'نصف النهائي',
-    final:    lang === 'en' ? 'Final'          : 'النهائي',
-    champion: lang === 'en' ? 'Champion'       : 'البطل',
-    vs:       lang === 'en' ? 'vs'             : '×',
-    tbd:      lang === 'en' ? 'TBD'            : 'يُحدَّد لاحقاً',
-    legendFilled: lang === 'en' ? 'Filled from standings' : 'مأخوذ من ترتيب المجموعات',
-    legendTbd:    lang === 'en' ? 'To be decided'         : 'يُحدَّد بعد المباريات',
-  };
-
-  // Resolve the 3rd-place opponent (team + originating group) for the
-  // "winner of <slotGid> vs 3rd place" slot, per the official table.
-  const thirdFor = (slotGid) => {
-    if (!thirdRow) return { team: null, group: null };
-    const fromGroup = thirdRow[THIRD_SLOT_GROUPS.indexOf(slotGid)];
-    const team = (fromGroup && ranked[fromGroup] && ranked[fromGroup][2]) || null;
-    return { team, group: fromGroup };
-  };
-  const thirdLabel3 = (slotGid) => {
-    const { group } = thirdFor(slotGid);
-    return group ? (lang === 'en' ? '3rd-' : 'ث') + group : (lang === 'en' ? '3rd' : 'ث');
-  };
-
-  const r32 = [
-    // ----- Left half (Matches 73–80) -----
-    { side:'L', home:R('A'), homeLabel:'2A', away:R('B'), awayLabel:'2B' },
-    { side:'L', home:W('E'), homeLabel:'1E', away:thirdFor('E').team, awayLabel:thirdLabel3('E') },
-    { side:'L', home:W('F'), homeLabel:'1F', away:R('C'), awayLabel:'2C' },
-    { side:'L', home:W('C'), homeLabel:'1C', away:R('F'), awayLabel:'2F' },
-    { side:'L', home:W('I'), homeLabel:'1I', away:thirdFor('I').team, awayLabel:thirdLabel3('I') },
-    { side:'L', home:R('E'), homeLabel:'2E', away:R('I'), awayLabel:'2I' },
-    { side:'L', home:W('A'), homeLabel:'1A', away:thirdFor('A').team, awayLabel:thirdLabel3('A') },
-    { side:'L', home:W('L'), homeLabel:'1L', away:thirdFor('L').team, awayLabel:thirdLabel3('L') },
-    // ----- Right half (Matches 81–88) -----
-    { side:'R', home:W('D'), homeLabel:'1D', away:thirdFor('D').team, awayLabel:thirdLabel3('D') },
-    { side:'R', home:W('G'), homeLabel:'1G', away:thirdFor('G').team, awayLabel:thirdLabel3('G') },
-    { side:'R', home:R('K'), homeLabel:'2K', away:R('L'), awayLabel:'2L' },
-    { side:'R', home:W('H'), homeLabel:'1H', away:R('J'), awayLabel:'2J' },
-    { side:'R', home:W('B'), homeLabel:'1B', away:thirdFor('B').team, awayLabel:thirdLabel3('B') },
-    { side:'R', home:W('J'), homeLabel:'1J', away:R('H'), awayLabel:'2H' },
-    { side:'R', home:W('K'), homeLabel:'1K', away:thirdFor('K').team, awayLabel:thirdLabel3('K') },
-    { side:'R', home:R('D'), homeLabel:'2D', away:R('G'), awayLabel:'2G' },
-  ];
-
-  // ---- Step 4: small render helpers ----
-  const teamRow = (t, label) => {
-    if (!t) {
-      return `
-        <div class="qb-team tbd">
-          <span class="qb-team-label">${wcEsc(label || '')}</span>
-          <span class="qb-team-flag tbd"></span>
-          <span class="qb-team-name">${tr.tbd}</span>
-        </div>`;
-    }
-    return `
-      <div class="qb-team">
-        <span class="qb-team-label">${wcEsc(label || '')}</span>
-        <span class="qb-team-flag">${wcFlagImg(t.code, 12)}</span>
-        <span class="qb-team-name">${wcEsc(t.name || t.code)}</span>
-      </div>`;
-  };
-
-  const matchCell = (m) => {
-    const filled = (m.home && m.away) ? 'filled' : '';
-    return `
-      <div class="qb-match ${filled}">
-        ${teamRow(m.home, m.homeLabel)}
-        ${teamRow(m.away, m.awayLabel)}
-      </div>`;
-  };
-  const emptyCell = () => `
-      <div class="qb-match">
-        ${teamRow(null, '')}
-        ${teamRow(null, '')}
-      </div>`;
-  // Renders a real (already auto-advanced) knockout match from
-  // wcState.results.knockout — used for R16/QF below, so a completed R32
-  // result shows its winner here automatically (see wcAutoAdvanceKnockout).
-  const koCell = (m) => {
-    const home = m && m.home ? WC_TEAM_MAP[m.home] : null;
-    const away = m && m.away ? WC_TEAM_MAP[m.away] : null;
-    const filled = (home && away) ? 'filled' : '';
-    return `
-      <div class="qb-match ${filled}">
-        ${teamRow(home, '')}
-        ${teamRow(away, '')}
-      </div>`;
-  };
-
-  // ---- Step 5: assemble columns ----
-  // Visual-order note: for the connecting lines to line up, every adjacent
-  // PAIR of boxes in a column must be the two matches that actually feed the
-  // same next-round slot. The official bracket does NOT pair R32 matches in
-  // simple numeric order (e.g. Match 74's winner meets Match 77's winner,
-  // not Match 73's) — so the lists below reorder cells for *display only*;
-  // the underlying r32/r16/qf data stays in official Match-number order
-  // (required for the identity-matching used by wcAutoAdvanceKnockout).
-  const LEFT_R32_ORDER  = [0, 2, 1, 4, 3, 5, 6, 7];        // → Matches 73,75,74,77,76,78,79,80
-  const RIGHT_R32_ORDER = [8, 9, 10, 11, 12, 14, 13, 15];  // → Matches 81,82,83,84,85,87,86,88
-  const LEFT_R16_ORDER  = [1, 0, 2, 3];                    // → Matches 90,89,91,92
-  const RIGHT_R16_ORDER = [5, 4, 7, 6];                    // → Matches 94,93,96,95
-
-  const leftR32  = LEFT_R32_ORDER.map(i => matchCell(r32[i])).join('');
-  const rightR32 = RIGHT_R32_ORDER.map(i => matchCell(r32[i])).join('');
-
-  // R16/QF are read straight from the real, already-advanced bracket
-  // (wcState.results.knockout.r16/.qf) rather than re-derived here, so this
-  // preview always matches what wcAutoAdvanceKnockout has resolved from
-  // actual entered results.
-  const r16Arr = (wcState.results.knockout && wcState.results.knockout.r16) || [];
-  const qfArr  = (wcState.results.knockout && wcState.results.knockout.qf)  || [];
-  const r16Cells      = LEFT_R16_ORDER.map(i => koCell(r16Arr[i])).join('');
-  const r16CellsRight = RIGHT_R16_ORDER.map(i => koCell(r16Arr[i])).join('');
-  const qfCells      = [0, 2].map(i => koCell(qfArr[i])).join('');
-  const qfCellsRight = [1, 3].map(i => koCell(qfArr[i])).join('');
-  // Semi-finals each combine one quarter from the left side with one from
-  // the right (Match 101 = winner M97 vs winner M98, etc.), so they don't
-  // map cleanly onto a single side — shown as TBD here for now.
-  const sfCell   = emptyCell();
-
-  return `
-    <div class="qb-wrap" aria-label="${wcEsc(tr.title)}">
-      <div class="qb-header">
-        <div class="qb-title">🏆 ${wcEsc(tr.title)}</div>
-        <div class="qb-subtitle">${wcEsc(tr.subtitle)}</div>
-      </div>
-      <div class="qb-scroll">
-        <div class="qb-grid">
-          <!-- LEFT HALF: R32 → R16 → QF → SF -->
-          <div class="qb-col qb-col-r32 qb-col-left">
-            <div class="qb-col-label">${wcEsc(tr.r32)}</div>
-            <div class="qb-col-cells">${leftR32}</div>
-          </div>
-          <div class="qb-col qb-col-r16 qb-col-left">
-            <div class="qb-col-label">${wcEsc(tr.r16)}</div>
-            <div class="qb-col-cells">${r16Cells}</div>
-          </div>
-          <div class="qb-col qb-col-qf qb-col-left">
-            <div class="qb-col-label">${wcEsc(tr.qf)}</div>
-            <div class="qb-col-cells">${qfCells}</div>
-          </div>
-          <div class="qb-col qb-col-sf qb-col-left">
-            <div class="qb-col-label">${wcEsc(tr.sf)}</div>
-            <div class="qb-col-cells">${sfCell}</div>
-          </div>
-
-          <!-- CENTER: FINAL / CHAMPION -->
-          <div class="qb-col qb-col-final">
-            <div class="qb-final-card">
-              <div class="qb-trophy-icon">🏆</div>
-              <div class="qb-final-label">${wcEsc(tr.final)}</div>
-              <div class="qb-final-match">
-                ${teamRow(null, '')}
-                <div class="qb-vs">${wcEsc(tr.vs)}</div>
-                ${teamRow(null, '')}
-              </div>
-            </div>
-          </div>
-
-          <!-- RIGHT HALF: SF → QF → R16 → R32 (mirrored) -->
-          <div class="qb-col qb-col-sf qb-col-right">
-            <div class="qb-col-label">${wcEsc(tr.sf)}</div>
-            <div class="qb-col-cells">${sfCell}</div>
-          </div>
-          <div class="qb-col qb-col-qf qb-col-right">
-            <div class="qb-col-label">${wcEsc(tr.qf)}</div>
-            <div class="qb-col-cells">${qfCellsRight}</div>
-          </div>
-          <div class="qb-col qb-col-r16 qb-col-right">
-            <div class="qb-col-label">${wcEsc(tr.r16)}</div>
-            <div class="qb-col-cells">${r16CellsRight}</div>
-          </div>
-          <div class="qb-col qb-col-r32 qb-col-right">
-            <div class="qb-col-label">${wcEsc(tr.r32)}</div>
-            <div class="qb-col-cells">${rightR32}</div>
-          </div>
-        </div>
-      </div>
-      <div class="qb-foot">
-        <span class="qb-foot-item"><span class="qb-foot-dot"></span> ${wcEsc(tr.legendFilled)}</span>
-        <span class="qb-foot-item"><span class="qb-foot-dot tbd"></span> ${wcEsc(tr.legendTbd)}</span>
-      </div>
-    </div>`;
-}
 
 function wcRenderBracket() {
   const koStages = WC_STAGES.filter(s => s.id !== 'groups');
