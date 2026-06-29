@@ -2633,6 +2633,37 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-register-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .wc-register-row .form-control { flex: 1; min-width: 180px; max-width: 360px; }
 
+/* ─── Guest "join now" banner — shown to visitors who haven't registered ─── */
+.wc-guest-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+  color: var(--green-dark);
+  border-radius: var(--radius-lg, 14px);
+  padding: 14px 18px;
+  margin: 0 0 14px;
+  box-shadow: var(--shadow-sm);
+}
+.wc-guest-banner-text {
+  font-size: 14px; font-weight: 800;
+  font-family: 'Co Headline', 'Tajawal', sans-serif;
+}
+.wc-guest-banner-btn {
+  flex-shrink: 0;
+  background: var(--green-dark); color: #FFFDF8;
+  border: 0; border-radius: 999px;
+  padding: 9px 20px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+  white-space: nowrap;
+}
+.wc-guest-banner-btn:hover { background: #1a3520; transform: translateY(-1px); }
+@media (max-width: 560px) {
+  .wc-guest-banner { padding: 12px 14px; }
+  .wc-guest-banner-text { font-size: 13px; }
+  .wc-guest-banner-btn { width: 100%; text-align: center; }
+}
+
 .wc-groups-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -2678,6 +2709,9 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-weight: 600;
 }
 .wc-team-row.disabled { opacity: .5; cursor: not-allowed; }
+.wc-team-row.guest { cursor: default; opacity: .82; }
+.wc-team-row.guest:hover { border-color: var(--border-soft); }
+.wc-group.guest .wc-group-header { opacity: .8; }
 .wc-group-pts {
   margin-top: 8px; text-align: center;
   font-size: 11.5px; font-weight: 700;
@@ -4295,6 +4329,13 @@ html.view-wc.wc-dark .wc-cs-leading {
   margin-top: 4px;
   font-weight: 600;
 }
+.wc-bm-mypick {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--text-mute);
+  margin-top: 2px;
+  font-weight: 600;
+}
 .wc-bm-golden {
   display: inline-block;
   margin-inline-start: 4px;
@@ -5868,6 +5909,7 @@ const I18N = {
     'wc.ko.pens.missing':     '⚠ هناك مباريات إقصائية متعادلة لم تختر فيها الفائز بضربات الترجيح.',
     'wc.match.tbd':           'منتظر',
     'wc.match.official':      'النتيجة الرسمية',
+    'wc.mypick':              'توقعك',
     'wc.group':               'المجموعة',
     // notice
     'wc.notice.title':        'تنبيه: موعد إغلاق توقعات دور المجموعات',
@@ -6169,6 +6211,7 @@ const I18N = {
     'wc.ko.pens.missing':     '⚠ Some tied knockout matches are missing a penalty-shootout winner.',
     'wc.match.tbd':           'TBD',
     'wc.match.official':      'Official result',
+    'wc.mypick':              'Your pick',
     'wc.group':               'Group',
     'wc.notice.title':        'Notice: Group Stage Closing Time',
     'wc.notice.body':         'Submitting or editing group-stage predictions will close automatically <strong>at the kickoff of the tournament\'s first match</strong> (Mexico vs South Africa). Make sure to save your predictions before this deadline — no edits will be allowed after.',
@@ -11936,42 +11979,49 @@ function wcRenderOpportunityCard() {
 // ────────────────────────────────────────────────────────────────
 function wcRenderPredict() {
   const adminEdit = !!wcState.editTargetId;
+  const guest = !adminEdit && !wcState.myName;
+  const isEn = (CURRENT_LANG === 'en');
 
-  if (!adminEdit && !wcState.myName) {
-    return `
-      ${wcRenderCurrentStageBadge()}
-      ${wcGroupsNotice()}
-      ${wcRenderBigCountdown()}
-      <div class="wc-register">
-        <div class="wc-register-title">${t('wc.register.title')}</div>
-        <div class="wc-register-row">
-          <input type="text" class="form-control" id="wcNameInput" placeholder="${t('wc.register.placeholder')}" maxlength="40" list="wcNameSuggestions" autocomplete="off" />
-          <datalist id="wcNameSuggestions">${wcNameDatalistOptions()}</datalist>
-          <button class="btn btn-primary" id="wcRegBtn">${t('wc.register.start')}</button>
-        </div>
-        <div style="font-size:11.5px;color:var(--text-mute);margin-top:8px">
-          ${t('wc.register.hint')}
-        </div>
-      </div>
-      ${wcRenderStageOverview()}
-    `;
-  }
   if (!wcState.draft) wcInitDraft();
+
+  // Friendly join banner — guests can browse the whole bracket and the
+  // crowd's predictions read-only; this nudges them to register so they
+  // can start predicting themselves.
+  const guestBanner = guest ? `
+    <div class="wc-guest-banner">
+      <div class="wc-guest-banner-text">⚽ ${isEn ? "You're not late — you can still predict and win!" : 'ما تأخرت، تقدر تتوقع وتفوز!'}</div>
+      <button type="button" class="wc-guest-banner-btn" onclick="wcFocusNameInput()">${isEn ? 'Join now' : 'سجّل الآن'}</button>
+    </div>
+    <div class="wc-register" id="wcRegisterBox">
+      <div class="wc-register-title">${t('wc.register.title')}</div>
+      <div class="wc-register-row">
+        <input type="text" class="form-control" id="wcNameInput" placeholder="${t('wc.register.placeholder')}" maxlength="40" list="wcNameSuggestions" autocomplete="off" />
+        <datalist id="wcNameSuggestions">${wcNameDatalistOptions()}</datalist>
+        <button class="btn btn-primary" id="wcRegBtn">${t('wc.register.start')}</button>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-mute);margin-top:8px">
+        ${t('wc.register.hint')}
+      </div>
+    </div>` : '';
 
   // Live running total — recomputed from the current draft vs. whatever
   // actual results already exist. Shown as a persistent bar so it's always
   // visible while picking, and patched directly (without a full re-render)
   // whenever a knockout score/penalty changes so it never loses input focus.
-  const liveTotalPts = wcTotal({ groups: wcState.draft.groups || {}, knockout: wcState.draft.knockout || {} });
-  const liveTotalLabel = (CURRENT_LANG === 'en') ? 'Current total' : 'الإجمالي الحالي';
-  const liveTotalBar = `
-    <div class="wc-live-total" id="wcLiveTotalBadge">
-      <div class="wc-live-total-ico">🏆</div>
-      <div class="wc-live-total-body">
-        <span class="wc-live-total-label">${liveTotalLabel}</span>
-        <span class="wc-live-total-value">${liveTotalPts} ${t('wc.lb.point')}</span>
-      </div>
-    </div>`;
+  // Not meaningful for a guest with no draft of their own, so skip it.
+  let liveTotalBar = '';
+  if (!guest) {
+    const liveTotalPts = wcTotal({ groups: wcState.draft.groups || {}, knockout: wcState.draft.knockout || {} });
+    const liveTotalLabel = isEn ? 'Current total' : 'الإجمالي الحالي';
+    liveTotalBar = `
+      <div class="wc-live-total" id="wcLiveTotalBadge">
+        <div class="wc-live-total-ico">🏆</div>
+        <div class="wc-live-total-body">
+          <span class="wc-live-total-label">${liveTotalLabel}</span>
+          <span class="wc-live-total-value">${liveTotalPts} ${t('wc.lb.point')}</span>
+        </div>
+      </div>`;
+  }
 
   const adminBanner = adminEdit ? `
     <div class="wc-admin-edit-banner">
@@ -12007,6 +12057,13 @@ function wcRenderPredict() {
     }
   }
   const stageCards = groupsCard + koSection;
+
+  // Guests have no identity to submit under, and the opportunity card is
+  // already a no-op for them (it returns '' without a registered name) —
+  // so skip the completion-check/submit-row machinery entirely for guests.
+  if (guest) {
+    return guestBanner + wcGroupsNotice() + wcRenderBigCountdown() + stageCards;
+  }
 
   // Completion check for every currently-open stage — the participant can't
   // submit until each one is fully predicted: all 12 groups picked, or every
@@ -12139,8 +12196,9 @@ function wcRenderStageCard(stage) {
       </div>`;
   } else {
     // OPEN
+    const isGuest = !wcState.myName && !adminEdit;
     if (stage.id === 'groups') {
-      body = `<div class="wc-stage-card-body">${wcRenderGroupsForm()}</div>`;
+      body = `<div class="wc-stage-card-body">${wcRenderGroupsForm(isGuest)}</div>`;
     } else {
       const matches = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
       const hasMatchups = matches.length > 0 && matches.some(m => m.home || m.away);
@@ -12148,7 +12206,7 @@ function wcRenderStageCard(stage) {
         body = `<div class="wc-empty"><div class="wc-empty-ico">⏳</div>
                 ${t('wc.empty.matchups')}</div>`;
       } else {
-        body = `<div class="wc-stage-card-body">${wcRenderKOForm(stage)}</div>`;
+        body = `<div class="wc-stage-card-body">${wcRenderKOForm(stage, isGuest)}</div>`;
       }
     }
   }
@@ -12156,7 +12214,7 @@ function wcRenderStageCard(stage) {
   return `<div class="wc-stage-card ${status}" id="wcStageCard-${stage.id}">${header}${body}</div>`;
 }
 
-function wcRenderGroupsForm() {
+function wcRenderGroupsForm(isGuest) {
   const cards = WC_GROUPS.map(g => {
     const picks = (wcState.draft.groups[g.id] || []).filter(Boolean);
     const complete = picks.length === 2;
@@ -12167,34 +12225,38 @@ function wcRenderGroupsForm() {
       ? `<div class="wc-group-pts ${livePts > 0 ? 'pos' : 'zero'}">${livePts > 0 ? '+' : ''}${livePts} ${t('wc.lb.point')}</div>`
       : '';
     return `
-      <div class="wc-group ${complete?'complete':''}">
+      <div class="wc-group ${complete?'complete':''} ${isGuest?'guest':''}">
         <div class="wc-group-header">
           <div class="wc-group-label">${t('wc.group')} ${g.id}</div>
-          <div class="wc-group-progress">${picks.length}/2</div>
+          ${isGuest ? '' : `<div class="wc-group-progress">${picks.length}/2</div>`}
         </div>
         ${g.teams.map(tm => {
           const [code, flag, name] = tm;
           const sel = picks.includes(code);
           const dis = (!sel && picks.length >= 2);
+          const attrs = isGuest ? '' : `data-wcteam="${code}" data-wcgrp="${g.id}"`;
           return `
-            <div class="wc-team-row ${sel?'selected':''} ${dis?'disabled':''}"
-                 data-wcteam="${code}" data-wcgrp="${g.id}">
+            <div class="wc-team-row ${sel?'selected':''} ${dis?'disabled':''} ${isGuest?'guest':''}" ${attrs}>
               <span class="wc-team-flag">${wcFlagImg(code, 18)}</span>
               <span class="wc-team-name">${name}</span>
-              <span class="wc-team-check">✓</span>
+              ${isGuest ? '' : '<span class="wc-team-check">✓</span>'}
             </div>`;
         }).join('')}
         ${ptsBadge}
       </div>`;
   }).join('');
-  return `<div class="wc-groups-grid">${cards}</div>
-          <div style="margin-top:10px;padding:8px 12px;background:var(--bg-2);border-radius:8px;font-size:11.5px;color:var(--text-mute);line-height:1.7">
-            ${t('wc.groups.hint')} ${WC_SCORING.groupQualifier} ${t('wc.groups.hintSuffix')}
-            ${t('wc.groups.hint.exactNote')} ${WC_SCORING.groupQualifier * 2 + WC_SCORING.groupExactOrderBonus} ${t('wc.lb.point')}.
-          </div>`;
+  const hint = isGuest
+    ? `<div style="margin-top:10px;padding:8px 12px;background:var(--bg-2);border-radius:8px;font-size:11.5px;color:var(--text-mute);line-height:1.7">
+        ${(CURRENT_LANG === 'en') ? 'Register your name above to pick your 2 qualifiers per group.' : 'سجّل اسمك بالأعلى حتى تقدر تختار متأهّلَين من كل مجموعة.'}
+      </div>`
+    : `<div style="margin-top:10px;padding:8px 12px;background:var(--bg-2);border-radius:8px;font-size:11.5px;color:var(--text-mute);line-height:1.7">
+        ${t('wc.groups.hint')} ${WC_SCORING.groupQualifier} ${t('wc.groups.hintSuffix')}
+        ${t('wc.groups.hint.exactNote')} ${WC_SCORING.groupQualifier * 2 + WC_SCORING.groupExactOrderBonus} ${t('wc.lb.point')}.
+      </div>`;
+  return `<div class="wc-groups-grid">${cards}</div>${hint}`;
 }
 
-function wcRenderKOForm(stage) {
+function wcRenderKOForm(stage, isGuest) {
   const matchups = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
   const draftArr = (wcState.draft.knockout && wcState.draft.knockout[stage.id]) || [];
 
@@ -12202,10 +12264,11 @@ function wcRenderKOForm(stage) {
     const d = draftArr[i] || {};
     const hasOfficial = (m.homeScore != null && m.awayScore != null);
     const kickedOff = wcKoMatchKickedOff(m);
-    // Locked once the match itself has kicked off OR its result is in —
-    // whichever comes first — unless an admin is editing on someone's
-    // behalf, in which case every match always stays editable.
-    const resultIn = (hasOfficial || kickedOff) && !wcState.editTargetId;
+    // Locked once the match itself has kicked off, its result is in, or the
+    // viewer is just browsing as a guest (read-only preview) — unless an
+    // admin is editing on someone's behalf, in which case every match
+    // always stays editable.
+    const resultIn = (hasOfficial || kickedOff || isGuest) && !wcState.editTargetId;
     const home = m.home ? WC_TEAM_MAP[m.home] : null;
     const away = m.away ? WC_TEAM_MAP[m.away] : null;
     const livePts = hasOfficial ? wcKoMatchPickPoints(stage.id, i, d) : null;
@@ -12219,13 +12282,10 @@ function wcRenderKOForm(stage) {
       ? `<div style="text-align:center;font-size:11px;color:var(--clay);margin-top:6px;font-weight:600">
           🔒 ${(CURRENT_LANG === 'en') ? 'Match has started — prediction locked' : 'انطلقت المباراة — التوقع مقفل'}</div>`
       : '';
-    // "توقع الجمهور" — only reveal how everyone else predicted this match
-    // once the participant has SAVED their own pick for it, so seeing the
-    // crowd's leaning never influences the choice they're still making.
-    const mySavedPred = wcState.predictions.find(p => p.id === wcEffectiveId());
-    const mySavedGuess = mySavedPred && mySavedPred.knockout && mySavedPred.knockout[stage.id] && mySavedPred.knockout[stage.id][i];
-    const iHaveSaved = !!(mySavedGuess && mySavedGuess.homeScore != null && mySavedGuess.awayScore != null);
-    const crowdHtml = iHaveSaved ? wcRenderCrowdBreakdown(stage.id, i, home, away) : '';
+    // "توقع الجمهور" — participation stats (how many predicted, and how the
+    // crowd split between the two teams) reveal once the match has an
+    // official result, for every viewer — registered or not.
+    const crowdHtml = hasOfficial ? wcRenderCrowdBreakdown(stage.id, i, home, away) : '';
     return `
       <div class="wc-match-card" data-wcstage="${stage.id}" data-wcidx="${i}">
         <div class="wc-match-row">
@@ -13220,6 +13280,15 @@ window.wcLogout = function() {
   wcRender();
 };
 
+// Guest banner's "Join now" button — bring the name field into view and
+// focus it instead of duplicating the registration form a second time.
+window.wcFocusNameInput = function() {
+  const el = document.getElementById('wcNameInput');
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.focus();
+};
+
 // ════════════════════════════════════════════════════════════════
 //   🎯  تحسينات الأدوار الإقصائية  -  دوال مساعدة
 // ════════════════════════════════════════════════════════════════
@@ -13417,9 +13486,11 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
   const away = m.away ? WC_TEAM_MAP[m.away] : null;
   const officialIn = (m.homeScore != null && m.awayScore != null);
   const kickedOff = wcKoMatchKickedOff(m);
+  const isGuest = !wcState.myName && !wcState.editTargetId;
   // A round can stay "open" (other matches still pending) while THIS
   // particular match has already kicked off — lock it individually.
-  const editable = (status === 'open') && !kickedOff;
+  // A guest (no registered name) only ever gets the read-only preview.
+  const editable = (status === 'open') && !kickedOff && !isGuest;
   const cls = ['wc-bm'];
   if (editable && !officialIn) cls.push('editable');
   if (status === 'upcoming' || status === 'closed' || (status === 'open' && kickedOff && !officialIn)) cls.push('locked');
@@ -13461,14 +13532,27 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
     </div>`;
 
   const resultBar = officialIn
-    ? `<div class="wc-bm-result">${wcEsc(t('wc.match.official'))}: ${m.homeScore} − ${m.awayScore}${golden}</div>`
+    ? `<div class="wc-bm-result">${wcEsc(t('wc.match.official'))}: ${m.homeScore} − ${m.awayScore}</div>`
     : ((status === 'open' && kickedOff)
         ? `<div class="wc-bm-result" style="color:var(--clay)">🔒 ${(CURRENT_LANG === 'en') ? 'Started — locked' : 'انطلقت — مقفلة'}</div>`
         : '');
 
+  // Logged-in participants keep seeing their own saved prediction even once
+  // the official score is in (mirrors the list-view's behavior); a visitor
+  // who hasn't registered has no prediction to show, so they only ever see
+  // the official-result line above.
+  const myPickLine = (officialIn && wcState.myName && d && d.homeScore != null && d.awayScore != null)
+    ? `<div class="wc-bm-mypick">${wcEsc(t('wc.mypick'))}: ${d.homeScore} − ${d.awayScore}${golden}</div>`
+    : '';
+
   const officialTiedNote = (officialIn && wcKoIsTied(m) && m.penWinner)
     ? `<div class="wc-bm-result" style="margin-top:2px"><span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span></div>`
     : '';
+
+  // Participation stats — how many predicted this match and how the crowd
+  // split between the two teams — reveal once the match is decided, for
+  // every viewer, registered or not.
+  const crowdHtml = officialIn ? wcRenderCrowdBreakdown(stage.id, idx, home, away) : '';
 
   // Pens picker — only meaningful while the user is editing their prediction
   // (and the official result isn't in yet). Hidden unless draft is tied.
@@ -13483,7 +13567,9 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
       ${awayRow}
       ${pensPicker}
       ${resultBar}
+      ${myPickLine}
       ${officialTiedNote}
+      ${crowdHtml}
     </div>`;
 }
 
