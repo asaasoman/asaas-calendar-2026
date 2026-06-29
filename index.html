@@ -4479,6 +4479,114 @@ html.view-wc.wc-dark .wc-cs-leading {
   .wc-bracket-grid { gap: 10px; }
 }
 
+/* ── Two-sided knockout tree (desktop, ≥1025px) ─────────────────────
+   Mirrors a classic World-Cup-style bracket: Round of 32 on both outer
+   edges, converging inward through R16 → QF → SF, meeting at the Final
+   in the centre. Below the existing 1024px breakpoint, the simple
+   stacked list (.wc-bracket-wrap above) is shown instead — see the
+   media query at the bottom of this block. */
+.wcbt-wrap { display: block; }
+.wc-bracket-wrap { display: none; }
+
+.wcbt-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 8px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.wcbt-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 14px;
+}
+.wcbt-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.wcbt-tree {
+  display: flex;
+  direction: ltr; /* purely spatial layout: left half → final → right half,
+                      independent of the page's overall RTL reading order */
+  align-items: flex-start;
+  justify-content: center;
+  min-width: max-content;
+  padding: 4px 10px 8px;
+}
+.wcbt-half { display: flex; flex-direction: row; }
+.wcbt-col {
+  display: flex;
+  flex-direction: column;
+  width: 182px;
+  flex: 0 0 auto;
+}
+.wcbt-col-label {
+  height: 30px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 11px; font-weight: 700; letter-spacing: .3px;
+  color: var(--text-soft);
+  background: var(--bg-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  margin: 0 3px 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wcbt-col-label.is-open   { background: var(--green-tint); color: var(--green-dark); border-color: var(--green-light); }
+.wcbt-col-label.is-closed { opacity: .7; }
+.wcbt-col-slots {
+  display: flex;
+  flex-direction: column;
+  height: var(--wcbt-half-h, 736px);
+}
+.wcbt-slot {
+  flex: 1 1 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+  min-width: 0;
+}
+.wcbt-slot .wc-bm { width: 100%; }
+
+/* Connector columns — purely decorative lines joining a round's two
+   feeder matches to the single match they advance to. A connector with
+   N slots always has the SAME per-slot height as the round it feeds, so
+   each slot's vertical centre lands exactly on the midpoint between its
+   two feeder matches one column over — flexbox's equal flex:1 slots give
+   that centering for free, no manual pixel offsets needed anywhere. */
+.wcbt-conn-col { width: 22px; }
+.wcbt-conn-slot { position: relative; flex: 1 1 0; }
+.wcbt-line { position: absolute; background: var(--border); }
+.wcbt-line.v     { left: 50%; top: 25%; bottom: 25%; width: 2px; margin-left: -1px; }
+.wcbt-line.h-top { left: 0; right: 50%; top: 25%; height: 2px; margin-top: -1px; }
+.wcbt-line.h-bot { left: 0; right: 50%; top: 75%; height: 2px; margin-top: -1px; }
+.wcbt-line.h-out { left: 50%; right: 0; top: 50%; height: 2px; margin-top: -1px; }
+.wcbt-line.h-mid { left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; }
+/* The right half mirrors the left half, so every connector's lines just
+   get flipped horizontally — far simpler than computing a second set of
+   positions (these slots hold only decorative lines, never text, so a
+   horizontal flip is always safe here). */
+.wcbt-half-right .wcbt-conn-slot { transform: scaleX(-1); }
+
+.wcbt-final-col {
+  width: 200px;
+  flex: 0 0 auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: calc(var(--wcbt-half-h, 736px) + 30px);
+  padding: 0 10px;
+  gap: 12px;
+}
+.wcbt-final-card, .wcbt-final-card .wc-bm { width: 100%; }
+
+@media (max-width: 1024px) {
+  .wcbt-wrap { display: none; }
+  .wc-bracket-wrap { display: block; }
+}
+
 /* ── 4) Big countdown banner ─────────────────────────────────── */
 .wc-big-countdown {
   background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
@@ -13568,7 +13676,137 @@ window.wcToggleStageDetails = function(stageId) {
   wcRender();
 };
 
+// Renders BOTH bracket variants: the two-sided converging tree (shown on
+// roomy screens) and the original single-row scroller (shown below the
+// 1024px breakpoint instead — see the CSS media query). Keeping both in
+// the DOM and toggling with CSS avoids any JS resize/orientation-change
+// wiring to switch between them.
 function wcRenderBracket() {
+  return wcRenderBracketTree() + wcRenderBracketSimple();
+}
+
+// ════════════════════════════════════════════════════════════════
+//   Two-sided knockout tree (desktop) — R32 on both outer edges,
+//   converging inward through R16 → QF → SF to meet at the Final in
+//   the centre, à la a classic World Cup bracket graphic.
+// ════════════════════════════════════════════════════════════════
+const WCBT_ROUNDS = ['r32', 'r16', 'qf', 'sf'];
+
+// The half (left or right) of the draw that a given knockout stage's
+// match-array index belongs to, plus its index within just that half.
+// Match arrays are stored in bracket order (pairs of consecutive indices
+// feed the same next-round slot), so the first half of each stage's
+// array is simply the left half of the draw, and the second half is the
+// right half of the draw.
+function wcBracketHalfCards(stageId, side) {
+  const stage = WC_STAGES.find(s => s.id === stageId);
+  const all = (wcState.results.knockout && wcState.results.knockout[stageId]) || [];
+  const draftAll = (wcState.draft && wcState.draft.knockout && wcState.draft.knockout[stageId]) || [];
+  const status = wcStageStatus(stage);
+  const half = stage.matchCount / 2;
+  const start = side === 'left' ? 0 : half;
+  return Array.from({ length: half }, (_, i) => {
+    const idx = start + i;
+    const m = all[idx] || {};
+    const d = draftAll[idx] || {};
+    return wcRenderBracketMatch(stage, idx, m, d, status);
+  });
+}
+
+function wcBracketTreeCol(cards, label, statusCls) {
+  return `
+    <div class="wcbt-col">
+      <div class="wcbt-col-label ${statusCls || ''}">${label}</div>
+      <div class="wcbt-col-slots">
+        ${cards.map(html => `<div class="wcbt-slot">${html}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// `count` = the LATER round's match count for this half (the round the
+// connector feeds INTO) — that's what makes the per-slot height land
+// exactly between the two feeder matches one column over. See the CSS
+// comment on .wcbt-conn-col for the (very simple) math behind this.
+function wcBracketTreeConnCol(count, kind) {
+  const slotHtml = (kind === 'straight')
+    ? `<div class="wcbt-conn-slot straight"><span class="wcbt-line h-mid"></span></div>`
+    : `<div class="wcbt-conn-slot">
+         <span class="wcbt-line v"></span>
+         <span class="wcbt-line h-top"></span>
+         <span class="wcbt-line h-bot"></span>
+         <span class="wcbt-line h-out"></span>
+       </div>`;
+  return `
+    <div class="wcbt-col wcbt-conn-col">
+      <div class="wcbt-col-label" aria-hidden="true">&nbsp;</div>
+      <div class="wcbt-col-slots">${Array(count).fill(slotHtml).join('')}</div>
+    </div>`;
+}
+
+function wcRenderBracketTreeHalf(side) {
+  const cols = [];
+  WCBT_ROUNDS.forEach((rid, i) => {
+    const stage = WC_STAGES.find(s => s.id === rid);
+    const status = wcStageStatus(stage);
+    const cards = wcBracketHalfCards(rid, side);
+    if (i > 0) cols.push(wcBracketTreeConnCol(cards.length, 'merge'));
+    cols.push(wcBracketTreeCol(cards, `${stage.icon} ${wcEsc(t('wc.stage.' + rid))}`, 'is-' + status));
+  });
+  cols.push(wcBracketTreeConnCol(1, 'straight')); // this half's SF → the centre Final
+  if (side === 'right') cols.reverse(); // mirror: centre-out instead of edge-in
+  return `<div class="wcbt-half wcbt-half-${side}">${cols.join('')}</div>`;
+}
+
+function wcRenderBracketTreeFinalCol() {
+  const finalStage = WC_STAGES.find(s => s.id === 'final');
+  const status = wcStageStatus(finalStage);
+  const all = (wcState.results.knockout && wcState.results.knockout.final) || [];
+  const draftAll = (wcState.draft && wcState.draft.knockout && wcState.draft.knockout.final) || [];
+  const m = all[0] || {};
+  const d = draftAll[0] || {};
+  const card = wcRenderBracketMatch(finalStage, 0, m, d, status);
+
+  let championHtml = `<div class="wc-bracket-trophy-winner tbd">${wcEsc(t('wc.bracket.tbd'))}</div>`;
+  const winCode = wcKoMatchComplete(m) ? wcKoWinnerCode(m) : null;
+  if (winCode) {
+    const wt = WC_TEAM_MAP[winCode];
+    if (wt) {
+      const onPens = wcKoIsTied(m) && m.penWinner;
+      championHtml = `<div class="wc-bracket-trophy-winner">${wcFlagImg(wt.code, 18)} <span>${wcEsc(wt.name)}</span>${onPens ? ` <span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}</span>` : ''}</div>`;
+    }
+  }
+
+  return `
+    <div class="wcbt-final-col">
+      <div class="wcbt-col-label is-${status}">🏆 ${wcEsc(t('wc.stage.final'))}</div>
+      <div class="wcbt-final-card">${card}</div>
+      <div class="wc-bracket-trophy">
+        <div class="wc-bracket-trophy-icon">🏆</div>
+        <div class="wc-bracket-trophy-label">${wcEsc(t('wc.bracket.champion'))}</div>
+        ${championHtml}
+      </div>
+    </div>`;
+}
+
+function wcRenderBracketTree() {
+  return `
+    <div class="wcbt-wrap">
+      <div class="wcbt-head">
+        <div class="wc-bracket-head-title">🌳 ${wcEsc(t('wc.bracket.title'))}</div>
+        <div class="wc-bracket-head-hint">${wcEsc(t('wc.bracket.hint'))}</div>
+      </div>
+      <div class="wcbt-scroll">
+        <div class="wcbt-tree">
+          ${wcRenderBracketTreeHalf('left')}
+          ${wcRenderBracketTreeFinalCol()}
+          ${wcRenderBracketTreeHalf('right')}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Simple single-row bracket (fallback for ≤1024px screens) ──────
+function wcRenderBracketSimple() {
   const koStages = WC_STAGES.filter(s => s.id !== 'groups');
   const cols = koStages.map(stage => wcRenderBracketColumn(stage)).join('');
 
