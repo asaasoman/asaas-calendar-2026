@@ -4502,6 +4502,24 @@ html.view-wc.wc-dark .wc-cs-leading {
   font-size: 11.5px;
   opacity: .85;
 }
+.wc-bcd-matchup {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.wc-bcd-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.wc-bcd-team img { border-radius: 2px; box-shadow: 0 0 0 1px rgba(255,253,248,.25); }
+.wc-bcd-vs {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: .75;
+  text-transform: uppercase;
+}
 .wc-bcd-numbers {
   display: flex;
   gap: 7px;
@@ -5189,7 +5207,9 @@ html[lang="en"] .wc-podium-spot.me::after { content: "YOU"; }
       <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Vinicius%20Jr%202018%20%28cropped%29.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
       <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Kylian%20Mbapp%C3%A9%202018.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
       <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Erling%20Haaland%202023%20%28cropped%20square%29.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Jude%20Bellingham%202022-11-21%201.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
       <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Lionel%20Messi%20at%20Bernabeu.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Manuel%20Peter%20Neuer%202018.jpg" alt="" loading="lazy" onerror="this.style.display='none'" />
       <div class="wc-launcher-duotone" aria-hidden="true"></div>
     </div>
     <div class="wc-launcher-overlay" aria-hidden="true"></div>
@@ -5980,6 +6000,9 @@ const I18N = {
 
     'wc.countdown.openLabel':    'تُغلق توقعات',
     'wc.countdown.upcomingLabel':'تفتح توقعات',
+    'wc.countdown.nextMatchLabel':'المباراة القادمة',
+    'wc.countdown.vs':           'ضد',
+    'wc.countdown.tbd':          'لم يُحدَّد بعد',
     'wc.countdown.allDone':      'انتهت جميع التوقعات',
     'wc.countdown.noOpen':       'لا توجد أدوار مفتوحة حالياً',
     'wc.countdown.openSoon':     'سيُفتح قريباً',
@@ -6279,6 +6302,9 @@ const I18N = {
 
     'wc.countdown.openLabel':    'Predictions close for',
     'wc.countdown.upcomingLabel':'Predictions open for',
+    'wc.countdown.nextMatchLabel':'Next match',
+    'wc.countdown.vs':           'vs',
+    'wc.countdown.tbd':          'TBD',
     'wc.countdown.allDone':      'All predictions are done',
     'wc.countdown.noOpen':       'No round is open right now',
     'wc.countdown.openSoon':     'Opening soon',
@@ -11261,17 +11287,7 @@ function wcGroupsNotice() {
         </div>
       </div>`;
   } else if (status === 'closed') {
-    return `
-      <div class="wc-notice closed">
-        <div class="wc-notice-ico">🔒</div>
-        <div class="wc-notice-body">
-          <div class="wc-notice-title">تم إغلاق توقعات دور المجموعات</div>
-          <div class="wc-notice-text">
-            تم حفظ توقعاتك، ويمكنك الآن متابعة توقعات الأدوار الإقصائية.
-          </div>
-          <div class="wc-notice-deadline">⏱ أُغلق في: ${muscatTime}</div>
-        </div>
-      </div>`;
+    return ''; // hidden — group-stage closed notice no longer shown
   }
   return ''; // upcoming — no notice needed
 }
@@ -13294,34 +13310,109 @@ window.wcFocusNameInput = function() {
 // ════════════════════════════════════════════════════════════════
 
 // ── (4) Big countdown banner ─────────────────────────────────────
-function wcRenderBigCountdown() {
-  // Find next-closing OPEN stage; else next OPEN-soon upcoming stage; else expired msg.
+// Looks across every knockout round's real per-match kickoff times (the
+// ones the admin enters once a round's matchups are known) and returns the
+// single soonest match that hasn't kicked off yet. Before any knockout
+// fixtures exist, it falls back to the tournament's very first match,
+// which is hardcoded on WC_STAGES[0].closesAt (see the comment there).
+function wcNextUpcomingMatch() {
   const now = Date.now();
-  const open = WC_STAGES.filter(s => wcStageStatus(s) === 'open')
-                        .sort((a,b) => new Date(a.closesAt) - new Date(b.closesAt))[0];
+  let best = null;
+  WC_STAGES.forEach(stage => {
+    if (stage.id === 'groups') return; // groups stage has no per-match data
+    const matches = (wcState.results.knockout && wcState.results.knockout[stage.id]) || [];
+    matches.forEach(m => {
+      if (!m || !m.kickoffAt) return;
+      const time = new Date(m.kickoffAt).getTime();
+      if (time > now && (!best || time < best.time)) {
+        best = { time, match: m, stage };
+      }
+    });
+  });
+  if (!best) {
+    const openerTime = new Date(WC_STAGES[0].closesAt).getTime();
+    if (openerTime > now) {
+      best = { time: openerTime, match: { home: 'MEX', away: 'RSA' }, stage: WC_STAGES[0] };
+    }
+  }
+  return best;
+}
+
+function wcRenderBigCountdown() {
+  const now = Date.now();
+  const next = wcNextUpcomingMatch();
+
+  if (!next) {
+    // No future match anywhere to count down to: either the tournament is
+    // fully over, or (a brief gap) a round just closed and the next
+    // round's matchups haven't been entered into Admin yet — fall back to
+    // the old "round opens/closes" framing for that narrow case.
+    const open = WC_STAGES.filter(s => wcStageStatus(s) === 'open')
+                          .sort((a,b) => new Date(a.closesAt) - new Date(b.closesAt))[0];
+    const upcoming = !open && WC_STAGES.filter(s => wcStageStatus(s) === 'upcoming')
+                          .sort((a,b) => new Date(a.opensAt) - new Date(b.opensAt))[0];
+    if (open || upcoming) return wcRenderStageCountdownFallback(open, upcoming, now);
+    return `
+      <div class="wc-big-countdown expired" id="wcBigCountdown">
+        <div class="wc-bcd-left">
+          <div class="wc-bcd-label">${wcEsc(t('wc.countdown.allDone'))}</div>
+          <div class="wc-bcd-stage">🏁</div>
+          <div class="wc-bcd-sub">${wcEsc(t('wc.countdown.expiredSub'))}</div>
+        </div>
+      </div>`;
+  }
+
+  const target = next.time;
+  const stage = next.stage;
+  const m = next.match;
+  const home = WC_TEAM_MAP[m.home];
+  const away = WC_TEAM_MAP[m.away];
+  const tbd = wcEsc(t('wc.countdown.tbd'));
+  const homeLabel = home ? `${wcFlagImg(home.code, 14)}<span>${wcEsc(home.name)}</span>` : `<span>${tbd}</span>`;
+  const awayLabel = away ? `${wcFlagImg(away.code, 14)}<span>${wcEsc(away.name)}</span>` : `<span>${tbd}</span>`;
+
+  const diff = Math.max(0, target - now);
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000) / 60000);
+  const secs  = Math.floor((diff % 60000) / 1000);
+  const urgent = diff > 0 && diff < 6 * 3600000;
+
+  return `
+    <div class="wc-big-countdown ${urgent ? 'urgent' : ''}" id="wcBigCountdown"
+         data-target="${target}" data-mode="match">
+      <div class="wc-bcd-left">
+        <div class="wc-bcd-label">${wcEsc(t('wc.countdown.nextMatchLabel'))} · ${wcEsc(stage.icon)} ${wcEsc(t('wc.stage.' + stage.id))}</div>
+        <div class="wc-bcd-stage wc-bcd-matchup">
+          <span class="wc-bcd-team">${homeLabel}</span>
+          <span class="wc-bcd-vs">${wcEsc(t('wc.countdown.vs'))}</span>
+          <span class="wc-bcd-team">${awayLabel}</span>
+        </div>
+        <div class="wc-bcd-sub" id="wcBcdSubLine">${urgent ? '⚠️ ' : ''}${wcEsc(t('wc.countdown.afterText'))}</div>
+      </div>
+      <div class="wc-bcd-numbers" id="wcBcdNumbers">
+        ${days > 0 ? `<div class="wc-bcd-cell"><div class="wc-bcd-num" data-bcd="d">${String(days).padStart(2,'0')}</div><div class="wc-bcd-lbl">${wcEsc(t('wc.countdown.d'))}</div></div>` : ''}
+        <div class="wc-bcd-cell"><div class="wc-bcd-num" data-bcd="h">${String(hours).padStart(2,'0')}</div><div class="wc-bcd-lbl">${wcEsc(t('wc.countdown.h'))}</div></div>
+        <div class="wc-bcd-cell"><div class="wc-bcd-num" data-bcd="m">${String(mins).padStart(2,'0')}</div><div class="wc-bcd-lbl">${wcEsc(t('wc.countdown.m'))}</div></div>
+        <div class="wc-bcd-cell"><div class="wc-bcd-num" data-bcd="s">${String(secs).padStart(2,'0')}</div><div class="wc-bcd-lbl">${wcEsc(t('wc.countdown.s'))}</div></div>
+      </div>
+    </div>`;
+}
+
+// Fallback to the previous "round opens/closes" framing — only used in the
+// rare gap where a round has just ended but the next round's matchups
+// haven't been entered into the Admin tab yet, so there's no real kickoff
+// time anywhere to count down to.
+function wcRenderStageCountdownFallback(open, upcoming, now) {
   let mode, target, stage;
   if (open) {
     mode = 'closing';
     target = wcStageEffectiveCloseTime(open);
     stage = open;
   } else {
-    const upcoming = WC_STAGES.filter(s => wcStageStatus(s) === 'upcoming')
-                              .sort((a,b) => new Date(a.opensAt) - new Date(b.opensAt))[0];
-    if (upcoming) {
-      mode = 'opening';
-      target = new Date(upcoming.opensAt).getTime();
-      stage = upcoming;
-    } else {
-      // No open & no upcoming → all closed (tournament finished)
-      return `
-        <div class="wc-big-countdown expired" id="wcBigCountdown">
-          <div class="wc-bcd-left">
-            <div class="wc-bcd-label">${wcEsc(t('wc.countdown.allDone'))}</div>
-            <div class="wc-bcd-stage">🏁</div>
-            <div class="wc-bcd-sub">${wcEsc(t('wc.countdown.expiredSub'))}</div>
-          </div>
-        </div>`;
-    }
+    mode = 'opening';
+    target = new Date(upcoming.opensAt).getTime();
+    stage = upcoming;
   }
 
   const diff = Math.max(0, target - now);
@@ -13387,8 +13478,8 @@ function wcStartCountdownLoop() {
     if (hEl) hEl.textContent = String(h).padStart(2,'0');
     if (mEl) mEl.textContent = String(m).padStart(2,'0');
     if (sEl) sEl.textContent = String(s).padStart(2,'0');
-    // Toggle urgent state at <6h for closing
-    if (mode === 'closing') {
+    // Toggle urgent state at <6h for closing/match countdowns
+    if (mode === 'closing' || mode === 'match') {
       const urgent = diff < 6 * 3600000;
       el.classList.toggle('urgent', urgent);
     }
