@@ -14340,12 +14340,38 @@ function wcRenderQualifiersBracket() {
         ${teamRow(null, '')}
         ${teamRow(null, '')}
       </div>`;
+  // Renders a real (already auto-advanced) knockout match from
+  // wcState.results.knockout — used for R16/QF below, so a completed R32
+  // result shows its winner here automatically (see wcAutoAdvanceKnockout).
+  const koCell = (m) => {
+    const home = m && m.home ? WC_TEAM_MAP[m.home] : null;
+    const away = m && m.away ? WC_TEAM_MAP[m.away] : null;
+    const filled = (home && away) ? 'filled' : '';
+    return `
+      <div class="qb-match ${filled}">
+        ${teamRow(home, '')}
+        ${teamRow(away, '')}
+      </div>`;
+  };
 
   // ---- Step 5: assemble columns ----
   const leftR32  = r32.slice(0, 8).map(matchCell).join('');
   const rightR32 = r32.slice(8).map(matchCell).join('');
-  const r16Cells = Array.from({ length: 4 }, emptyCell).join('');
-  const qfCells  = Array.from({ length: 2 }, emptyCell).join('');
+
+  // R16/QF are read straight from the real, already-advanced bracket
+  // (wcState.results.knockout.r16/.qf) rather than re-derived here, so this
+  // preview always matches what wcAutoAdvanceKnockout has resolved from
+  // actual entered results. Index grouping mirrors which R32 matches feed
+  // which side (left: Matches 73–80 / right: Matches 81–88).
+  const r16Arr = (wcState.results.knockout && wcState.results.knockout.r16) || [];
+  const qfArr  = (wcState.results.knockout && wcState.results.knockout.qf)  || [];
+  const r16Cells      = [0, 1, 2, 3].map(i => koCell(r16Arr[i])).join('');
+  const r16CellsRight = [4, 5, 6, 7].map(i => koCell(r16Arr[i])).join('');
+  const qfCells      = [0, 2].map(i => koCell(qfArr[i])).join('');
+  const qfCellsRight = [1, 3].map(i => koCell(qfArr[i])).join('');
+  // Semi-finals each combine one quarter from the left side with one from
+  // the right (Match 101 = winner M97 vs winner M98, etc.), so they don't
+  // map cleanly onto a single side — shown as TBD here for now.
   const sfCell   = emptyCell();
 
   return `
@@ -14394,11 +14420,11 @@ function wcRenderQualifiersBracket() {
           </div>
           <div class="qb-col qb-col-qf qb-col-right">
             <div class="qb-col-label">${wcEsc(tr.qf)}</div>
-            <div class="qb-col-cells">${qfCells}</div>
+            <div class="qb-col-cells">${qfCellsRight}</div>
           </div>
           <div class="qb-col qb-col-r16 qb-col-right">
             <div class="qb-col-label">${wcEsc(tr.r16)}</div>
-            <div class="qb-col-cells">${r16Cells}</div>
+            <div class="qb-col-cells">${r16CellsRight}</div>
           </div>
           <div class="qb-col qb-col-r32 qb-col-right">
             <div class="qb-col-label">${wcEsc(tr.r32)}</div>
