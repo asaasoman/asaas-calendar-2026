@@ -12794,6 +12794,105 @@ function wcDescribeGroupUpdate(grp, teamCode) {
   return `${name} (${isEn ? 'Group' : 'المجموعة'} ${grp})`;
 }
 
+// ────────────────────────────────────────────────────────────────
+// Admin: export all participants' predictions to an Excel file
+// ────────────────────────────────────────────────────────────────
+function wcXlsxStageNameAr(id) {
+  const map = { r32: 'دور الـ32', r16: 'دور الـ16', qf: 'ربع النهائي', sf: 'نصف النهائي', final: 'النهائي' };
+  return map[id] || id;
+}
+function wcXlsxTeamName(code) {
+  if (!code) return '';
+  return (WC_TEAM_MAP[code] && WC_TEAM_MAP[code].name) || code;
+}
+function wcLoadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('فشل تحميل مكتبة التصدير. تحقّق من الاتصال بالإنترنت.'));
+    document.head.appendChild(s);
+  });
+}
+async function wcExportPredictionsToExcel() {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  const btn = document.getElementById('wcExportBtn');
+  const isEn = (CURRENT_LANG === 'en');
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = isEn ? '⏳ Exporting…' : '⏳ جارٍ التصدير…'; }
+    if (typeof XLSX === 'undefined') {
+      await wcLoadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    }
+
+    const preds = (wcState.predictions || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    if (!preds.length) {
+      alert(isEn ? 'No predictions have been submitted yet.' : 'لا توجد توقعات محفوظة بعد لأي مشارك.');
+      return;
+    }
+
+    const groupIds = WC_GROUPS.map(g => g.id);
+    const stages = ['r32', 'r16', 'qf', 'sf', 'final'];
+
+    const rows = preds.map(p => {
+      const byStage = wcPointsByStage(p);
+      const row = {
+        'الاسم': p.name || '',
+        'تاريخ ووقت الإرسال': p.ts ? new Date(p.ts).toLocaleString('ar-OM') : '',
+        'إجمالي النقاط': wcTotal(p),
+        'نقاط دور المجموعات': byStage.groups,
+        'نقاط دور الـ32': byStage.r32,
+        'نقاط دور الـ16': byStage.r16,
+        'نقاط ربع النهائي': byStage.qf,
+        'نقاط نصف النهائي': byStage.sf,
+        'نقاط النهائي': byStage.final,
+      };
+
+      groupIds.forEach(gid => {
+        const picks = (p.groups && p.groups[gid]) || [];
+        row[`مجموعة ${gid} - المتأهل الأول`] = wcXlsxTeamName(picks[0]);
+        row[`مجموعة ${gid} - المتأهل الثاني`] = wcXlsxTeamName(picks[1]);
+      });
+
+      stages.forEach(stageId => {
+        const myPicks = (p.knockout && p.knockout[stageId]) || [];
+        const realMatches = (wcState.results.knockout && wcState.results.knockout[stageId]) || [];
+        const len = Math.max(myPicks.length, realMatches.length);
+        for (let idx = 0; idx < len; idx++) {
+          const pick = myPicks[idx] || {};
+          const m = realMatches[idx];
+          const homeName = m ? wcXlsxTeamName(m.home) : '';
+          const awayName = m ? wcXlsxTeamName(m.away) : '';
+          const label = (homeName && awayName) ? `${homeName} × ${awayName}` : `مباراة ${idx + 1}`;
+          let scoreTxt = '';
+          if (pick.homeScore !== undefined && pick.homeScore !== '' && pick.homeScore !== null) {
+            scoreTxt = `${pick.homeScore} - ${pick.awayScore}`;
+            if (pick.homeScore === pick.awayScore && pick.penWinner) {
+              const penName = pick.penWinner === 'home' ? homeName : awayName;
+              scoreTxt += ` (ركلات الترجيح: ${penName || pick.penWinner})`;
+            }
+          }
+          row[`${wcXlsxStageNameAr(stageId)} - ${label}`] = scoreTxt;
+        }
+      });
+
+      return row;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = Object.keys(rows[0] || {}).map(() => ({ wch: 22 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, isEn ? 'Predictions' : 'توقعات المشاركين');
+    XLSX.writeFile(wb, 'توقعات_المشاركين_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+  } catch (e) {
+    console.error('[WC] export failed:', e);
+    alert((isEn ? 'Export failed: ' : 'فشل التصدير: ') + (e && e.message ? e.message : e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = isEn ? '⬇ Export predictions (Excel)' : '⬇ تصدير بيانات التوقعات (Excel)'; }
+  }
+}
+window.wcExportPredictionsToExcel = wcExportPredictionsToExcel;
+
 function wcRenderAdmin() {
   const r = wcState.results;
   const overrides = r.stageOverrides || {};
@@ -12813,6 +12912,20 @@ function wcRenderAdmin() {
   return `
     <div class="wc-admin-warn">
       ${t('wc.admin.warn')}
+    </div>
+
+    <div class="wc-admin-section" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="wc-admin-section-title">${isEn ? 'Export predictions' : 'تصدير بيانات التوقعات'}</div>
+        <div style="font-size:12px;color:var(--text-mute);margin-top:2px;line-height:1.6">
+          ${isEn
+            ? 'Download every participant\'s predictions (group picks, knockout picks, and points) as an Excel file.'
+            : 'تنزيل توقعات جميع المشاركين (توقعات المجموعات والأدوار الإقصائية والنقاط) في ملف إكسل واحد.'}
+        </div>
+      </div>
+      <button id="wcExportBtn" class="wc-gs-seed-btn" onclick="wcExportPredictionsToExcel()">
+        ${isEn ? '⬇ Export predictions (Excel)' : '⬇ تصدير بيانات التوقعات (Excel)'}
+      </button>
     </div>
 
     ${updateLogHtml}
