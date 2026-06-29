@@ -11964,6 +11964,7 @@ async function wcLoadSeedGroupResults() {
     alert(CURRENT_LANG === 'en' ? 'Failed to save. Try again.' : 'تعذّر الحفظ. حاول مرة أخرى.');
     return;
   }
+  try { await wcAutoAdvanceKnockout(); } catch (e) { console.error('[WC] auto-advance:', e); }
   wcRender();
 }
 window.wcLoadSeedGroupResults = wcLoadSeedGroupResults;
@@ -12209,6 +12210,147 @@ function wcKoMatchComplete(m) {
 function wcKoIsTied(m) {
   return m && m.homeScore != null && m.awayScore != null && m.homeScore === m.awayScore;
 }
+
+// ════════════════════════════════════════════════════════════════
+//   Automatic advancement of knockout winners (R32 → R16 → QF → SF → Final)
+// ────────────────────────────────────────────────────────────────
+// Builds the 16 official Round of 32 slots (FIFA 2026 World Cup Regulations,
+// Matches 73–88) from the CURRENT LIVE group standings only. Unlike the
+// decorative "Path to the Final" preview (wcRenderQualifiersBracket), this
+// never falls back to a participant's draft picks — it only reflects real,
+// admin-entered group results, since it drives the actual official bracket.
+function wcOfficialR32Slots() {
+  const top = (gid) => (wcGroupHasResults(gid) ? wcGroupStandings(gid) : null);
+  const W3 = (gid) => { const s = top(gid); return s ? s[0].code : null; };
+  const R3 = (gid) => { const s = top(gid); return s ? s[1].code : null; };
+  const third = (gid) => { const s = top(gid); return s ? s[2].code : null; };
+
+  const allThirds = [];
+  WC_GROUPS.forEach(g => {
+    const s = top(g.id);
+    if (s) allThirds.push({ code: s[2].code, pts: s[2].pts, gd: s[2].gd, gf: s[2].gf, group: g.id });
+  });
+  allThirds.sort((a, b) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf));
+  const best8 = allThirds.slice(0, 8);
+  const THIRD_SLOT_GROUPS = ['A', 'B', 'D', 'E', 'G', 'I', 'K', 'L'];
+  let thirdRow = null;
+  if (best8.length === 8) {
+    const key = best8.map(t => t.group).sort().join('');
+    thirdRow = WC_THIRD_PLACE_TABLE[key] || null;
+  }
+  const thirdFor = (slotGid) => {
+    if (!thirdRow) return null;
+    const fromGroup = thirdRow[THIRD_SLOT_GROUPS.indexOf(slotGid)];
+    return fromGroup ? third(fromGroup) : null;
+  };
+
+  return [
+    { home: R3('A'), away: R3('B') },           // Match 73
+    { home: W3('E'), away: thirdFor('E') },     // Match 74
+    { home: W3('F'), away: R3('C') },           // Match 75
+    { home: W3('C'), away: R3('F') },           // Match 76
+    { home: W3('I'), away: thirdFor('I') },     // Match 77
+    { home: R3('E'), away: R3('I') },           // Match 78
+    { home: W3('A'), away: thirdFor('A') },     // Match 79
+    { home: W3('L'), away: thirdFor('L') },     // Match 80
+    { home: W3('D'), away: thirdFor('D') },     // Match 81
+    { home: W3('G'), away: thirdFor('G') },     // Match 82
+    { home: R3('K'), away: R3('L') },           // Match 83
+    { home: W3('H'), away: R3('J') },           // Match 84
+    { home: W3('B'), away: thirdFor('B') },     // Match 85
+    { home: W3('J'), away: R3('H') },           // Match 86
+    { home: W3('K'), away: thirdFor('K') },     // Match 87
+    { home: R3('D'), away: R3('G') },           // Match 88
+  ];
+}
+
+// Fixed connectivity for every round AFTER the Round of 32, expressed as
+// [homeSourceIdx, awaySourceIdx] pairs into the PREVIOUS round's match array
+// (0-based, in official Match-number order — e.g. r32 index 0 = Match 73).
+// Source: FIFA 2026 World Cup Regulations knockout-stage bracket (Matches
+// 89–104).
+const WC_KO_LINKS = {
+  r16:   [[1,4], [0,2], [3,5], [6,7], [10,11], [8,9], [13,15], [12,14]], // Matches 89–96
+  qf:    [[0,1], [4,5], [2,3], [6,7]],                                   // Matches 97–100
+  sf:    [[0,1], [2,3]],                                                 // Matches 101–102
+  final: [[0,1]],                                                        // Match 104
+};
+
+// Pushes decided winners forward into the next round's fixed bracket slots.
+// - Round of 32: matched by TEAM IDENTITY against the official slots above
+//   (not by storage order), so it never disturbs however the admin originally
+//   entered/ordered the 16 real R32 matches.
+// - R16 → Final: written at fixed canonical indices, since those rounds only
+//   ever contain auto-derived matchups (no free-form admin team picking).
+// Only writes (and saves) when something actually changed. Admin-only.
+async function wcAutoAdvanceKnockout() {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return false;
+  if (!wcState.results.knockout) wcState.results.knockout = {};
+  let changed = false;
+
+  const officialR32 = wcOfficialR32Slots();
+  const r32Arr = wcState.results.knockout.r32 || [];
+  let prevWinners = officialR32.map(slot => {
+    if (!slot.home || !slot.away) return null;
+    const entry = r32Arr.find(m => m && m.home && m.away &&
+      ((m.home === slot.home && m.away === slot.away) ||
+       (m.home === slot.away && m.away === slot.home)));
+    return (entry && wcKoMatchComplete(entry)) ? wcKoWinnerCode(entry) : null;
+  });
+
+  ['r16', 'qf', 'sf', 'final'].forEach(stageId => {
+    const links = WC_KO_LINKS[stageId];
+    if (!wcState.results.knockout[stageId]) wcState.results.knockout[stageId] = [];
+    const arr = wcState.results.knockout[stageId];
+    const thisRoundWinners = [];
+    links.forEach(([a, b], i) => {
+      while (arr.length <= i) arr.push({});
+      const homeCode = prevWinners[a] || null;
+      const awayCode = prevWinners[b] || null;
+      const slot = arr[i];
+      if ((slot.home || null) !== homeCode || (slot.away || null) !== awayCode) {
+        if (slot.home || slot.away) {
+          // The matchup is changing (shouldn't normally happen once a
+          // winner is final) — clear any score tied to the old pairing.
+          delete slot.homeScore; delete slot.awayScore; delete slot.penWinner;
+        }
+        slot.home = homeCode;
+        slot.away = awayCode;
+        changed = true;
+      }
+      thisRoundWinners.push(
+        (slot.home && slot.away && wcKoMatchComplete(slot)) ? wcKoWinnerCode(slot) : null
+      );
+    });
+    prevWinners = thisRoundWinners;
+  });
+
+  if (changed) {
+    try { await wcSaveResults(); } catch (e) { console.error('[WC] auto-advance save failed:', e); }
+  }
+  return changed;
+}
+window.wcAutoAdvanceKnockout = wcAutoAdvanceKnockout;
+
+// Manual "re-check now" trigger for the admin button — same logic as the
+// automatic version, with button feedback and a result summary.
+async function wcManualAdvanceKnockout() {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  const isEn = (CURRENT_LANG === 'en');
+  const btn = document.getElementById('wcAdvanceBtn');
+  const orig = btn ? btn.textContent : '';
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = isEn ? '⏳ Checking…' : '⏳ جارٍ الفحص…'; }
+    const changed = await wcAutoAdvanceKnockout();
+    alert(changed
+      ? (isEn ? 'Done — winners have been advanced to their next round.' : 'تم — تم نقل الفرق الفائزة إلى أدوارها التالية.')
+      : (isEn ? 'Everything is already in sync — no changes were needed.' : 'كل شيء متزامن بالفعل — لا حاجة لأي تغيير.'));
+    wcRender();
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = orig; }
+  }
+}
+window.wcManualAdvanceKnockout = wcManualAdvanceKnockout;
 
 // Renders the penalty-shootout winner picker (hidden unless tied OR has a penWinner already).
 // `scope` = 'draft' (writes to wcState.draft) or 'admin' (writes to wcState.results) — used by the wiring code.
@@ -13435,6 +13577,20 @@ function wcRenderAdmin() {
       </button>
     </div>
 
+    <div class="wc-admin-section" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="wc-admin-section-title">${isEn ? 'Advance qualified teams' : 'ترقية الفرق المتأهلة'}</div>
+        <div style="font-size:12px;color:var(--text-mute);margin-top:2px;line-height:1.6">
+          ${isEn
+            ? 'Winners of completed matches move to the next round automatically as soon as you enter a result. Use this button to force a re-check (e.g. right after this update, or if something looks out of sync).'
+            : 'يتم نقل الفريق الفائز من أي مباراة مكتملة إلى الدور التالي تلقائياً بمجرد إدخال نتيجتها. استخدم هذا الزر لإعادة الفحص يدوياً (مثلاً بعد هذا التحديث مباشرة، أو إذا شعرت أن شيئاً غير متزامن).'}
+        </div>
+      </div>
+      <button id="wcAdvanceBtn" class="wc-gs-seed-btn" onclick="wcManualAdvanceKnockout()">
+        ${isEn ? '🔄 Re-check & advance winners' : '🔄 فحص وترقية الفرق الفائزة'}
+      </button>
+    </div>
+
     ${updateLogHtml}
 
     ${wcRenderAdminParticipantsProgress()}
@@ -13732,6 +13888,7 @@ function wcWireEvents() {
         const winnerName = winnerTeam ? winnerTeam.name : (side === 'home' ? 'Home' : 'Away');
         wcLogResultUpdate((CURRENT_LANG === 'en' ? 'Penalty shootout winner: ' : 'الفائز بركلات الترجيح: ') + winnerName);
         try { await wcSaveResults(); } catch (err) { console.error('[WC] save pen winner (admin):', err); }
+        try { await wcAutoAdvanceKnockout(); } catch (err) { console.error('[WC] auto-advance:', err); }
         wcRender();
         return;
       }
@@ -13813,6 +13970,7 @@ function wcWireEvents() {
       wcSyncGroupQualifiers(grp);
       wcLogResultUpdate(wcDescribeGroupUpdate(grp, team));
       try { await wcSaveResults(); } catch (e) { console.error(e); }
+      try { await wcAutoAdvanceKnockout(); } catch (e) { console.error('[WC] auto-advance:', e); }
       wcRender();
     };
   });
@@ -13838,12 +13996,15 @@ function wcWireEvents() {
       if (!wcKoIsTied(m) && m.penWinner) delete m.penWinner;
       wcLogResultUpdate(wcDescribeKoUpdate(stage, idx));
       try { await wcSaveResults(); } catch(e){ console.error(e); }
+      try { await wcAutoAdvanceKnockout(); } catch (e) { console.error('[WC] auto-advance:', e); }
       // For team-name or score changes, toggle the pens row visibility inline.
       const card = el.closest('[data-wcadmcard]');
       if (card) wcTogglePensRow(card, m, 'admin', stage, idx);
-      // Setting/changing a kickoff time can flip this match's lock state and
-      // the round's overall open/closed status — re-render to reflect both.
-      if (field === 'kickoffAt') wcRender();
+      // Setting/changing a kickoff time, or auto-advancing a winner into the
+      // next round, can change visible team names or round open/closed
+      // status — re-render to reflect it without waiting on the Firestore
+      // round-trip.
+      wcRender();
     };
   });
 }
