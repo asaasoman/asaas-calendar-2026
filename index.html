@@ -12199,7 +12199,6 @@ function wcRenderStageCard(stage) {
       </button>` : '';
     body = `
       <div class="wc-closed-body">
-        <div class="wc-closed-line">${t('wc.closed.msg')}</div>
         ${myPred ? `<div class="wc-closed-points">${t('wc.closed.points')}: <strong>${myPts}</strong>${(() => {
           const g = wcCountGoldenInStage(stage.id, myPred);
           return g > 0 ? ` <span class="wc-golden-badge" title="${wcEsc(t('wc.golden.tooltip'))}">${g} ${wcEsc(t('wc.golden.label'))}</span>` : '';
