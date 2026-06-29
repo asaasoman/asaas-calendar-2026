@@ -13992,11 +13992,6 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
     ? `<div class="wc-bm-result" style="margin-top:2px"><span class="wc-pens-tag">${wcEsc(t('wc.ko.pens.tag'))}: ${wcEsc(m.penWinner==='home' ? (home?.name||'') : (away?.name||''))}</span></div>`
     : '';
 
-  // Participation stats — how many predicted this match and how the crowd
-  // split between the two teams — reveal once the match is decided, for
-  // every viewer, registered or not.
-  const crowdHtml = officialIn ? wcRenderCrowdBreakdown(stage.id, idx, home, away) : '';
-
   // Pens picker — only meaningful while the user is editing their prediction
   // (and the official result isn't in yet). Hidden unless draft is tied.
   const pensPicker = (editable && !officialIn)
@@ -14012,7 +14007,6 @@ function wcRenderBracketMatch(stage, idx, m, d, status) {
       ${resultBar}
       ${myPickLine}
       ${officialTiedNote}
-      ${crowdHtml}
     </div>`;
 }
 
