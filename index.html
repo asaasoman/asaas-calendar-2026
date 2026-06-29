@@ -11265,6 +11265,27 @@ function wcKoSlotLabel(stageId, idx, side) {
   return (CURRENT_LANG === 'en') ? `Winner: ${h.name} vs ${a.name}` : `الفائز من ${h.name} × ${a.name}`;
 }
 
+// Resolves which team is actually playing a knockout slot's home/away side
+// — preferring whatever's directly stored on the match (`m.home`/`m.away`,
+// the admin's own entry), but falling back to auto-advancing the winner of
+// the specific earlier match that feeds this side, the moment that match
+// is officially decided. Without this, a slot stays stuck on a vague
+// "winner of X × Y" label — and locked out of predictions entirely — until
+// someone manually opens Admin and copies the winning code in, even though
+// the result everyone needed to know was already final.
+function wcKoResolvedTeamCode(stageId, idx, side, m) {
+  const direct = m && m[side];
+  if (direct) return direct;
+  const pos = WC_KO_ORDER.indexOf(stageId);
+  if (pos <= 0) return null;
+  const feed = WC_KO_FEED[stageId] && WC_KO_FEED[stageId][idx];
+  if (!feed) return null;
+  const prevMatches = (wcState.results.knockout && wcState.results.knockout[WC_KO_ORDER[pos - 1]]) || [];
+  const fm = prevMatches[side === 'home' ? feed[0] : feed[1]];
+  if (!fm || !wcKoMatchComplete(fm)) return null;
+  return wcKoWinnerCode(fm);
+}
+
 // Decorative bunting strip across the top of the hero banner — every one
 // of the 48 participating nations, in official group order, sourced
 // straight from WC_GROUPS so it can never drift out of sync with the
@@ -11862,8 +11883,8 @@ function wcViewParticipant(participantId) {
     const rows = matchups.length
       ? matchups.map((m, i) => {
           const g = guesses[i] || {};
-          const home = m.home ? WC_TEAM_MAP[m.home] : null;
-          const away = m.away ? WC_TEAM_MAP[m.away] : null;
+          const home = WC_TEAM_MAP[wcKoResolvedTeamCode(stageId, i, 'home', m)] || null;
+          const away = WC_TEAM_MAP[wcKoResolvedTeamCode(stageId, i, 'away', m)] || null;
           const hasGuess  = g.homeScore != null && g.awayScore != null;
           const hasActual = wcKoMatchComplete(m);
           let cls = '';
@@ -12577,9 +12598,8 @@ function wcRenderKOForm(stage, isGuest) {
     // admin is editing on someone's behalf, in which case every match
     // always stays editable.
     const resultIn = (hasOfficial || kickedOff || isGuest) && !wcState.editTargetId;
-    const home = m.home ? WC_TEAM_MAP[m.home] : null;
-    const away = m.away ? WC_TEAM_MAP[m.away] : null;
-    const livePts = hasOfficial ? wcKoMatchPickPoints(stage.id, i, d) : null;
+    const home = WC_TEAM_MAP[wcKoResolvedTeamCode(stage.id, i, 'home', m)] || null;
+    const away = WC_TEAM_MAP[wcKoResolvedTeamCode(stage.id, i, 'away', m)] || null;
     const ptsBadge = hasOfficial
       ? `<div class="wc-match-pts ${livePts > 0 ? 'pos' : 'zero'}" data-wckopts="${stage.id}|${i}">${livePts > 0 ? '+' : ''}${livePts} ${t('wc.lb.point')}</div>`
       : '';
@@ -14123,8 +14143,8 @@ function wcRenderBracketColumn(stage) {
 }
 
 function wcRenderBracketMatch(stage, idx, m, d, status) {
-  const home = m.home ? WC_TEAM_MAP[m.home] : null;
-  const away = m.away ? WC_TEAM_MAP[m.away] : null;
+  const home = WC_TEAM_MAP[wcKoResolvedTeamCode(stage.id, idx, 'home', m)] || null;
+  const away = WC_TEAM_MAP[wcKoResolvedTeamCode(stage.id, idx, 'away', m)] || null;
   const officialIn = (m.homeScore != null && m.awayScore != null);
   const kickedOff = wcKoMatchKickedOff(m);
   const isGuest = !wcState.myName && !wcState.editTargetId;
