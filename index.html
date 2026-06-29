@@ -3528,6 +3528,16 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .wc-closed-points strong { color: var(--green-dark); font-size: 16px; }
 
+.wc-stage-toggle-btn {
+  display: flex; width: 100%; align-items: center; justify-content: center; gap: 7px;
+  background: var(--card-2); border: 1px dashed var(--border-soft);
+  border-radius: 8px; padding: 9px 14px;
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  color: var(--green-dark); cursor: pointer;
+  transition: all .15s;
+}
+.wc-stage-toggle-btn:hover { background: var(--green-tint); border-color: var(--green-light); }
+
 .wc-summary-row {
   display: flex; gap: 8px; align-items: flex-start;
   font-size: 12px;
@@ -10946,6 +10956,7 @@ const wcState = {
   lbStage: 'overall',      // overall | groups | r32 | r16 | qf | sf | final
   lbShowMe: false,         // true → leaderboard tab shows the personal contestant card
   koView: 'bracket',       // bracket | list (knockout display mode)
+  stageDetailsOpen: {},    // { [stageId]: true } — closed-stage standings/picks panel, collapsed by default
   prevTotals: null,        // { [playerId]: prevTotalScore }  for + animation
   countdownTimer: null,    // setInterval handle for big countdown
   draft: null,
@@ -12104,6 +12115,15 @@ function wcRenderStageCard(stage) {
         <div class="wc-locked-date" style="opacity:.7">${t('wc.locked.closes')}: ${wcFmtDateAr(stage.closesAt)}</div>
       </div>`;
   } else if (status === 'closed') {
+    const hasExtra = hasResults || stage.id === 'groups';
+    const expanded = !!wcState.stageDetailsOpen[stage.id];
+    const isEn = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'en');
+    const toggleBtn = hasExtra ? `
+      <button type="button" class="wc-stage-toggle-btn" onclick="wcToggleStageDetails('${stage.id}')">
+        ${expanded
+          ? `🔼 ${isEn ? 'Hide standings & picks' : 'إخفاء الترتيب والتوقعات'}`
+          : `🔽 ${isEn ? 'Show standings & picks' : 'عرض الترتيب والتوقعات'}`}
+      </button>` : '';
     body = `
       <div class="wc-closed-body">
         <div class="wc-closed-line">${t('wc.closed.msg')}</div>
@@ -12111,8 +12131,11 @@ function wcRenderStageCard(stage) {
           const g = wcCountGoldenInStage(stage.id, myPred);
           return g > 0 ? ` <span class="wc-golden-badge" title="${wcEsc(t('wc.golden.tooltip'))}">${g} ${wcEsc(t('wc.golden.label'))}</span>` : '';
         })()}</div>` : ''}
-        ${hasResults ? wcRenderStageSummary(stage, myPred, true) : ''}
-        ${stage.id === 'groups' ? wcRenderAllGroupStandingsPublic() : ''}
+        ${toggleBtn}
+        ${expanded ? `
+          ${hasResults ? wcRenderStageSummary(stage, myPred, true) : ''}
+          ${stage.id === 'groups' ? wcRenderAllGroupStandingsPublic() : ''}
+        ` : ''}
       </div>`;
   } else {
     // OPEN
@@ -13316,6 +13339,14 @@ function wcRenderViewToggle() {
 window.wcSetKoView = function(mode) {
   wcState.koView = (mode === 'list') ? 'list' : 'bracket';
   try { localStorage.setItem('asaas_wc_koView', wcState.koView); } catch(e){}
+  wcRender();
+};
+
+// Show/hide the bulky part of a closed stage's card (picks summary + full
+// standings tables for groups). Collapsed by default so a closed round
+// doesn't dominate the page — one tap reveals it again.
+window.wcToggleStageDetails = function(stageId) {
+  wcState.stageDetailsOpen[stageId] = !wcState.stageDetailsOpen[stageId];
   wcRender();
 };
 
