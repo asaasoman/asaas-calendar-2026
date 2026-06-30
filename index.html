@@ -3078,6 +3078,18 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .wc-lb-row.gold { background: linear-gradient(90deg, var(--gold-tint) 0%, transparent 50%); }
 .wc-lb-row.me { background: var(--green-tint); }
 .wc-lb-name { color: var(--text); font-weight: 500; }
+.wc-lb-name-clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color .15s, text-decoration-color .15s;
+}
+.wc-lb-name-clickable:hover,
+.wc-lb-name-clickable:focus-visible {
+  color: var(--green-dark);
+  text-decoration-color: var(--green-dark);
+}
 .wc-lb-row.me .wc-lb-name::after {
   content: " (أنت)"; color: var(--green); font-weight: 600; font-size: 11.5px;
 }
@@ -3288,6 +3300,18 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   font-size: 12.5px; font-weight: 600; color: var(--text);
   white-space: normal; overflow: visible; word-break: break-word;
   line-height: 1.3;
+}
+.wc-prog-name-clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color .15s, text-decoration-color .15s;
+}
+.wc-prog-name-clickable:hover,
+.wc-prog-name-clickable:focus-visible {
+  color: var(--green-dark);
+  text-decoration-color: var(--green-dark);
 }
 .wc-prog-cell {
   text-align: center;
@@ -6144,7 +6168,7 @@ const I18N = {
     'wc.lb.champOf':          'بطل توقعات',
     'wc.lb.champsOf':         'أبطال توقعات',
     'wc.lb.count':            'مشارك · يُحدَّث تلقائياً عند إدخال نتائج جديدة',
-    'wc.lb.viewHint':         'يمكنك مشاهدة توقعاتك وتوقعات منافسيك بالضغط على زر العين',
+    'wc.lb.viewHint':         'يمكنك مشاهدة توقعاتك وتوقعات منافسيك بالضغط على اسم المشارك',
     'wc.lb.scoring':          'نظام النقاط:',
     'wc.lb.scoring.q':        'منتخب متأهّل صح',
     'wc.lb.scoring.qExact':   'ترتيب الأول والثاني مطابق تماماً',
@@ -6450,7 +6474,7 @@ const I18N = {
     'wc.lb.champOf':          'Champion of',
     'wc.lb.champsOf':         'Joint Champions of',
     'wc.lb.count':            'participants · Updated automatically when results are entered',
-    'wc.lb.viewHint':         'Tap the eye button to see your own predictions and those of any competitor',
+    'wc.lb.viewHint':         'Tap a participant\'s name to see their predictions (and your own)',
     'wc.lb.scoring':          'Scoring:',
     'wc.lb.scoring.q':        'correct qualifier',
     'wc.lb.scoring.qExact':   'exact 1st & 2nd order',
@@ -12972,13 +12996,12 @@ function wcRenderLeaderboardTable(stage) {
     const shareBtn = `<button class="wc-lb-btn share" onclick="wcOpenShareCard('${wcEsc(p.id)}', ${stage === 'overall' ? 'null' : `'${stage}'`})" title="${wcEsc(shareLabel)}" aria-label="${wcEsc(shareLabel)}">📤</button>`;
     const actions = `<div class="wc-lb-actions">
            ${shareBtn}
-           <button class="wc-lb-btn view" onclick="wcViewParticipant('${wcEsc(p.id)}')" title="${viewLabel}" aria-label="${viewLabel}">👁</button>
            ${isAdmin ? `<button class="wc-lb-btn del" onclick="wcDeleteParticipant('${wcEsc(p.id)}')" title="${delLabel}" aria-label="${delLabel}">🗑</button>` : ''}
          </div>`;
     return `
       <div class="wc-lb-row ${cls} ${isMe?'me':''}" data-wc-player="${wcEsc(p.id)}">
         <div class="wc-lb-rank">${medal}</div>
-        <div class="wc-lb-name">${wcEsc(p.name)}${goldenHtml}</div>
+        <div class="wc-lb-name wc-lb-name-clickable" role="button" tabindex="0" onclick="wcViewParticipant('${wcEsc(p.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();wcViewParticipant('${wcEsc(p.id)}');}" title="${viewLabel}" aria-label="${viewLabel}">${wcEsc(p.name)}${goldenHtml}</div>
         <div class="wc-lb-points">${p.score} ${t('wc.lb.point')}</div>
         ${actions}
       </div>`;
@@ -12998,7 +13021,7 @@ function wcRenderLeaderboardTable(stage) {
       ${ranked.length} ${t('wc.lb.count')}
     </div>
     <div class="wc-lb-view-hint">
-      <div class="wc-lb-view-hint-ico">👁</div>
+      <div class="wc-lb-view-hint-ico">👆</div>
       <div class="wc-lb-view-hint-text">${t('wc.lb.viewHint')}</div>
     </div>
     <div class="wc-leaderboard ${isAdmin?'lb-admin':''}">
@@ -13128,10 +13151,9 @@ function wcRenderAdminParticipantsProgress() {
     }).join('');
     return `
       <div class="wc-prog-row">
-        <div class="wc-prog-name" title="${wcEsc(p.name || '')}">${wcEsc(p.name || '')}</div>
+        <div class="wc-prog-name wc-prog-name-clickable" role="button" tabindex="0" onclick="wcViewParticipant('${wcEsc(p.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();wcViewParticipant('${wcEsc(p.id)}');}" title="${wcEsc(viewLabel)}" aria-label="${wcEsc(viewLabel)}">${wcEsc(p.name || '')}</div>
         ${cells}
         <div class="wc-prog-actions">
-          <button class="wc-prog-act-btn" onclick="wcViewParticipant('${wcEsc(p.id)}')" title="${wcEsc(viewLabel)}" aria-label="${wcEsc(viewLabel)}">👁</button>
           <button class="wc-prog-act-btn" onclick="wcAdminEditParticipant('${wcEsc(p.id)}')" title="${wcEsc(editLabel)}" aria-label="${wcEsc(editLabel)}">✏️</button>
           <button class="wc-prog-act-btn del" onclick="wcDeleteParticipant('${wcEsc(p.id)}')" title="${wcEsc(delLabel)}" aria-label="${wcEsc(delLabel)}">🗑</button>
         </div>
