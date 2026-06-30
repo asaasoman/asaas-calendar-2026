@@ -317,7 +317,10 @@ const WC_TEAM_MAP = {
   POL:{name:'بولندا', flag:'pl'}, JOR:{name:'الأردن', flag:'jo'}, RSA:{name:'جنوب أفريقيا', flag:'za'},
   ECU:{name:'الإكوادور', flag:'ec'}, PAN:{name:'بنما', flag:'pa'}, CRC:{name:'كوستاريكا', flag:'cr'},
   NZL:{name:'نيوزيلندا', flag:'nz'}, UZB:{name:'أوزبكستان', flag:'uz'}, CIV:{name:'ساحل العاج', flag:'ci'},
-  ALG:{name:'الجزائر', flag:'dz'}, IRQ:{name:'العراق', flag:'iq'}, UAE:{name:'الإمارات', flag:'ae'}
+  ALG:{name:'الجزائر', flag:'dz'}, IRQ:{name:'العراق', flag:'iq'}, UAE:{name:'الإمارات', flag:'ae'},
+  PAR:{name:'باراغواي', flag:'py'}, NOR:{name:'النرويج', flag:'no'}, SWE:{name:'السويد', flag:'se'},
+  COD:{name:'الكونغو الديمقراطية', flag:'cd'}, BIH:{name:'البوسنة والهرسك', flag:'ba'}, AUT:{name:'النمسا', flag:'at'},
+  CPV:{name:'الرأس الأخضر', flag:'cv'}
 };
 const TEAM_CODES = Object.keys(WC_TEAM_MAP);
 
@@ -347,6 +350,26 @@ function loadResults(){
   WC_STAGES.forEach(s=>{
     empty.knockout[s.id] = Array.from({length:s.matchCount},()=>({home:null,away:null,homeScore:null,awayScore:null,penWinner:null,kickoffAt:null}));
   });
+  // مواجهات دور الـ32 الفعلية المؤكدة (مع نتائج المباريات التي أُقيمت فعلياً حتى الآن)
+  const r32Real = [
+    {home:'RSA', away:'CAN', homeScore:0, awayScore:1, penWinner:null,           kickoffAt:'2026-06-28T19:00:00Z'}, // م73
+    {home:'BRA', away:'JPN', homeScore:2, awayScore:1, penWinner:null,           kickoffAt:'2026-06-29T17:00:00Z'}, // م74
+    {home:'GER', away:'PAR', homeScore:1, awayScore:1, penWinner:'PAR',          kickoffAt:'2026-06-29T20:30:00Z'}, // م75
+    {home:'NED', away:'MAR', homeScore:1, awayScore:1, penWinner:'MAR',          kickoffAt:'2026-06-30T01:00:00Z'}, // م76
+    {home:'CIV', away:'NOR', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-06-30T17:00:00Z'}, // م77
+    {home:'FRA', away:'SWE', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-06-30T21:00:00Z'}, // م78
+    {home:'MEX', away:'ECU', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-01T01:00:00Z'}, // م79
+    {home:'ENG', away:'COD', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-01T16:00:00Z'}, // م80
+    {home:'BEL', away:'SEN', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-01T20:00:00Z'}, // م81
+    {home:'USA', away:'BIH', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-02T00:00:00Z'}, // م82
+    {home:'ESP', away:'AUT', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-02T19:00:00Z'}, // م83
+    {home:'CRO', away:'POR', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-02T23:00:00Z'}, // م84
+    {home:'SUI', away:'ALG', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-03T03:00:00Z'}, // م85
+    {home:'AUS', away:'EGY', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-03T18:00:00Z'}, // م86
+    {home:'ARG', away:'CPV', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-03T22:00:00Z'}, // م87
+    {home:'GHA', away:'COL', homeScore:null, awayScore:null, penWinner:null,     kickoffAt:'2026-07-04T01:30:00Z'}  // م88
+  ];
+  empty.knockout.r32 = r32Real;
   saveResults(empty);
   return empty;
 }
