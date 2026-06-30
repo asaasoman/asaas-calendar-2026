@@ -3,1382 +3,969 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تحدي توقعات كأس العالم 2026 | VISIT OMAN</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-
-<!-- Firebase (compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
+<title>تحدّي توقعات كأس العالم 2026</title>
 <style>
-/* ============================== DESIGN TOKENS ============================== */
 :root{
-  --bg:#F4ECDA;
-  --bg-2:#EDE2C8;
-  --surface:#FFFDF8;
-  --ink:#1F2A24;
-  --muted:rgba(31,42,36,.62);
-  --line:rgba(31,42,36,.13);
-  --primary:#0B5351;
-  --primary-dark:#073B3A;
-  --primary-soft:rgba(11,83,81,.10);
-  --accent:#C1502E;
-  --accent-soft:rgba(193,80,46,.12);
-  --gold:#C99A3E;
-  --gold-soft:rgba(201,154,62,.15);
-  --success:#2F7D5A;
-  --success-soft:rgba(47,125,90,.13);
-  --danger:#B23A2E;
-  --danger-soft:rgba(178,58,46,.12);
-  --radius:16px;
-  --radius-sm:10px;
-  --shadow:0 6px 24px rgba(31,42,36,.08), 0 1px 3px rgba(31,42,36,.06);
-  --font-display:'Aref Ruqaa', serif;
-  --font-body:'Tajawal', sans-serif;
+  --green-dark:#315C3B;
+  --green-darker:#234430;
+  --bg-warm:#F4EFE6;
+  --gold:#C9A646;
+  --gold-light:#E2C878;
+  --card:#FFFDF8;
+  --text-dark:#3A2A1D;
+  --radius:18px;
+  --shadow:0 6px 22px rgba(58,42,29,0.10);
 }
 [data-theme="dark"]{
-  --bg:#10201D;
-  --bg-2:#0B1715;
-  --surface:#16302B;
-  --ink:#F2EBD9;
-  --muted:rgba(242,235,217,.62);
-  --line:rgba(242,235,217,.13);
-  --primary:#3FA79C;
-  --primary-dark:#2C7E76;
-  --primary-soft:rgba(63,167,156,.16);
-  --accent:#E08A5E;
-  --accent-soft:rgba(224,138,94,.16);
-  --gold:#E0BD6E;
-  --gold-soft:rgba(224,189,110,.18);
-  --success:#4FBE8A;
-  --success-soft:rgba(79,190,138,.16);
-  --danger:#E2766A;
-  --danger-soft:rgba(226,118,106,.16);
-  --shadow:0 6px 24px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.3);
+  --bg-warm:#1B2420;
+  --card:#23302A;
+  --text-dark:#F1E9DA;
+  --shadow:0 6px 22px rgba(0,0,0,0.35);
 }
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;}
 body{
-  background:
-    radial-gradient(900px 500px at 90% -10%, var(--gold-soft), transparent 60%),
-    radial-gradient(900px 500px at -10% 10%, var(--primary-soft), transparent 60%),
-    var(--bg);
-  color:var(--ink);
-  font-family:var(--font-body);
-  min-height:100vh;
-  -webkit-font-smoothing:antialiased;
+  margin:0;
+  font-family:'Tahoma','Segoe UI',sans-serif;
+  background:var(--bg-warm);
+  color:var(--text-dark);
   transition:background .3s,color .3s;
 }
-h1,h2,h3,.display{font-family:var(--font-display);}
-.muted{color:var(--muted);}
-img,svg{max-width:100%;}
-button{font-family:inherit;cursor:pointer;}
-input,select,button{font-family:inherit;}
-.fi{border-radius:3px;box-shadow:0 0 0 1px var(--line);}
+a{color:inherit;}
+img.flag{width:28px;height:20px;object-fit:cover;border-radius:4px;box-shadow:0 0 0 1px rgba(0,0,0,.15);vertical-align:middle;}
+img.flag.lg{width:46px;height:32px;border-radius:6px;}
 
-/* ============================== LAYOUT ============================== */
-.app-shell{max-width:1180px;margin:0 auto;padding:18px 18px 80px;}
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:14px 20px;background:var(--surface);border:1px solid var(--line);
-  border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;
-  position:sticky;top:10px;z-index:50;
-}
-.brand{display:flex;align-items:center;gap:12px;}
-.brand-mark{
-  width:42px;height:42px;border-radius:50%;
-  background:linear-gradient(145deg,var(--primary),var(--primary-dark));
-  display:flex;align-items:center;justify-content:center;color:#fff;
-  font-family:var(--font-display);font-size:22px;font-weight:700;flex:none;
-}
-.brand-text h1{margin:0;font-size:19px;line-height:1.1;}
-.brand-text span{font-size:11px;color:var(--muted);letter-spacing:.5px;}
-.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.icon-btn{
-  width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
-  background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:16px;
-  transition:transform .15s, background .15s;
-}
-.icon-btn:hover{transform:translateY(-1px);background:var(--primary-soft);}
-.pill-name{
-  display:flex;align-items:center;gap:8px;background:var(--primary-soft);
-  color:var(--primary-dark);padding:6px 14px;border-radius:999px;font-weight:700;font-size:13px;
-}
-[data-theme="dark"] .pill-name{color:var(--gold);}
-
-.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
-.tab-btn{
-  padding:10px 18px;border-radius:999px;border:1px solid var(--line);
-  background:var(--surface);color:var(--ink);font-weight:700;font-size:14px;
-  display:flex;align-items:center;gap:6px;transition:all .15s;
-}
-.tab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:var(--shadow);}
-.tab-btn:hover:not(.active){background:var(--primary-soft);}
-
-.card{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:20px;margin-bottom:16px;
-  animation:fadeIn .35s ease;
-}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-.grid{display:grid;gap:16px;}
-.grid-auto{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
-
-.badge{
-  display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;
-  font-size:11px;font-weight:700;
-}
-.badge.open{background:var(--success-soft);color:var(--success);}
-.badge.upcoming{background:var(--gold-soft);color:var(--gold);}
-.badge.closed{background:var(--danger-soft);color:var(--danger);}
-
-.btn{
-  border:none;border-radius:999px;padding:11px 22px;font-weight:700;font-size:14px;
-  background:var(--primary);color:#fff;transition:transform .15s,opacity .15s;
-}
-.btn:hover{transform:translateY(-1px);}
-.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
-.btn.secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line);}
-.btn.accent{background:var(--accent);}
-.btn.gold{background:var(--gold);color:#2b2106;}
-.btn.sm{padding:7px 14px;font-size:12px;}
-.btn.danger{background:var(--danger);}
-
-input[type=text],input[type=password],input[type=number],select{
-  border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;
-  background:var(--bg);color:var(--ink);font-size:14px;width:100%;
-}
-input[type=number]{text-align:center;}
-
-/* ===== Register screen ===== */
-.register-wrap{
-  min-height:70vh;display:flex;align-items:center;justify-content:center;
-}
-.register-card{
-  max-width:420px;width:100%;text-align:center;padding:36px 28px;
-}
-.register-card h2{font-size:26px;margin:6px 0 4px;}
-.register-card p{color:var(--muted);font-size:14px;margin-bottom:22px;}
-.suggest-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center;}
-.suggest-chip{
-  background:var(--primary-soft);color:var(--primary-dark);padding:4px 12px;border-radius:999px;
-  font-size:12px;font-weight:600;border:none;
-}
-[data-theme="dark"] .suggest-chip{color:var(--gold);}
-
-/* ===== Countdown ===== */
-.countdown-bar{
-  background:linear-gradient(120deg,var(--primary),var(--primary-dark));
-  color:#fff;border-radius:var(--radius);padding:18px 22px;margin-bottom:18px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-  box-shadow:var(--shadow);
-}
-.countdown-bar .label{font-size:13px;opacity:.85;}
-.countdown-bar .stage-name{font-family:var(--font-display);font-size:22px;}
-.countdown-nums{display:flex;gap:10px;}
-.countdown-nums div{text-align:center;}
-.countdown-nums .n{font-size:24px;font-weight:900;font-family:var(--font-display);}
-.countdown-nums .u{font-size:10px;opacity:.8;}
-
-/* ===== Total bar ===== */
-.total-bar{
-  position:sticky;top:84px;z-index:40;background:var(--surface);border:1px solid var(--line);
-  border-radius:999px;padding:10px 18px;margin-bottom:16px;box-shadow:var(--shadow);
-  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
-}
-.total-bar .val{font-family:var(--font-display);font-size:22px;color:var(--accent);font-weight:700;}
-
-/* ===== Match card ===== */
-.match-card{
-  border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;background:var(--bg);
+/* HERO */
+.hero{
+  background:linear-gradient(135deg,var(--green-dark),var(--green-darker));
+  color:#FFFDF8;
+  padding:46px 18px 34px;
+  text-align:center;
+  border-radius:0 0 28px 28px;
   position:relative;
+  overflow:hidden;
 }
-.match-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:11px;color:var(--muted);}
-.match-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.team{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
-.team.right{flex-direction:row-reverse;text-align:left;}
-.team .name{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.team .name.tbd{color:var(--muted);font-weight:500;font-style:normal;font-size:12px;}
-.score-inputs{display:flex;align-items:center;gap:6px;}
-.score-inputs input{width:46px;height:42px;padding:0;font-size:16px;font-weight:700;}
-.score-vs{color:var(--muted);font-size:12px;}
-.pen-row{
-  margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
-  display:flex;align-items:center;gap:8px;font-size:12px;flex-wrap:wrap;
+.hero h1{margin:0 0 8px;font-size:clamp(22px,4vw,34px);}
+.hero p{margin:0 auto 18px;max-width:560px;opacity:.92;font-size:15px;}
+.hero .quicklinks{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px;}
+.hero .quicklinks button{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff;
+  padding:7px 14px;
+  border-radius:999px;
+  cursor:pointer;
+  font-size:13px;
 }
-.pen-choice{display:flex;gap:6px;}
-.pen-choice button{
-  border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;
+.hero .quicklinks button:hover{background:rgba(255,255,255,.25);}
+.flagstrip{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;opacity:.9;}
+.countdown{
+  display:inline-flex;gap:10px;align-items:center;
+  background:rgba(255,255,255,.1);
+  border:1px solid var(--gold);
+  padding:10px 18px;border-radius:14px;font-size:13px;
 }
-.pen-choice button.sel{background:var(--accent);color:#fff;border-color:var(--accent);}
-.poll-row{margin-top:10px;font-size:11px;}
-.poll-bar{height:6px;border-radius:4px;background:var(--line);overflow:hidden;display:flex;margin-top:4px;}
-.poll-bar span{height:100%;}
-.locked-tag{position:absolute;top:10px;left:10px;font-size:10px;background:var(--danger-soft);color:var(--danger);padding:2px 8px;border-radius:999px;font-weight:700;}
+.countdown b{color:var(--gold-light);font-size:15px;}
 
-/* ===== Bracket ===== */
-.bracket-toggle{display:flex;gap:8px;margin-bottom:14px;}
-.bracket-wrap{overflow-x:auto;padding:10px 0 24px;}
-.bracket{display:flex;gap:38px;min-width:max-content;padding:4px;}
-.bracket-col{display:flex;flex-direction:column;justify-content:space-around;gap:18px;min-width:210px;}
-.bracket-col .col-title{text-align:center;font-size:12px;font-weight:800;color:var(--primary);margin-bottom:4px;letter-spacing:.5px;}
-.b-match{
-  background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;position:relative;
+/* TABS */
+.tabbar{
+  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  padding:16px 10px;position:sticky;top:0;z-index:50;
+  background:var(--bg-warm);
 }
-.b-team{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 2px;font-size:12px;font-weight:700;}
-.b-team .nm{display:flex;align-items:center;gap:6px;overflow:hidden;}
-.b-team .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.b-team.winner{color:var(--success);}
-.b-divider{height:1px;background:var(--line);margin:2px 0;}
-.b-connector{position:absolute;top:50%;right:-19px;width:19px;height:2px;background:var(--gold);}
-.b-connector.left{right:auto;left:-19px;}
+.tabbar button{
+  border:none;background:var(--card);color:var(--text-dark);
+  padding:10px 18px;border-radius:14px;cursor:pointer;font-size:14px;
+  box-shadow:var(--shadow);font-weight:bold;
+}
+.tabbar button.active{background:var(--green-dark);color:#fff;}
+.darkbtn{
+  border:none;background:var(--card);box-shadow:var(--shadow);
+  padding:10px 14px;border-radius:14px;cursor:pointer;
+}
 
-/* ===== Leaderboard ===== */
-.lb-row{
-  display:flex;align-items:center;gap:12px;padding:12px 10px;border-radius:12px;border:1px solid transparent;
-}
-.lb-row.me{background:var(--gold-soft);border-color:var(--gold);}
-.lb-rank{width:32px;text-align:center;font-weight:900;font-family:var(--font-display);font-size:18px;color:var(--muted);}
-.lb-avatar{
-  width:36px;height:36px;border-radius:50%;background:var(--primary-soft);color:var(--primary-dark);
-  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none;
-}
-[data-theme="dark"] .lb-avatar{color:var(--gold);}
-.lb-name{flex:1;font-weight:700;font-size:14px;}
-.lb-pts{font-weight:900;font-family:var(--font-display);font-size:18px;color:var(--accent);position:relative;}
-.lb-delta{
-  position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--success);font-weight:800;
-  animation:floatUp 1.6s ease forwards;
-}
-@keyframes floatUp{0%{opacity:0;transform:translate(-50%,4px);}20%{opacity:1;}100%{opacity:0;transform:translate(-50%,-16px);}}
-.me-card{
-  display:flex;align-items:center;gap:14px;padding:18px;border-radius:var(--radius);
-  background:linear-gradient(120deg,var(--accent),var(--primary-dark));color:#fff;margin-bottom:16px;
-}
-.me-card .big{font-family:var(--font-display);font-size:30px;font-weight:800;}
-.lb-subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
-.lb-subtabs button{
-  border:1px solid var(--line);background:var(--surface);padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;
-}
-.lb-subtabs button.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+.wrap{max-width:1000px;margin:0 auto;padding:6px 14px 60px;}
 
-/* ===== Admin ===== */
-.admin-login{max-width:340px;margin:40px auto;text-align:center;}
-table.admin-table{width:100%;border-collapse:collapse;font-size:13px;}
-table.admin-table th,table.admin-table td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;}
-table.admin-table th{color:var(--muted);font-weight:700;font-size:12px;}
-.progress-mini{display:flex;gap:3px;}
-.progress-mini span{width:10px;height:10px;border-radius:3px;background:var(--line);}
-.progress-mini span.full{background:var(--success);}
-.progress-mini span.partial{background:var(--gold);}
-.group-team-row{display:grid;grid-template-columns:1.6fr repeat(5,55px);gap:6px;align-items:center;margin-bottom:6px;}
-.group-team-row label{font-size:11px;color:var(--muted);}
-.admin-section-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;margin:18px 0 10px;color:var(--primary);}
-.last-update{font-size:12px;color:var(--muted);margin-top:8px;}
-.waiting-card{text-align:center;padding:50px 20px;}
-.waiting-card .icon{font-size:46px;margin-bottom:10px;}
-
-/* ===== Share card preview ===== */
-.share-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-canvas#shareCanvas{display:none;}
-
-/* ===== Misc ===== */
-.empty{text-align:center;padding:40px 16px;color:var(--muted);}
-.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.section-title h2{margin:0;font-size:20px;}
-.toast{
-  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
-  padding:10px 20px;border-radius:999px;font-size:13px;font-weight:700;z-index:200;box-shadow:var(--shadow);
-  animation:fadeIn .25s ease;
+/* CARDS */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px 20px;
+  margin-bottom:20px;
 }
-@media (max-width:640px){
-  .topbar{flex-wrap:wrap;}
-  .total-bar{top:auto;position:relative;}
+.card h2{margin-top:0;font-size:18px;color:var(--green-dark);display:flex;gap:8px;align-items:center;}
+[data-theme="dark"] .card h2{color:var(--gold-light);}
+
+/* LOGIN */
+.login-box{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.login-box input{
+  flex:1;min-width:180px;padding:10px 14px;border-radius:12px;
+  border:1px solid #d8cdb8;background:#fff;font-size:14px;
 }
+.login-box button{
+  background:var(--green-dark);color:#fff;border:none;padding:10px 20px;
+  border-radius:12px;cursor:pointer;font-weight:bold;
+}
+.welcome-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:14px;}
+.welcome-bar button{background:transparent;border:1px solid var(--green-dark);color:var(--green-dark);border-radius:10px;padding:6px 12px;cursor:pointer;}
+[data-theme="dark"] .welcome-bar button{color:var(--gold-light);border-color:var(--gold-light);}
+
+/* STAGE CARD */
+.stage-card{margin-bottom:24px;}
+.stage-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.stage-head .stname{font-size:17px;font-weight:bold;color:var(--green-dark);}
+[data-theme="dark"] .stage-head .stname{color:var(--gold-light);}
+.stage-status{font-size:12px;padding:4px 10px;border-radius:999px;background:#eee;}
+.stage-status.open{background:#d9f0e0;color:#1d6b3a;}
+.stage-status.closed{background:#f3dcdc;color:#9a2c2c;}
+
+.match{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;
+  background:rgba(0,0,0,0.025);border-radius:14px;padding:12px;margin-bottom:10px;
+}
+[data-theme="dark"] .match{background:rgba(255,255,255,0.03);}
+.team{display:flex;align-items:center;gap:8px;font-size:14px;}
+.team.away{flex-direction:row-reverse;text-align:left;}
+.scorebox{display:flex;align-items:center;gap:6px;justify-content:center;}
+.scorebox input{
+  width:42px;text-align:center;padding:6px 0;border-radius:8px;border:1px solid #d8cdb8;font-size:15px;
+}
+.scorebox input:disabled{background:#eee;}
+.match .vs{font-size:12px;opacity:.6;}
+.match-meta{grid-column:1/-1;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:12px;opacity:.75;}
+.pen-row{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fbf3df;border-radius:10px;padding:8px 12px;font-size:13px;}
+[data-theme="dark"] .pen-row{background:#3a3120;}
+.pen-row select{padding:5px 8px;border-radius:8px;border:1px solid #d8cdb8;}
+.locked-tag{grid-column:1/-1;font-size:12px;color:#9a2c2c;font-weight:bold;}
+.result-row{grid-column:1/-1;display:flex;gap:14px;flex-wrap:wrap;font-size:12px;background:#eef5ee;border-radius:10px;padding:6px 12px;}
+[data-theme="dark"] .result-row{background:#1d2b22;}
+
+.save-btn{
+  display:block;width:100%;margin-top:6px;padding:12px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#3A2A1D;font-weight:bold;
+  font-size:15px;cursor:pointer;
+}
+.save-msg{text-align:center;font-size:13px;margin-top:8px;min-height:18px;}
+.save-msg.ok{color:#1d6b3a;}
+.save-msg.err{color:#9a2c2c;}
+
+/* LEADERBOARD */
+.lb-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.lb-tabs button{border:none;background:#eee;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:13px;}
+.lb-tabs button.active{background:var(--green-dark);color:#fff;}
+.champion-card{
+  text-align:center;background:linear-gradient(135deg,var(--gold-light),var(--gold));
+  border-radius:16px;padding:18px;margin-bottom:16px;color:#3A2A1D;
+}
+.champion-card h3{margin:4px 0;}
+table.lb{width:100%;border-collapse:collapse;font-size:14px;}
+table.lb th,table.lb td{padding:9px 8px;text-align:right;border-bottom:1px solid rgba(0,0,0,.07);}
+table.lb tr:first-child td{font-weight:bold;}
+.rank-badge{display:inline-block;width:24px;height:24px;border-radius:50%;background:var(--green-dark);color:#fff;text-align:center;line-height:24px;font-size:12px;}
+.icon-btn{border:none;background:transparent;cursor:pointer;font-size:15px;margin:0 3px;}
+
+/* BRACKET */
+.bracket-toggle{display:flex;gap:8px;margin-bottom:16px;}
+.bracket-toggle button{border:none;background:#eee;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:13px;}
+.bracket-toggle button.active{background:var(--green-dark);color:#fff;}
+.bracket-scroll{overflow-x:auto;padding-bottom:10px;}
+.bracket{display:flex;gap:26px;min-width:760px;}
+.bcol{display:flex;flex-direction:column;justify-content:space-around;gap:14px;min-width:160px;}
+.bcol .blabel{text-align:center;font-size:12px;font-weight:bold;color:var(--green-dark);margin-bottom:4px;}
+[data-theme="dark"] .bcol .blabel{color:var(--gold-light);}
+.bmatch{background:var(--card);border-radius:10px;box-shadow:var(--shadow);padding:6px 10px;font-size:12px;}
+.bmatch div{display:flex;justify-content:space-between;padding:2px 0;}
+.bmatch .winner{font-weight:bold;color:var(--green-dark);}
+[data-theme="dark"] .bmatch .winner{color:var(--gold-light);}
+.list-view .stage-block{margin-bottom:14px;}
+.list-view .lv-match{display:flex;justify-content:space-between;background:var(--card);border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:13px;box-shadow:var(--shadow);}
+
+/* ADMIN */
+.admin-warn{background:#fbecec;border:1px solid #e3b8b8;color:#9a2c2c;padding:10px 14px;border-radius:12px;font-size:13px;margin-bottom:14px;}
+[data-theme="dark"] .admin-warn{background:#3a2222;border-color:#5a3030;color:#f0c0c0;}
+.stage-ctrl{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.stage-ctrl button{border:1px solid #d8cdb8;background:#fff;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:12px;}
+.stage-ctrl button.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
+.admin-match{background:rgba(0,0,0,.025);border-radius:12px;padding:10px;margin-bottom:8px;}
+[data-theme="dark"] .admin-match{background:rgba(255,255,255,.03);}
+.admin-match-row{display:grid;grid-template-columns:1fr auto 1fr auto auto;gap:8px;align-items:center;font-size:13px;}
+.admin-match-row select,.admin-match-row input{padding:6px;border-radius:8px;border:1px solid #d8cdb8;font-size:13px;}
+.admin-match-row input[type=number]{width:50px;text-align:center;}
+.log-list{font-size:12px;max-height:160px;overflow:auto;border-top:1px dashed #ccc;margin-top:8px;padding-top:8px;}
+.log-list div{padding:3px 0;}
+.participants-table{width:100%;border-collapse:collapse;font-size:13px;}
+.participants-table th,.participants-table td{padding:7px;border-bottom:1px solid rgba(0,0,0,.07);text-align:right;}
+.small-btn{border:none;background:var(--green-dark);color:#fff;padding:4px 9px;border-radius:8px;font-size:11px;cursor:pointer;margin-inline-start:4px;}
+.small-btn.del{background:#9a2c2c;}
+.hidden{display:none !important;}
+.muted{opacity:.6;font-size:12px;}
 </style>
 </head>
 <body>
-<div id="app" class="app-shell"></div>
-<canvas id="shareCanvas" width="900" height="560"></canvas>
+
+<div class="hero">
+  <h1>🏆 تحدّي توقعات كأس العالم 2026</h1>
+  <p>توقع نتائج المباريات، اجمع النقاط، وتابع ترتيبك بين المشاركين</p>
+  <div class="quicklinks" id="quickLinks"></div>
+  <div class="flagstrip" id="flagStrip"></div>
+  <div class="countdown" id="countdownBox">⏱ جاري الحساب…</div>
+</div>
+
+<div class="tabbar">
+  <button data-tab="predict" class="active">🎯 توقعاتي</button>
+  <button data-tab="leaders">🏆 المتصدّرون</button>
+  <button data-tab="bracket">🌳 الشجرة الإقصائية</button>
+  <button id="adminTabBtn" data-tab="admin" class="hidden">⚙ إدارة النتائج</button>
+  <button class="darkbtn" id="darkToggle">🌙</button>
+</div>
+
+<div class="wrap">
+
+  <!-- PREDICT TAB -->
+  <div id="tab-predict">
+    <div class="card" id="loginCard">
+      <h2>👋 سجّل اسمك للمشاركة</h2>
+      <div class="login-box">
+        <input id="nameInput" placeholder="اكتب اسمك الكامل أو لقبك">
+        <button id="loginBtn">ابدأ التوقع</button>
+      </div>
+      <div class="muted" id="loginMsg"></div>
+    </div>
+
+    <div class="card hidden" id="welcomeCard">
+      <div class="welcome-bar">
+        <span>مرحباً، <b id="userNameLabel"></b> 👋</span>
+        <button id="logoutBtn">تبديل المستخدم</button>
+      </div>
+    </div>
+
+    <div id="stagesContainer" class="hidden"></div>
+  </div>
+
+  <!-- LEADERS TAB -->
+  <div id="tab-leaders" class="hidden">
+    <div class="card">
+      <div class="lb-tabs" id="lbTabs"></div>
+      <div id="championBox"></div>
+      <div style="overflow-x:auto;">
+        <table class="lb" id="lbTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRACKET TAB -->
+  <div id="tab-bracket" class="hidden">
+    <div class="card">
+      <h2>🌳 الشجرة الإقصائية</h2>
+      <div class="bracket-toggle">
+        <button id="btnTreeView" class="active">عرض الشجرة</button>
+        <button id="btnListView">عرض القائمة</button>
+      </div>
+      <div id="bracketTreeWrap" class="bracket-scroll"></div>
+      <div id="bracketListWrap" class="list-view hidden"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN TAB -->
+  <div id="tab-admin" class="hidden">
+    <div class="card">
+      <h2>⚙ إدارة النتائج</h2>
+      <div class="admin-warn">⚠️ أي تعديل على النتائج الرسمية يُحدّث نقاط جميع المشاركين تلقائياً وفوراً.</div>
+      <div id="adminStages"></div>
+      <div class="log-list" id="updateLog"><b>سجل تحديث النتائج</b></div>
+    </div>
+    <div class="card">
+      <h2>👥 حالة توقعات المشاركين</h2>
+      <div style="overflow-x:auto;">
+        <table class="participants-table" id="participantsTable"></table>
+      </div>
+    </div>
+  </div>
+
+</div>
 
 <script>
-/* =========================================================================
-   SECTION: CONFIG
-   ========================================================================= */
-const BRAND = { name:"VISIT OMAN", sub:"تحدي توقعات كأس العالم 2026" };
-
-// --- Firebase placeholders: استبدلها ببيانات مشروعك الحقيقية في Firebase Console ---
-const FIREBASE_CONFIG = {
-  apiKey: "PLACEHOLDER_API_KEY",
-  authDomain: "PLACEHOLDER.firebaseapp.com",
-  projectId: "PLACEHOLDER_PROJECT_ID",
-  storageBucket: "PLACEHOLDER.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "PLACEHOLDER_APP_ID"
-};
-
-const ADMIN_PASSWORD_DEFAULT = "Oman2026!"; // كلمة مرور افتراضية - عدّلها أو غيّرها من الكود متى أردت
-
-// أدوار البطولة القابلة للتوقع (لا يوجد دور مجموعات ضمن التوقعات)
+/* ============== DATA ============== */
 const WC_STAGES = [
-  { id:"r32",  name:"دور الـ32",      icon:"🥅", opensAt:"2026-06-29T12:00:00Z", closesAt:"2026-07-03T23:00:00Z", matchCount:16 },
-  { id:"r16",  name:"دور الـ16",      icon:"⚔️", opensAt:"2026-07-03T23:00:00Z", closesAt:"2026-07-07T23:00:00Z", matchCount:8  },
-  { id:"qf",   name:"ربع النهائي",    icon:"🔥", opensAt:"2026-07-07T23:00:00Z", closesAt:"2026-07-10T23:00:00Z", matchCount:4  },
-  { id:"sf",   name:"نصف النهائي",    icon:"🏟️", opensAt:"2026-07-10T23:00:00Z", closesAt:"2026-07-14T23:00:00Z", matchCount:2  },
-  { id:"final",name:"النهائي",        icon:"🏆", opensAt:"2026-07-14T23:00:00Z", closesAt:"2026-07-19T20:00:00Z", matchCount:1  },
+  { id:'r32', name:'دور الـ32', icon:'⚔️', opensAt:'2026-06-28T04:45:00Z', closesAt:'2026-06-28T19:00:00Z', matchCount:16 },
+  { id:'r16', name:'دور الـ16', icon:'🛡️', opensAt:'2026-07-04T04:15:00Z', closesAt:'2026-07-04T17:00:00Z', matchCount:8 },
+  { id:'qf',  name:'ربع النهائي', icon:'⚡', opensAt:'2026-07-07T22:45:00Z', closesAt:'2026-07-09T20:00:00Z', matchCount:4 },
+  { id:'sf',  name:'نصف النهائي', icon:'🔥', opensAt:'2026-07-12T03:45:00Z', closesAt:'2026-07-14T19:00:00Z', matchCount:2 },
+  { id:'final', name:'النهائي', icon:'🏆', opensAt:'2026-07-15T21:45:00Z', closesAt:'2026-07-19T19:00:00Z', matchCount:1 }
 ];
-const STAGE_ORDER = WC_STAGES.map(s=>s.id);
-const PREV_STAGE = {r16:"r32", qf:"r16", sf:"qf", final:"sf"};
-
 const WC_SCORING = { knockoutWinner:3, knockoutExactBonus:2 };
-
-// 12 مجموعة × 4 منتخبات (كود الدولة لـ flag-icons، اسم عربي)
-const WC_GROUPS = {
-  A:[["mx","المكسيك"],["pl","بولندا"],["sa","السعودية"],["ar","الأرجنتين"]],
-  B:[["us","الولايات المتحدة"],["gb-wls","ويلز"],["ir","إيران"],["gb-eng","إنجلترا"]],
-  C:[["sn","السنغال"],["nl","هولندا"],["qa","قطر"],["ec","الإكوادور"]],
-  D:[["fr","فرنسا"],["au","أستراليا"],["dk","الدنمارك"],["tn","تونس"]],
-  E:[["es","إسبانيا"],["cr","كوستاريكا"],["de","ألمانيا"],["jp","اليابان"]],
-  F:[["be","بلجيكا"],["ca","كندا"],["ma","المغرب"],["hr","كرواتيا"]],
-  G:[["br","البرازيل"],["rs","صربيا"],["ch","سويسرا"],["cm","الكاميرون"]],
-  H:[["pt","البرتغال"],["gh","غانا"],["uy","الأوروغواي"],["kr","كوريا الجنوبية"]],
-  I:[["it","إيطاليا"],["co","كولومبيا"],["eg","مصر"],["ng","نيجيريا"]],
-  J:[["dz","الجزائر"],["se","السويد"],["cl","تشيلي"],["no","النرويج"]],
-  K:[["om","عُمان"],["iq","العراق"],["jo","الأردن"],["pa","بنما"]],
-  L:[["ci","ساحل العاج"],["pe","بيرو"],["gb-sct","اسكتلندا"],["gr","اليونان"]],
-};
-const GROUP_IDS = Object.keys(WC_GROUPS);
-const WC_TEAM_MAP = {};
-GROUP_IDS.forEach(g=> WC_GROUPS[g].forEach(([code,name])=> WC_TEAM_MAP[code]={code,name,group:g}));
-
-// شبكة الإطعام للدور الإقصائي
-// r32: من نتائج المجموعات (متصدر/وصيف كل مجموعة + أفضل 8 أصحاب مركز ثالث)
-const R32_FEED = [
-  ["G:A:1","G:B:2"], ["G:B:1","G:A:2"],
-  ["G:C:1","G:D:2"], ["G:D:1","G:C:2"],
-  ["G:E:1","G:F:2"], ["G:F:1","G:E:2"],
-  ["G:G:1","G:H:2"], ["G:H:1","G:G:2"],
-  ["G:I:1","G:J:2"], ["G:J:1","G:I:2"],
-  ["G:K:1","G:L:2"], ["G:L:1","G:K:2"],
-  ["T:1","T:2"], ["T:3","T:4"], ["T:5","T:6"], ["T:7","T:8"],
-];
-// بقية الأدوار: مصفوفة من [مصدر1، مصدر2] = فهرس مباراة في الدور السابق
-const KO_FEED = {
-  r16:  [[0,2],[1,3],[4,6],[5,7],[8,10],[9,11],[12,14],[13,15]],
-  qf:   [[0,1],[2,3],[4,5],[6,7]],
-  sf:   [[0,1],[2,3]],
-  final:[[0,1]],
-};
-const WC_KO_FEED = { r32:R32_FEED, ...KO_FEED };
-
-/* =========================================================================
-   SECTION: FIRESTORE INIT (with graceful local fallback)
-   ========================================================================= */
-let db = null, FIRESTORE_OK = false;
-try{
-  if(!firebase.apps || !firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-  db = firebase.firestore();
-  FIRESTORE_OK = true;
-}catch(e){ console.warn("Firebase init failed, running in local-only demo mode.", e); }
-
-// مخزن محلي احتياطي (يُستخدم تلقائياً إذا تعذر الاتصال بـ Firestore، حتى تبقى الصفحة قابلة للتجربة)
-const LOCAL_FALLBACK = { predictions: JSON.parse(localStorage.getItem("wc_local_predictions")||"[]"), results: JSON.parse(localStorage.getItem("wc_local_results")||"null") || emptyResults() };
-function emptyResults(){
-  const groups = {}; GROUP_IDS.forEach(g=> groups[g] = WC_GROUPS[g].map(([code])=>({code,W:0,D:0,L:0,GF:0,GA:0})));
-  return { groups, groupsLocked:false, knockout:{ r32:Array(16).fill(null), r16:Array(8).fill(null), qf:Array(4).fill(null), sf:Array(2).fill(null), final:Array(1).fill(null) }, lastUpdate:null, forceOpen:{}, forceClose:{} };
-}
-
-/* =========================================================================
-   SECTION: STATE
-   ========================================================================= */
-const S = {
-  theme: localStorage.getItem("wc_theme") || "light",
-  user: JSON.parse(localStorage.getItem("wc_user")||"null"), // {id,name}
-  tab: "predict", // predict | leaderboard | admin
-  bracketView: localStorage.getItem("wc_bracket_view") || "list", // list | bracket
-  lbSub: "overall",
-  predictions: [], // كل المشاركين (مباشر من Firestore)
-  results: emptyResults(),
-  draft: {}, // {matchId: {home,away,penWinner}} لكل الأدوار مجتمعة بمفاتيح stageId__index
-  adminAuthed: localStorage.getItem("wc_admin_ok")==="1",
-  prevTotals: {},
-  toast: null,
-  now: Date.now(),
+const WC_KO_ORDER = ['r32','r16','qf','sf','final'];
+const WC_KO_FEED = {
+  r16:   [[2,5],[0,3],[1,4],[6,7],[11,10],[9,8],[14,13],[12,15]],
+  qf:    [[0,1],[4,5],[2,3],[6,7]],
+  sf:    [[0,1],[2,3]],
+  final: [[0,1]]
 };
 
-function uid(){ return 'u' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+// Team map: code -> {name (ar), flag (iso2 lowercase)}
+const WC_TEAM_MAP = {
+  USA:{name:'الولايات المتحدة', flag:'us'}, MEX:{name:'المكسيك', flag:'mx'}, CAN:{name:'كندا', flag:'ca'},
+  BRA:{name:'البرازيل', flag:'br'}, ARG:{name:'الأرجنتين', flag:'ar'}, FRA:{name:'فرنسا', flag:'fr'},
+  ENG:{name:'إنجلترا', flag:'gb-eng'}, ESP:{name:'إسبانيا', flag:'es'}, GER:{name:'ألمانيا', flag:'de'},
+  POR:{name:'البرتغال', flag:'pt'}, NED:{name:'هولندا', flag:'nl'}, BEL:{name:'بلجيكا', flag:'be'},
+  ITA:{name:'إيطاليا', flag:'it'}, CRO:{name:'كرواتيا', flag:'hr'}, URU:{name:'الأوروغواي', flag:'uy'},
+  COL:{name:'كولومبيا', flag:'co'}, JPN:{name:'اليابان', flag:'jp'}, KOR:{name:'كوريا الجنوبية', flag:'kr'},
+  MAR:{name:'المغرب', flag:'ma'}, KSA:{name:'السعودية', flag:'sa'}, QAT:{name:'قطر', flag:'qa'},
+  IRN:{name:'إيران', flag:'ir'}, AUS:{name:'أستراليا', flag:'au'}, SEN:{name:'السنغال', flag:'sn'},
+  GHA:{name:'غانا', flag:'gh'}, NGA:{name:'نيجيريا', flag:'ng'}, EGY:{name:'مصر', flag:'eg'},
+  TUN:{name:'تونس', flag:'tn'}, SUI:{name:'سويسرا', flag:'ch'}, DEN:{name:'الدنمارك', flag:'dk'},
+  POL:{name:'بولندا', flag:'pl'}, JOR:{name:'الأردن', flag:'jo'}, RSA:{name:'جنوب أفريقيا', flag:'za'},
+  ECU:{name:'الإكوادور', flag:'ec'}, PAN:{name:'بنما', flag:'pa'}, CRC:{name:'كوستاريكا', flag:'cr'},
+  NZL:{name:'نيوزيلندا', flag:'nz'}, UZB:{name:'أوزبكستان', flag:'uz'}, CIV:{name:'ساحل العاج', flag:'ci'},
+  ALG:{name:'الجزائر', flag:'dz'}, IRQ:{name:'العراق', flag:'iq'}, UAE:{name:'الإمارات', flag:'ae'}
+};
+const TEAM_CODES = Object.keys(WC_TEAM_MAP);
 
-/* =========================================================================
-   SECTION: FIRESTORE SYNC
-   ========================================================================= */
-let suppressFullRerenderForInputs = false;
-
-function subscribeLive(){
-  if(!FIRESTORE_OK){
-    S.predictions = LOCAL_FALLBACK.predictions;
-    S.results = LOCAL_FALLBACK.results;
-    render();
-    return;
-  }
-  db.collection("calendar").doc("wc_predictions").onSnapshot(snap=>{
-    const data = snap.exists ? snap.data() : {value:[]};
-    S.predictions = data.value || [];
-    if(suppressFullRerenderForInputs){ patchLeaderboardOnly(); } else { render(); }
-  }, err=>console.warn("predictions snapshot err", err));
-
-  db.collection("calendar").doc("wc_results").onSnapshot(snap=>{
-    const data = snap.exists ? snap.data() : {value:emptyResults()};
-    S.results = data.value || emptyResults();
-    if(suppressFullRerenderForInputs){ patchScoreboardOnly(); } else { render(); }
-  }, err=>console.warn("results snapshot err", err));
+function flagImg(code, lg){
+  const t = WC_TEAM_MAP[code];
+  if(!t) return `<span class="muted">؟</span>`;
+  return `<img class="flag${lg?' lg':''}" src="https://flagcdn.com/${t.flag}.svg" alt="${t.name}">`;
 }
+function teamName(code){ return WC_TEAM_MAP[code] ? WC_TEAM_MAP[code].name : '—'; }
 
-async function savePredictions(list){
-  if(FIRESTORE_OK){
-    await db.collection("calendar").doc("wc_predictions").set({value:list});
-  }else{
-    LOCAL_FALLBACK.predictions = list;
-    localStorage.setItem("wc_local_predictions", JSON.stringify(list));
-    S.predictions = list;
-  }
-}
-async function saveResults(res){
-  res.lastUpdate = new Date().toISOString();
-  if(FIRESTORE_OK){
-    await db.collection("calendar").doc("wc_results").set({value:res});
-  }else{
-    LOCAL_FALLBACK.results = res;
-    localStorage.setItem("wc_local_results", JSON.stringify(res));
-    S.results = res;
-  }
-}
+/* ============== STORAGE (Firestore-shaped, localStorage-backed) ============== */
+const LS_PRED = 'calendar/wc_predictions';
+const LS_RES  = 'calendar/wc_results';
 
-/* =========================================================================
-   SECTION: HELPERS - GROUPS / QUALIFICATION
-   ========================================================================= */
-function groupStandings(g){
-  const rows = S.results.groups[g].map(t=>{
-    const code=t.code, info=WC_TEAM_MAP[code];
-    const pts = t.W*3 + t.D;
-    const gd = (t.GF||0)-(t.GA||0);
-    return {code, name:info.name, W:t.W,D:t.D,L:t.L,GF:t.GF,GA:t.GA, pts, gd};
+function loadPredictions(){
+  try{ return JSON.parse(localStorage.getItem(LS_PRED)).value || []; }catch(e){ return []; }
+}
+function savePredictions(list){
+  localStorage.setItem(LS_PRED, JSON.stringify({ value:list }));
+}
+function loadResults(){
+  try{
+    const r = JSON.parse(localStorage.getItem(LS_RES)).value;
+    if(r) return r;
+  }catch(e){}
+  const empty = { knockout:{r32:[],r16:[],qf:[],sf:[],final:[]}, stageOverrides:{}, lastUpdate:{} };
+  WC_STAGES.forEach(s=>{
+    empty.knockout[s.id] = Array.from({length:s.matchCount},()=>({home:null,away:null,homeScore:null,awayScore:null,penWinner:null,kickoffAt:null}));
   });
-  rows.sort((a,b)=> b.pts-a.pts || b.gd-a.gd || b.GF-a.GF || a.name.localeCompare(b.name,'ar'));
-  return rows;
+  saveResults(empty);
+  return empty;
 }
-function allGroupsEntered(){
-  return GROUP_IDS.every(g=>{
-    const t = S.results.groups[g];
-    return t.every(row => (row.W+row.D+row.L) > 0);
-  }) || S.results.groupsLocked;
-}
-function bestThirdPlaced(){
-  const thirds = GROUP_IDS.map(g=>{
-    const st = groupStandings(g);
-    return {...st[2], group:g};
-  });
-  thirds.sort((a,b)=> b.pts-a.pts || b.gd-a.gd || b.GF-a.GF);
-  return thirds.slice(0,8);
-}
-function resolveSlot(slot){
-  // slot مثل "G:A:1" أو "T:3"
-  if(!allGroupsEntered()) return null;
-  const [type,a,b] = slot.split(":");
-  if(type==="G"){
-    const st = groupStandings(a);
-    const row = st[Number(b)-1];
-    return row ? {code:row.code, name:row.name} : null;
-  }else{
-    const thirds = bestThirdPlaced();
-    const row = thirds[Number(a)-1];
-    return row ? {code:row.code, name:row.name, group:row.group} : null;
-  }
-}
-function placeholderLabel(slot){
-  const [type,a,b] = slot.split(":");
-  if(type==="G") return (b==="1"?"متصدر المجموعة ":"وصيف المجموعة ") + a;
-  return "أفضل ثالث #" + a;
-}
+function saveResults(r){ localStorage.setItem(LS_RES, JSON.stringify({ value:r })); }
 
-/* =========================================================================
-   SECTION: HELPERS - MATCH RESOLUTION (names, scores, status)
-   ========================================================================= */
-function matchTeams(stageId, idx){
-  const ko = S.results.knockout[stageId][idx];
-  if(stageId==="r32"){
-    const [s1,s2] = WC_KO_FEED.r32[idx];
-    const home = ko && ko.home ? {code:ko.home,name:WC_TEAM_MAP[ko.home]?.name||ko.home} : resolveSlot(s1);
-    const away = ko && ko.away ? {code:ko.away,name:WC_TEAM_MAP[ko.away]?.name||ko.away} : resolveSlot(s2);
-    return { home, away, homeLabel: home?home.name:placeholderLabel(s1), awayLabel: away?away.name:placeholderLabel(s2) };
+let RESULTS = loadResults();
+let PREDICTIONS = loadPredictions();
+
+/* ============== USER ============== */
+const ADMIN_NAME = 'admin';
+let currentUser = localStorage.getItem('wc_current_user') || null;
+
+function findParticipant(name){
+  return PREDICTIONS.find(p=>p.name.trim().toLowerCase() === name.trim().toLowerCase());
+}
+function getOrCreateParticipant(name){
+  let p = findParticipant(name);
+  if(!p){
+    p = { id:'u_'+Date.now()+Math.random().toString(36).slice(2,7), name:name.trim(), ts:Date.now(),
+      knockout:{r32:[],r16:[],qf:[],sf:[],final:[]} };
+    PREDICTIONS.push(p);
+    savePredictions(PREDICTIONS);
   }
-  const [i1,i2] = WC_KO_FEED[stageId][idx];
-  const prevStage = PREV_STAGE[stageId];
-  const w1 = matchWinner(prevStage,i1), w2 = matchWinner(prevStage,i2);
-  const t1 = w1 ? {code:w1, name:WC_TEAM_MAP[w1]?.name||w1} : null;
-  const t2 = w2 ? {code:w2, name:WC_TEAM_MAP[w2]?.name||w2} : null;
-  const fallback1 = "الفائز من المباراة "+(i1+1)+" ("+stageDisplay(prevStage)+")";
-  const fallback2 = "الفائز من المباراة "+(i2+1)+" ("+stageDisplay(prevStage)+")";
-  return { home:t1, away:t2, homeLabel: t1?t1.name:fallback1, awayLabel: t2?t2.name:fallback2 };
+  return p;
 }
-function stageDisplay(id){ return WC_STAGES.find(s=>s.id===id)?.name || id; }
-function matchWinner(stageId, idx){
-  const ko = S.results.knockout[stageId][idx];
-  if(!ko || ko.homeScore===null || ko.homeScore===undefined || ko.awayScore===null || ko.awayScore===undefined) return null;
-  if(ko.homeScore > ko.awayScore) return ko.home;
-  if(ko.awayScore > ko.homeScore) return ko.away;
-  if(ko.penWinner) return ko.penWinner;
-  return null;
-}
-function matchHasResult(stageId, idx){
-  const ko = S.results.knockout[stageId][idx];
-  return !!(ko && ko.homeScore!=null && ko.awayScore!=null);
-}
+function isAdmin(){ return currentUser && currentUser.trim().toLowerCase()===ADMIN_NAME; }
+
+/* ============== STAGE STATE ============== */
+function now(){ return new Date(); }
+function stageOverride(stageId){ return RESULTS.stageOverrides ? RESULTS.stageOverrides[stageId] : null; }
+
 function matchKickoff(stageId, idx){
-  const ko = S.results.knockout[stageId][idx];
-  return ko && ko.kickoff ? ko.kickoff : null;
-}
-function matchStarted(stageId, idx){
-  const kt = matchKickoff(stageId, idx);
-  if(kt) return new Date(kt).getTime() <= S.now;
-  return false;
-}
-function stageStatus(stageId){
+  const m = RESULTS.knockout[stageId][idx];
+  if(m && m.kickoffAt) return new Date(m.kickoffAt);
   const stage = WC_STAGES.find(s=>s.id===stageId);
-  if(S.results.forceClose && S.results.forceClose[stageId]) return "closed";
-  if(S.results.forceOpen && S.results.forceOpen[stageId]) return "open";
-  if(stageId==="r32"){
-    if(!allGroupsEntered()) return "upcoming";
-  }else{
-    const prevDone = S.results.knockout[PREV_STAGE[stageId]].every(m=>m && m.homeScore!=null);
-    if(!prevDone) return "upcoming";
-  }
-  const n = stage.matchCount;
-  let allStarted = true;
-  for(let i=0;i<n;i++){ if(!matchStarted(stageId,i)){ allStarted=false; break; } }
-  if(allStarted){
-    // افتراضي احتياطي إن لم تُحدد مواعيد فعلية
-    const anyKickoff = Array.from({length:n}, (_,i)=>matchKickoff(stageId,i)).some(Boolean);
-    if(anyKickoff) return "closed";
-  }
-  if(Date.now() > new Date(stage.closesAt).getTime() && !Array.from({length:n}, (_,i)=>matchKickoff(stageId,i)).some(Boolean)){
-    return "closed";
-  }
-  return "open";
+  return new Date(stage.closesAt); // fallback
 }
-function nextCloseTarget(){
-  for(const stage of WC_STAGES){
-    const st = stageStatus(stage.id);
-    if(st==="open"){
-      // أقرب موعد إغلاق: أقرب kickoff قادم أو closesAt الاحتياطي
-      let soonest = new Date(stage.closesAt).getTime();
-      for(let i=0;i<stage.matchCount;i++){
-        const kt = matchKickoff(stage.id,i);
-        if(kt && !matchStarted(stage.id,i)) soonest = Math.min(soonest, new Date(kt).getTime());
-      }
-      return {stage, target:soonest};
+function isMatchLocked(stageId, idx){
+  const ov = stageOverride(stageId);
+  if(ov==='force-close') return true;
+  if(ov==='force-open') return false;
+  return now() >= matchKickoff(stageId, idx);
+}
+function isStageOpen(stageId){
+  const ov = stageOverride(stageId);
+  const stage = WC_STAGES.find(s=>s.id===stageId);
+  if(ov==='force-open') return true;
+  if(ov==='force-close') return false;
+  const n = now();
+  return n >= new Date(stage.opensAt) && n <= new Date(stage.closesAt);
+}
+
+/* derive teams for a stage match using previous stage winners (for r16+) */
+function winnerOf(m){
+  if(!m || m.homeScore==null || m.awayScore==null) return null;
+  if(m.homeScore > m.awayScore) return m.home;
+  if(m.awayScore > m.homeScore) return m.away;
+  return m.penWinner || null;
+}
+function stageMatchTeams(stageId, idx){
+  if(stageId==='r32'){
+    const m = RESULTS.knockout.r32[idx];
+    return { home:m.home, away:m.away, homeLabel:m.home?teamName(m.home):'منتظر', awayLabel:m.away?teamName(m.away):'منتظر' };
+  }
+  const order = WC_KO_ORDER;
+  const prevStage = order[order.indexOf(stageId)-1];
+  const feed = WC_KO_FEED[stageId][idx];
+  const m1 = RESULTS.knockout[prevStage][feed[0]];
+  const m2 = RESULTS.knockout[prevStage][feed[1]];
+  const w1 = winnerOf(m1);
+  const w2 = winnerOf(m2);
+  return {
+    home: w1, away: w2,
+    homeLabel: w1 ? teamName(w1) : `الفائز من المباراة ${feed[0]+1}`,
+    awayLabel: w2 ? teamName(w2) : `الفائز من المباراة ${feed[1]+1}`
+  };
+}
+
+/* ============== SCORING ============== */
+function matchPoints(pred, result){
+  if(!pred || result.homeScore==null || result.awayScore==null) return 0;
+  const actualWinner = winnerOf(result);
+  let predWinner;
+  if(pred.homeScore > pred.awayScore) predWinner = result.home;
+  else if(pred.awayScore > pred.homeScore) predWinner = result.away;
+  else predWinner = pred.penWinner || null;
+
+  if(!actualWinner || predWinner !== actualWinner) return 0;
+  let pts = WC_SCORING.knockoutWinner;
+  const scoreExact = pred.homeScore===result.homeScore && pred.awayScore===result.awayScore;
+  const wasDraw = result.homeScore===result.awayScore;
+  if(scoreExact){
+    if(wasDraw){
+      if(pred.penWinner && result.penWinner && pred.penWinner===result.penWinner) pts += WC_SCORING.knockoutExactBonus;
+    } else {
+      pts += WC_SCORING.knockoutExactBonus;
     }
   }
-  return null;
+  return Math.min(pts, 5);
 }
-
-/* =========================================================================
-   SECTION: SCORING (pure functions)
-   ========================================================================= */
-function pointsForMatch(stageId, idx, pred){
-  if(!pred) return 0;
-  const ko = S.results.knockout[stageId][idx];
-  if(!ko || ko.homeScore==null || ko.awayScore==null) return 0;
-  const actualWinner = matchWinner(stageId, idx);
-  let predWinner = null;
-  if(pred.home > pred.away) predWinner = "home";
-  else if(pred.away > pred.home) predWinner = "away";
-  else predWinner = pred.penWinner==="home" ? "home" : pred.penWinner==="away" ? "away" : null;
-  const realSide = ko.home===actualWinner ? "home" : ko.away===actualWinner ? "away" : null;
-  let pts = 0;
-  if(predWinner && realSide && predWinner===realSide) pts += WC_SCORING.knockoutWinner;
-  if(pred.home===ko.homeScore && pred.away===ko.awayScore) pts += WC_SCORING.knockoutExactBonus;
-  return pts;
-}
-function stagePoints(participant, stageId){
+function participantStagePoints(p, stageId){
   let total=0;
-  const n = WC_STAGES.find(s=>s.id===stageId).matchCount;
-  for(let i=0;i<n;i++){
-    const pred = participant.knockout && participant.knockout[stageId] ? participant.knockout[stageId][i] : null;
-    total += pointsForMatch(stageId, i, pred);
+  const preds = p.knockout[stageId] || [];
+  const results = RESULTS.knockout[stageId] || [];
+  for(let i=0;i<results.length;i++){
+    total += matchPoints(preds[i], results[i]);
   }
   return total;
 }
-function totalPoints(participant){
-  return STAGE_ORDER.reduce((sum,st)=> sum + stagePoints(participant, st), 0);
+function participantTotalPoints(p){
+  return WC_KO_ORDER.reduce((s,st)=>s+participantStagePoints(p,st),0);
 }
 
-/* =========================================================================
-   SECTION: DRAFT MANAGEMENT
-   ========================================================================= */
-function loadDraftFromSaved(){
-  const mine = S.predictions.find(p=>p.id===S.user?.id);
-  S.draft = {};
-  if(mine && mine.knockout){
-    STAGE_ORDER.forEach(st=>{
-      (mine.knockout[st]||[]).forEach((m,i)=>{ if(m) S.draft[st+"__"+i] = {...m}; });
-    });
-  }
+/* ============== RENDER: HERO ============== */
+function renderHero(){
+  const ql = document.getElementById('quickLinks');
+  ql.innerHTML = WC_STAGES.map(s=>`<button onclick="scrollToStage('${s.id}')">${s.icon} ${s.name}</button>`).join('');
+  const fs = document.getElementById('flagStrip');
+  fs.innerHTML = TEAM_CODES.slice(0,18).map(c=>flagImg(c)).join('');
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
 }
-function getDraft(stageId, idx){ return S.draft[stageId+"__"+idx] || {home:"",away:"",penWinner:null}; }
-function setDraft(stageId, idx, patch){
-  const key = stageId+"__"+idx;
-  S.draft[key] = {...getDraft(stageId,idx), ...patch};
-}
-function draftToKnockoutObj(){
-  const obj = {}; STAGE_ORDER.forEach(st=>{
-    const stage = WC_STAGES.find(s=>s.id===st);
-    obj[st] = Array.from({length:stage.matchCount}, (_,i)=>{
-      const d = S.draft[st+"__"+i];
-      if(!d || d.home===""||d.home==null||d.away===""||d.away==null) return null;
-      return { home:Number(d.home), away:Number(d.away), penWinner: d.home===d.away ? (d.penWinner||null) : null };
-    });
-  });
-  return obj;
-}
-function stageComplete(stageId){
-  const stage = WC_STAGES.find(s=>s.id===stageId);
-  for(let i=0;i<stage.matchCount;i++){
-    if(matchStarted(stageId,i)) continue; // المباريات المنطلقة فعلاً تُستثنى من شرط الإكمال
-    const d = S.draft[stageId+"__"+i];
-    if(!d || d.home===""||d.home==null||d.away===""||d.away==null) return false;
-    if(Number(d.home)===Number(d.away) && !d.penWinner) return false;
-  }
-  return true;
-}
-function allOpenStagesComplete(){
-  return WC_STAGES.filter(s=>stageStatus(s.id)==="open").every(s=>stageComplete(s.id));
-}
-
-/* =========================================================================
-   SECTION: RENDER ROOT
-   ========================================================================= */
-function showToast(msg){
-  S.toast = msg;
-  render();
-  setTimeout(()=>{ S.toast=null; const t=document.querySelector(".toast"); if(t) t.remove(); }, 2400);
-}
-function fmtCountdown(ms){
-  if(ms<=0) return {d:0,h:0,m:0,s:0};
-  const s=Math.floor(ms/1000)%60, m=Math.floor(ms/60000)%60, h=Math.floor(ms/3600000)%24, d=Math.floor(ms/86400000);
-  return {d,h,m,s};
-}
-
-function render(){
-  const root = document.getElementById("app");
-  document.body.setAttribute("data-theme", S.theme);
-  if(!S.user || S.guest){
-    root.innerHTML = topbarHtml() + (S.guest ? mainContentHtml() : registerHtml());
-  }else{
-    root.innerHTML = topbarHtml() + tabsHtml() + mainContentHtml();
-  }
-  if(S.toast){
-    const t=document.createElement("div"); t.className="toast"; t.textContent=S.toast;
-    document.body.appendChild(t);
-  }
-  bindEvents();
-}
-
-function topbarHtml(){
-  return `
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-mark">و</div>
-      <div class="brand-text">
-        <h1>${BRAND.name}</h1>
-        <span>${BRAND.sub}</span>
-      </div>
-    </div>
-    <div class="top-actions">
-      ${S.user && !S.guest ? `<div class="pill-name">👤 ${escapeHtml(S.user.name)}</div>` : (S.guest ? `<div class="pill-name">👁️ وضع ضيف (قراءة فقط)</div>`:"")}
-      <button class="icon-btn" id="themeToggle" title="تبديل الوضع">${S.theme==="dark"?"☀️":"🌙"}</button>
-      ${S.user && !S.guest ? `<button class="icon-btn" id="logoutBtn" title="تسجيل خروج">↩️</button>` : ""}
-    </div>
-  </div>`;
-}
-
-function registerHtml(){
-  const names = (S.predictions||[]).map(p=>p.name).filter((v,i,a)=>a.indexOf(v)===i).slice(0,8);
-  return `
-  <div class="register-wrap">
-    <div class="card register-card">
-      <div style="font-size:38px;">🏆</div>
-      <h2>انضم إلى التحدي</h2>
-      <p>أدخل اسمك لبدء توقعاتك في تحدي كأس العالم 2026 الخاص بـ ${BRAND.name}</p>
-      <input type="text" id="nameInput" placeholder="اكتب اسمك الكامل" list="nameList" autocomplete="off">
-      <datalist id="nameList">${names.map(n=>`<option value="${escapeHtml(n)}">`).join("")}</datalist>
-      ${names.length?`<div class="suggest-list">${names.map(n=>`<button class="suggest-chip" data-name="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join("")}</div>`:""}
-      <div style="margin-top:18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn" id="joinBtn">ابدأ التوقع</button>
-        <button class="btn secondary" id="guestBtn">تصفح كضيف</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function tabsHtml(){
-  const tabs = [
-    {id:"predict", label:"توقعاتي", icon:"📝"},
-    {id:"leaderboard", label:"لوحة المتصدرين", icon:"🏅"},
-    {id:"admin", label:"Admin", icon:"⚙️"},
-  ];
-  return `<div class="tabs">${tabs.map(t=>`
-    <button class="tab-btn ${S.tab===t.id?'active':''}" data-tab="${t.id}">${t.icon} ${t.label}</button>
-  `).join("")}</div>`;
-}
-
-function mainContentHtml(){
-  if(S.tab==="predict") return predictTabHtml();
-  if(S.tab==="leaderboard") return leaderboardTabHtml();
-  if(S.tab==="admin") return adminTabHtml();
-  return "";
-}
-
-/* =========================================================================
-   SECTION: PREDICT TAB
-   ========================================================================= */
-function predictTabHtml(){
-  if(!allGroupsEntered()){
-    return `<div class="card waiting-card">
-      <div class="icon">⏳</div>
-      <h2>بانتظار انتهاء دور المجموعات</h2>
-      <p class="muted">سيتم فتح التوقعات بدءاً من دور الـ32 فور إعلان نتائج دور المجموعات وتحديد الفرق الـ32 المتأهلة رسمياً.</p>
-      <p class="muted" style="font-size:12px;">الموعد التقريبي لبدء التوقعات: ${fmtDateLocal(WC_STAGES[0].opensAt)}</p>
-    </div>`;
-  }
-  const cd = nextCloseTarget();
-  let html = "";
-  if(cd){
-    const f = fmtCountdown(cd.target - S.now);
-    html += `<div class="countdown-bar" id="countdownBar" data-target="${cd.target}">
-      <div>
-        <div class="label">الوقت المتبقي لإغلاق</div>
-        <div class="stage-name">${cd.stage.icon} ${cd.stage.name}</div>
-      </div>
-      <div class="countdown-nums" id="countdownNums">
-        <div><div class="n">${f.d}</div><div class="u">يوم</div></div>
-        <div><div class="n">${pad(f.h)}</div><div class="u">ساعة</div></div>
-        <div><div class="n">${pad(f.m)}</div><div class="u">دقيقة</div></div>
-        <div><div class="n">${pad(f.s)}</div><div class="u">ثانية</div></div>
-      </div>
-    </div>`;
-  }
-  if(!S.guest){
-    const mine = S.predictions.find(p=>p.id===S.user.id) || {knockout:{}};
-    const cur = totalPoints({...mine, knockout: mergeDraftIntoSaved(mine)});
-    html += `<div class="total-bar" id="totalBar">
-      <span>إجمالي نقاطك الحالي (حسب المسودة الحالية)</span>
-      <span class="val" id="totalVal">${cur} نقطة</span>
-    </div>`;
-  }
-  html += `<div class="bracket-toggle">
-    <button class="tab-btn ${S.bracketView==='list'?'active':''}" data-bview="list">📋 قائمة</button>
-    <button class="tab-btn ${S.bracketView==='bracket'?'active':''}" data-bview="bracket">🌳 قوس بصري</button>
-  </div>`;
-
-  if(S.bracketView==="list"){
-    WC_STAGES.forEach(stage=>{
-      const status = stageStatus(stage.id);
-      html += `<div class="card">
-        <div class="section-title">
-          <h2>${stage.icon} ${stage.name}</h2>
-          <span class="badge ${status}">${status==='open'?'مفتوح':status==='upcoming'?'قادم':'مغلق'}</span>
-        </div>
-        <div class="grid grid-auto">
-          ${Array.from({length:stage.matchCount},(_,i)=>matchCardHtml(stage.id,i,status)).join("")}
-        </div>
-      </div>`;
-    });
-  }else{
-    html += `<div class="card"><div class="bracket-wrap">${bracketHtml()}</div></div>`;
-  }
-
-  if(!S.guest){
-    const canSave = allOpenStagesComplete();
-    html += `<div class="card" style="text-align:center;">
-      <button class="btn" id="saveBtn" ${canSave?"":"disabled"}>💾 حفظ / إرسال توقعاتي</button>
-      ${!canSave?`<p class="muted" style="margin-top:8px;font-size:12px;">أكمل كل المباريات المفتوحة (غير المنطلقة) لتفعيل الحفظ</p>`:""}
-    </div>`;
-  }
-  return html;
-}
-
-function mergeDraftIntoSaved(mine){
-  const merged = JSON.parse(JSON.stringify(mine.knockout||{}));
-  STAGE_ORDER.forEach(st=>{
-    const stage = WC_STAGES.find(s=>s.id===st);
-    if(!merged[st]) merged[st] = Array(stage.matchCount).fill(null);
-    for(let i=0;i<stage.matchCount;i++){
-      const d = S.draft[st+"__"+i];
-      if(d && d.home!=="" && d.home!=null && d.away!=="" && d.away!=null){
-        merged[st][i] = {home:Number(d.home), away:Number(d.away), penWinner: Number(d.home)===Number(d.away)?(d.penWinner||null):null};
-      }
+window.scrollToStage = function(id){
+  document.querySelector('.tabbar button[data-tab="predict"]').click();
+  setTimeout(()=>{
+    const el = document.getElementById('stage-'+id);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  },50);
+};
+function nextClosingMoment(){
+  let best=null;
+  WC_STAGES.forEach(s=>{
+    s_matches: for(let i=0;i<s.matchCount;i++){
+      const k = matchKickoff(s.id,i);
+      if(k > now() && (!best || k<best)) best = k;
     }
   });
-  return merged;
+  return best;
+}
+function updateCountdown(){
+  const box = document.getElementById('countdownBox');
+  const target = nextClosingMoment();
+  if(!target){ box.innerHTML = '⏱ لا توجد مباريات قادمة حالياً'; return; }
+  const diff = target - now();
+  if(diff<=0){ box.innerHTML='⏱ إغلاق وشيك الآن'; return; }
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor(diff/3600000)%24;
+  const m = Math.floor(diff/60000)%60;
+  const sec = Math.floor(diff/1000)%60;
+  box.innerHTML = `⏱ أقرب إغلاق توقع خلال: <b>${d}ي ${h}س ${m}د ${sec}ث</b>`;
 }
 
-function matchCardHtml(stageId, idx, status){
-  const {home,away,homeLabel,awayLabel} = matchTeams(stageId, idx);
-  const started = matchStarted(stageId, idx);
-  const locked = status==="closed" || started || S.guest;
-  const d = getDraft(stageId, idx);
-  const hasResult = matchHasResult(stageId, idx);
-  const kt = matchKickoff(stageId, idx);
-  const flag = code => code ? `<span class="fi fi-${code.replace('gb-','gb-')}" style="width:22px;height:16px;display:inline-block;"></span>` : `<span style="width:22px;height:16px;display:inline-block;background:var(--line);border-radius:3px;"></span>`;
-
-  let scoreArea;
-  if(locked){
-    const val = d.home!==""&&d.home!=null ? `${d.home} - ${d.away}` : "—";
-    scoreArea = `<div class="score-inputs"><b>${val}</b></div>`;
-  }else{
-    scoreArea = `<div class="score-inputs">
-      <input type="number" min="0" max="20" value="${d.home??''}" data-stage="${stageId}" data-idx="${idx}" data-side="home" class="scoreInput">
-      <span class="score-vs">:</span>
-      <input type="number" min="0" max="20" value="${d.away??''}" data-stage="${stageId}" data-idx="${idx}" data-side="away" class="scoreInput">
-    </div>`;
+/* ============== RENDER: PREDICT TAB ============== */
+function renderLogin(){
+  document.getElementById('loginCard').classList.toggle('hidden', !!currentUser);
+  document.getElementById('welcomeCard').classList.toggle('hidden', !currentUser);
+  document.getElementById('stagesContainer').classList.toggle('hidden', !currentUser);
+  document.getElementById('adminTabBtn').classList.toggle('hidden', !isAdmin());
+  if(currentUser){
+    document.getElementById('userNameLabel').textContent = currentUser;
+    renderStages();
   }
-  let penRow = "";
-  if(!locked && d.home!=="" && d.away!=="" && d.home!=null && d.away!=null && Number(d.home)===Number(d.away)){
-    penRow = `<div class="pen-row">
-      <span>تعادل؟ اختر الفائز بركلات الترجيح:</span>
-      <div class="pen-choice">
-        <button data-stage="${stageId}" data-idx="${idx}" data-pen="home" class="${d.penWinner==='home'?'sel':''}">${homeLabel}</button>
-        <button data-stage="${stageId}" data-idx="${idx}" data-pen="away" class="${d.penWinner==='away'?'sel':''}">${awayLabel}</button>
-      </div>
-    </div>`;
-  }
-  let pollRow = "";
-  if((locked || hasResult) && S.predictions.length){
-    const stats = pollStats(stageId, idx);
-    if(stats.total>0){
-      pollRow = `<div class="poll-row">توقّع الجمهور (${stats.total} صوت)
-        <div class="poll-bar">
-          <span style="width:${stats.homePct}%;background:var(--success);" title="فوز ${homeLabel}"></span>
-          <span style="width:${stats.drawPct}%;background:var(--gold);" title="تعادل"></span>
-          <span style="width:${stats.awayPct}%;background:var(--accent);" title="فوز ${awayLabel}"></span>
-        </div>
-      </div>`;
-    }
-  }
-  return `<div class="match-card">
-    ${started?`<span class="locked-tag">انطلقت</span>`:""}
-    <div class="match-meta">
-      <span>مباراة ${idx+1}</span>
-      <span>${kt?fmtDateLocal(kt):"موعد لاحق"}</span>
-    </div>
-    <div class="match-row">
-      <div class="team">${flag(home?.code)}<span class="name ${home?'':'tbd'}">${homeLabel}</span></div>
-      ${scoreArea}
-      <div class="team right">${flag(away?.code)}<span class="name ${away?'':'tbd'}">${awayLabel}</span></div>
-    </div>
-    ${penRow}
-    ${pollRow}
-  </div>`;
 }
-function pollStats(stageId, idx){
-  let home=0,draw=0,away=0,total=0;
-  S.predictions.forEach(p=>{
-    const m = p.knockout && p.knockout[stageId] ? p.knockout[stageId][idx] : null;
-    if(!m) return;
-    total++;
-    if(m.home>m.away) home++; else if(m.away>m.home) away++; else draw++;
-  });
-  if(!total) return {total:0,homePct:0,drawPct:0,awayPct:0};
-  return {total, homePct:Math.round(home/total*100), drawPct:Math.round(draw/total*100), awayPct:Math.round(away/total*100)};
-}
+document.getElementById('loginBtn').onclick = ()=>{
+  const name = document.getElementById('nameInput').value.trim();
+  const msg = document.getElementById('loginMsg');
+  if(!name){ msg.textContent='الرجاء كتابة اسمك.'; return; }
+  const existing = findParticipant(name);
+  if(existing){
+    if(!confirm(`الاسم "${name}" مسجّل مسبقاً. هل تريد المتابعة بنفس الاسم؟`)){ return; }
+  }
+  getOrCreateParticipant(name);
+  currentUser = name;
+  localStorage.setItem('wc_current_user', name);
+  msg.textContent='';
+  renderLogin();
+  renderLeaders();
+};
+document.getElementById('logoutBtn').onclick = ()=>{
+  currentUser = null;
+  localStorage.removeItem('wc_current_user');
+  document.getElementById('nameInput').value='';
+  renderLogin();
+};
 
-function bracketHtml(){
-  let cols = "";
+function renderStages(){
+  const wrap = document.getElementById('stagesContainer');
+  wrap.innerHTML = '';
+  const participant = getOrCreateParticipant(currentUser);
+
   WC_STAGES.forEach(stage=>{
-    cols += `<div class="bracket-col">
-      <div class="col-title">${stage.icon} ${stage.name}</div>
-      ${Array.from({length:stage.matchCount},(_,i)=>{
-        const {home,away,homeLabel,awayLabel} = matchTeams(stage.id,i);
-        const ko = S.results.knockout[stage.id][i];
-        const winner = matchWinner(stage.id,i);
-        return `<div class="b-match">
-          <div class="b-team ${winner && winner===home?.code ?'winner':''}"><span class="nm">${flagTiny(home?.code)}<span>${homeLabel}</span></span><b>${ko&&ko.homeScore!=null?ko.homeScore:""}</b></div>
-          <div class="b-divider"></div>
-          <div class="b-team ${winner && winner===away?.code ?'winner':''}"><span class="nm">${flagTiny(away?.code)}<span>${awayLabel}</span></span><b>${ko&&ko.awayScore!=null?ko.awayScore:""}</b></div>
-        </div>`;
-      }).join("")}
-    </div>`;
-  });
-  return `<div class="bracket">${cols}</div>`;
-}
-function flagTiny(code){ return code? `<span class="fi fi-${code}" style="width:16px;height:12px;display:inline-block;"></span>`:""; }
+    const open = isStageOpen(stage.id);
+    const card = document.createElement('div');
+    card.className='card stage-card';
+    card.id = 'stage-'+stage.id;
 
-/* =========================================================================
-   SECTION: LEADERBOARD TAB
-   ========================================================================= */
-function computeRanking(stageFilter){
-  const rows = S.predictions.map(p=>({
-    id:p.id, name:p.name,
-    pts: stageFilter==="overall" ? totalPoints(p) : stagePoints(p, stageFilter)
-  }));
-  rows.sort((a,b)=> b.pts-a.pts || a.name.localeCompare(b.name,'ar'));
-  let rank=0,lastPts=null;
-  rows.forEach((r,i)=>{ if(r.pts!==lastPts){ rank=i+1; lastPts=r.pts; } r.rank=rank; });
-  return rows;
-}
-function leaderboardTabHtml(){
-  const rows = computeRanking(S.lbSub);
-  const me = !S.guest ? rows.find(r=>r.id===S.user.id) : null;
-  let html = "";
-  if(me){
-    html += `<div class="me-card">
-      <div style="font-size:34px;">${me.rank===1?'🥇':me.rank===2?'🥈':me.rank===3?'🥉':'🎖️'}</div>
-      <div>
-        <div style="font-size:13px;opacity:.85;">ترتيبك الحالي</div>
-        <div class="big">المركز ${me.rank} • ${me.pts} نقطة</div>
-      </div>
-      <button class="btn gold" id="shareBtn" style="margin-right:auto;">📤 مشاركة بطاقتي</button>
-    </div>`;
-  }
-  html += `<div class="lb-subtabs">
-    <button class="${S.lbSub==='overall'?'active':''}" data-lbsub="overall">الإجمالي</button>
-    ${WC_STAGES.map(s=>`<button class="${S.lbSub===s.id?'active':''}" data-lbsub="${s.id}">${s.icon} ${s.name}</button>`).join("")}
-  </div>`;
-  html += `<div class="card">`;
-  if(!rows.length){
-    html += `<div class="empty">لا توجد توقعات مسجَّلة بعد. كن أول من يشارك!</div>`;
-  }else{
-    rows.forEach(r=>{
-      const delta = S.prevTotals[r.id+"_"+S.lbSub]!=null ? r.pts - S.prevTotals[r.id+"_"+S.lbSub] : 0;
-      html += `<div class="lb-row ${!S.guest && r.id===S.user.id?'me':''}">
-        <div class="lb-rank">${r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':r.rank}</div>
-        <div class="lb-avatar">${escapeHtml(r.name.slice(0,1))}</div>
-        <div class="lb-name">${escapeHtml(r.name)}</div>
-        <div class="lb-pts">${delta>0?`<span class="lb-delta">+${delta}</span>`:""}${r.pts}</div>
+    let matchesHtml = '';
+    for(let i=0;i<stage.matchCount;i++){
+      const {home, away, homeLabel, awayLabel} = stageMatchTeams(stage.id, i);
+      const result = RESULTS.knockout[stage.id][i];
+      const locked = isMatchLocked(stage.id, i) || !home || !away;
+      const predList = participant.knockout[stage.id] || [];
+      const pred = predList[i] || {homeScore:'', awayScore:'', penWinner:null};
+      const pts = matchPoints(pred, result);
+
+      matchesHtml += `
+      <div class="match" data-stage="${stage.id}" data-idx="${i}">
+        <div class="team home">${home?flagImg(home):''} <span>${homeLabel}</span></div>
+        <div class="scorebox">
+          <input type="number" min="0" class="sc-home" value="${pred.homeScore??''}" ${locked?'disabled':''}>
+          <span class="vs">×</span>
+          <input type="number" min="0" class="sc-away" value="${pred.awayScore??''}" ${locked?'disabled':''}>
+        </div>
+        <div class="team away">${away?flagImg(away):''} <span>${awayLabel}</span></div>
+        <div class="pen-row pen-zone ${locked?'hidden':''}" style="display:none;">
+          <span>في حال التعادل، من يفوز بضربات الترجيح؟</span>
+          <select class="pen-select">
+            <option value="">اختر الفائز بالركلات</option>
+            ${home?`<option value="${home}" ${pred.penWinner===home?'selected':''}>${teamName(home)}</option>`:''}
+            ${away?`<option value="${away}" ${pred.penWinner===away?'selected':''}>${teamName(away)}</option>`:''}
+          </select>
+        </div>
+        ${locked && (!home || !away) ? `<div class="locked-tag">⏳ في انتظار إعلان مواجهات هذا الدور من قِبَل الإدارة.</div>` : ''}
+        ${locked && home && away ? `<div class="locked-tag">🔒 المباراة انطلقت — التوقع مقفل</div>` : ''}
+        ${result.homeScore!=null ? `<div class="result-row"><span>النتيجة الرسمية: ${result.homeScore} - ${result.awayScore}${result.penWinner?` (ترجيح: ${teamName(result.penWinner)})`:''}</span><span>نقاطك في هذا الدور: ${pts}</span></div>` : ''}
+        <div class="match-meta"><span>⏰ موعد الانطلاق: ${result.kickoffAt? new Date(result.kickoffAt).toLocaleString('ar-EG') : 'غير محدد بعد'}</span></div>
       </div>`;
-    });
-  }
-  html += `</div>`;
-  return html;
-}
-function snapshotPrevTotals(){
-  WC_STAGES.concat([{id:"overall"}]).forEach(()=>{});
-  ["overall",...STAGE_ORDER].forEach(key=>{
-    computeRanking(key).forEach(r=>{ S.prevTotals[r.id+"_"+key] = r.pts; });
-  });
-}
-
-/* =========================================================================
-   SECTION: ADMIN TAB
-   ========================================================================= */
-function adminTabHtml(){
-  if(!S.adminAuthed){
-    return `<div class="card admin-login">
-      <h2>دخول المسؤول</h2>
-      <input type="password" id="adminPass" placeholder="كلمة المرور">
-      <button class="btn" id="adminLoginBtn" style="margin-top:12px;width:100%;">دخول</button>
-    </div>`;
-  }
-  let html = `<div class="card">
-    <div class="admin-section-title">🌍 نتائج دور المجموعات الفعلية (لتحديد المتأهلين فقط — لا نقاط)</div>
-    ${GROUP_IDS.map(g=>groupAdminHtml(g)).join("")}
-    <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-      <button class="btn sm" id="groupsLockBtn">${S.results.groupsLocked?'✅ المجموعات مقفلة (اضغط للتحرير)':'🔒 قفل نتائج المجموعات وفتح دور الـ32'}</button>
-      <span class="muted" style="font-size:12px;">${allGroupsEntered()?'كل المجموعات مكتملة — دور الـ32 مفتوح':'أكمل كل المجموعات الـ12 لفتح دور الـ32'}</span>
-    </div>
-  </div>`;
-
-  html += `<div class="card">
-    <div class="admin-section-title">⚽ نتائج وأدوار البطولة</div>
-    ${WC_STAGES.map(stage=>adminStageHtml(stage)).join("")}
-  </div>`;
-
-  html += `<div class="card">
-    <div class="admin-section-title">👥 تقدّم المشاركين (${S.predictions.length})</div>
-    ${adminParticipantsTable()}
-  </div>`;
-
-  if(S.results.lastUpdate){
-    html += `<div class="last-update">آخر تحديث: ${fmtDateLocal(S.results.lastUpdate)}</div>`;
-  }
-  html += `<div style="margin-top:14px;"><button class="btn secondary sm" id="adminLogoutBtn">تسجيل خروج المسؤول</button></div>`;
-  return html;
-}
-function groupAdminHtml(g){
-  return `<details style="margin-bottom:8px;"><summary style="cursor:pointer;font-weight:700;padding:6px 0;">المجموعة ${g}</summary>
-    <div style="padding:8px 0;">
-      <div class="group-team-row" style="font-weight:700;"><span></span><label>فوز</label><label>تعادل</label><label>خسارة</label><label>له</label><label>عليه</label></div>
-      ${WC_GROUPS[g].map(([code,name])=>{
-        const t = S.results.groups[g].find(x=>x.code===code);
-        return `<div class="group-team-row">
-          <span><span class="fi fi-${code}" style="width:18px;height:13px;display:inline-block;margin-left:6px;"></span>${name}</span>
-          <input type="number" min="0" class="grpInput" data-g="${g}" data-c="${code}" data-f="W" value="${t.W}">
-          <input type="number" min="0" class="grpInput" data-g="${g}" data-c="${code}" data-f="D" value="${t.D}">
-          <input type="number" min="0" class="grpInput" data-g="${g}" data-c="${code}" data-f="L" value="${t.L}">
-          <input type="number" min="0" class="grpInput" data-g="${g}" data-c="${code}" data-f="GF" value="${t.GF}">
-          <input type="number" min="0" class="grpInput" data-g="${g}" data-c="${code}" data-f="GA" value="${t.GA}">
-        </div>`;
-      }).join("")}
-    </div>
-  </details>`;
-}
-function adminStageHtml(stage){
-  const status = stageStatus(stage.id);
-  return `<details style="margin-bottom:10px;" ${status==='open'?'open':''}>
-    <summary style="cursor:pointer;font-weight:700;padding:6px 0;display:flex;gap:8px;align-items:center;">
-      ${stage.icon} ${stage.name} <span class="badge ${status}">${status==='open'?'مفتوح':status==='upcoming'?'قادم':'مغلق'}</span>
-      <span style="margin-right:auto;display:flex;gap:6px;">
-        <button class="btn sm secondary forceBtn" data-stage="${stage.id}" data-mode="open">إجبار فتح</button>
-        <button class="btn sm secondary forceBtn" data-stage="${stage.id}" data-mode="close">إجبار إغلاق</button>
-      </span>
-    </summary>
-    <div class="grid grid-auto" style="margin-top:10px;">
-      ${Array.from({length:stage.matchCount},(_,i)=>adminMatchHtml(stage.id,i)).join("")}
-    </div>
-  </details>`;
-}
-function adminMatchHtml(stageId, idx){
-  const {homeLabel,awayLabel} = matchTeams(stageId, idx);
-  const ko = S.results.knockout[stageId][idx] || {};
-  return `<div class="match-card">
-    <div class="match-meta"><span>مباراة ${idx+1}</span></div>
-    <div class="match-row">
-      <div class="team"><span class="name">${homeLabel}</span></div>
-      <div class="score-inputs">
-        <input type="number" min="0" class="adminScore" data-stage="${stageId}" data-idx="${idx}" data-side="home" value="${ko.homeScore??''}">
-        <span class="score-vs">:</span>
-        <input type="number" min="0" class="adminScore" data-stage="${stageId}" data-idx="${idx}" data-side="away" value="${ko.awayScore??''}">
-      </div>
-      <div class="team right"><span class="name">${awayLabel}</span></div>
-    </div>
-    <div class="pen-row">
-      <span>ركلات ترجيح (عند التعادل):</span>
-      <div class="pen-choice">
-        <button data-stage="${stageId}" data-idx="${idx}" data-penadmin="home" class="${ko.penWinner==='home'?'sel':''}">${homeLabel}</button>
-        <button data-stage="${stageId}" data-idx="${idx}" data-penadmin="away" class="${ko.penWinner==='away'?'sel':''}">${awayLabel}</button>
-      </div>
-    </div>
-    <div class="pen-row">
-      <span>موعد الانطلاق الفعلي:</span>
-      <input type="text" placeholder="YYYY-MM-DDTHH:MM" class="kickoffInput" data-stage="${stageId}" data-idx="${idx}" value="${ko.kickoff?ko.kickoff.slice(0,16):''}" style="width:auto;flex:1;">
-    </div>
-  </div>`;
-}
-function adminParticipantsTable(){
-  if(!S.predictions.length) return `<div class="empty">لا يوجد مشاركون بعد</div>`;
-  let rows = S.predictions.map(p=>{
-    const cells = STAGE_ORDER.map(st=>{
-      const stage = WC_STAGES.find(s=>s.id===st);
-      const arr = (p.knockout&&p.knockout[st])||[];
-      const filled = arr.filter(Boolean).length;
-      const cls = filled===0?'':filled>=stage.matchCount?'full':'partial';
-      return `<span class="progress-mini" title="${stage.name}: ${filled}/${stage.matchCount}"><span class="${cls}"></span></span>`;
-    }).join("");
-    return `<tr>
-      <td>${escapeHtml(p.name)}</td>
-      <td>${cells}</td>
-      <td>${totalPoints(p)}</td>
-      <td>
-        <button class="btn sm secondary editPredBtn" data-id="${p.id}">تعديل</button>
-        <button class="btn sm danger delPredBtn" data-id="${p.id}">حذف</button>
-      </td>
-    </tr>`;
-  }).join("");
-  return `<table class="admin-table"><thead><tr><th>الاسم</th><th>التقدّم</th><th>النقاط</th><th>إجراءات</th></tr></thead><tbody>${rows}</tbody></table>`;
-}
-
-/* =========================================================================
-   SECTION: SHARE CARD
-   ========================================================================= */
-function generateShareCard(){
-  const rows = computeRanking("overall");
-  const me = rows.find(r=>r.id===S.user.id);
-  if(!me) return;
-  const canvas = document.getElementById("shareCanvas");
-  const ctx = canvas.getContext("2d");
-  const grad = ctx.createLinearGradient(0,0,900,560);
-  grad.addColorStop(0,"#0B5351"); grad.addColorStop(1,"#C1502E");
-  ctx.fillStyle = grad; ctx.fillRect(0,0,900,560);
-  ctx.fillStyle = "rgba(255,255,255,.08)";
-  for(let i=0;i<6;i++){ ctx.beginPath(); ctx.arc(120+i*150, 60, 70,0,Math.PI*2); ctx.fill(); }
-  ctx.textAlign="center";
-  ctx.fillStyle="#fff";
-  ctx.font="bold 26px Tajawal, sans-serif";
-  ctx.fillText("VISIT OMAN — تحدي توقعات كأس العالم 2026", 450, 80);
-  const medal = me.rank===1?"🥇":me.rank===2?"🥈":me.rank===3?"🥉":"🎖️";
-  ctx.font="80px serif"; ctx.fillText(medal, 450, 220);
-  ctx.font="bold 44px Tajawal, sans-serif"; ctx.fillText(me.name, 450, 300);
-  ctx.font="bold 30px Tajawal, sans-serif"; ctx.fillText("المركز "+me.rank+"  •  "+me.pts+" نقطة", 450, 350);
-  const lines = me.rank===1?"بطل التوقعات بلا منازع! 🏆":me.rank<=3?"على منصة التتويج! استمر 🔥":me.rank<=10?"في المقدمة، واصل التألق ⚡":"لم تنتهِ البطولة بعد، عُد بقوة 💪";
-  ctx.font="22px Tajawal, sans-serif"; ctx.fillText(lines, 450, 410);
-  ctx.font="16px Tajawal, sans-serif"; ctx.fillStyle="rgba(255,255,255,.8)";
-  ctx.fillText("شارك توقعاتك على #VisitOmanWC2026", 450, 510);
-
-  const dataUrl = canvas.toDataURL("image/png");
-  showSharePreview(dataUrl);
-}
-function showSharePreview(dataUrl){
-  const wrap = document.createElement("div");
-  wrap.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;";
-  wrap.innerHTML = `<div class="card" style="max-width:420px;text-align:center;">
-    <img src="${dataUrl}" style="width:100%;border-radius:12px;margin-bottom:12px;">
-    <div class="share-actions" style="justify-content:center;">
-      <a class="btn sm" id="dlShare" href="${dataUrl}" download="visit-oman-wc-card.png">⬇️ تنزيل</a>
-      <button class="btn sm secondary" id="copyShare">📋 نسخ</button>
-      <button class="btn sm secondary" id="navShare">📤 مشاركة</button>
-      <button class="btn sm secondary" id="closeShare">✖️ إغلاق</button>
-    </div>
-  </div>`;
-  document.body.appendChild(wrap);
-  wrap.querySelector("#closeShare").onclick = ()=> wrap.remove();
-  wrap.querySelector("#copyShare").onclick = async ()=>{
-    try{
-      const blob = await (await fetch(dataUrl)).blob();
-      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
-      showToast("تم النسخ إلى الحافظة");
-    }catch(e){ showToast("تعذر النسخ على هذا المتصفح"); }
-  };
-  wrap.querySelector("#navShare").onclick = async ()=>{
-    try{
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], "wc-card.png", {type:"image/png"});
-      if(navigator.share) await navigator.share({files:[file], title:"بطاقتي في تحدي كأس العالم"});
-      else showToast("المشاركة غير مدعومة على هذا الجهاز");
-    }catch(e){}
-  };
-}
-
-/* =========================================================================
-   SECTION: EVENTS
-   ========================================================================= */
-function bindEvents(){
-  const themeBtn = document.getElementById("themeToggle");
-  if(themeBtn) themeBtn.onclick = ()=>{ S.theme = S.theme==="dark"?"light":"dark"; localStorage.setItem("wc_theme",S.theme); render(); };
-
-  const logoutBtn = document.getElementById("logoutBtn");
-  if(logoutBtn) logoutBtn.onclick = ()=>{ if(confirm("تسجيل خروج؟")){ localStorage.removeItem("wc_user"); S.user=null; S.guest=false; render(); } };
-
-  const joinBtn = document.getElementById("joinBtn");
-  if(joinBtn) joinBtn.onclick = ()=>{
-    const input = document.getElementById("nameInput");
-    const name = input.value.trim();
-    if(!name){ showToast("الرجاء إدخال الاسم"); return; }
-    const existing = S.predictions.find(p=>p.name===name);
-    const user = existing ? {id:existing.id, name} : {id:uid(), name};
-    S.user = user; S.guest=false;
-    localStorage.setItem("wc_user", JSON.stringify(user));
-    loadDraftFromSaved();
-    render();
-  };
-  document.querySelectorAll(".suggest-chip").forEach(c=> c.onclick = ()=>{ document.getElementById("nameInput").value = c.dataset.name; });
-  const guestBtn = document.getElementById("guestBtn");
-  if(guestBtn) guestBtn.onclick = ()=>{ S.guest = true; S.user = S.user || {id:"guest", name:"ضيف"}; render(); };
-
-  document.querySelectorAll("[data-tab]").forEach(b=> b.onclick = ()=>{ S.tab=b.dataset.tab; render(); });
-  document.querySelectorAll("[data-bview]").forEach(b=> b.onclick = ()=>{ S.bracketView=b.dataset.bview; localStorage.setItem("wc_bracket_view",S.bracketView); render(); });
-  document.querySelectorAll("[data-lbsub]").forEach(b=> b.onclick = ()=>{ S.lbSub=b.dataset.lbsub; render(); });
-
-  document.querySelectorAll(".scoreInput").forEach(inp=>{
-    inp.oninput = ()=>{
-      setDraft(inp.dataset.stage, inp.dataset.idx, {[inp.dataset.side]: inp.value});
-      suppressFullRerenderForInputs = true;
-      patchTotalBar();
-      // إعادة رسم بطاقة المباراة فقط لإظهار صف الترجيح إن لزم، دون فقدان تركيز الحقل الآخر
-      const cardsGrid = inp.closest(".grid");
-      if(cardsGrid){
-        const idx = Number(inp.dataset.idx), stage = inp.dataset.stage;
-        const card = inp.closest(".match-card");
-        const status = stageStatus(stage);
-        const html = matchCardHtml(stage, idx, status);
-        const temp = document.createElement("div"); temp.innerHTML = html;
-        const newPenRow = temp.querySelector(".pen-row");
-        const oldPenRow = card.querySelector(".pen-row");
-        if(newPenRow && !oldPenRow){ card.appendChild(newPenRow); bindPenButtons(); }
-        else if(!newPenRow && oldPenRow){ oldPenRow.remove(); }
-      }
-      setTimeout(()=> suppressFullRerenderForInputs=false, 50);
-    };
-  });
-  bindPenButtons();
-  function bindPenButtons(){
-    document.querySelectorAll(".pen-row .pen-choice button[data-pen]").forEach(btn=>{
-      btn.onclick = ()=>{ setDraft(btn.dataset.stage, btn.dataset.idx, {penWinner: btn.dataset.pen}); render(); };
-    });
-  }
-
-  const saveBtn = document.getElementById("saveBtn");
-  if(saveBtn) saveBtn.onclick = async ()=>{
-    saveBtn.disabled = true; saveBtn.textContent = "جارٍ الحفظ...";
-    const list = [...S.predictions.filter(p=>p.id!==S.user.id)];
-    list.push({ id:S.user.id, name:S.user.name, ts:new Date().toISOString(), groups:{}, knockout: draftToKnockoutObj() });
-    await savePredictions(list);
-    showToast("تم حفظ توقعاتك بنجاح ✅");
-    render();
-  };
-
-  // admin
-  const adminLoginBtn = document.getElementById("adminLoginBtn");
-  if(adminLoginBtn) adminLoginBtn.onclick = ()=>{
-    const pass = document.getElementById("adminPass").value;
-    const saved = localStorage.getItem("wc_admin_pass") || ADMIN_PASSWORD_DEFAULT;
-    if(pass===saved){ S.adminAuthed=true; localStorage.setItem("wc_admin_ok","1"); render(); }
-    else showToast("كلمة المرور غير صحيحة");
-  };
-  const adminLogoutBtn = document.getElementById("adminLogoutBtn");
-  if(adminLogoutBtn) adminLogoutBtn.onclick = ()=>{ S.adminAuthed=false; localStorage.removeItem("wc_admin_ok"); render(); };
-
-  document.querySelectorAll(".grpInput").forEach(inp=>{
-    inp.onchange = async ()=>{
-      const {g,c,f} = inp.dataset;
-      const row = S.results.groups[g].find(x=>x.code===c);
-      row[f] = Number(inp.value)||0;
-      await saveResults(S.results);
-      showToast("تم تحديث نتائج المجموعة");
-    };
-  });
-  const groupsLockBtn = document.getElementById("groupsLockBtn");
-  if(groupsLockBtn) groupsLockBtn.onclick = async ()=>{
-    S.results.groupsLocked = !S.results.groupsLocked;
-    await saveResults(S.results);
-    render();
-  };
-
-  document.querySelectorAll(".adminScore").forEach(inp=>{
-    inp.onchange = async ()=>{
-      const {stage,idx,side} = inp.dataset;
-      const arr = S.results.knockout[stage];
-      if(!arr[idx]) arr[idx] = {home:null,away:null,homeScore:null,awayScore:null,penWinner:null,kickoff:null};
-      const teams = matchTeams(stage, Number(idx));
-      arr[idx].home = arr[idx].home || teams.home?.code || null;
-      arr[idx].away = arr[idx].away || teams.away?.code || null;
-      arr[idx][side+"Score"] = inp.value===""?null:Number(inp.value);
-      await saveResults(S.results);
-      showToast("تم تحديث نتيجة المباراة");
-      render();
-    };
-  });
-  document.querySelectorAll("[data-penadmin]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      const {stage,idx} = btn.dataset;
-      const arr = S.results.knockout[stage];
-      if(!arr[idx]) arr[idx] = {home:null,away:null,homeScore:null,awayScore:null,penWinner:null,kickoff:null};
-      arr[idx].penWinner = btn.dataset.penadmin;
-      await saveResults(S.results);
-      render();
-    };
-  });
-  document.querySelectorAll(".kickoffInput").forEach(inp=>{
-    inp.onchange = async ()=>{
-      const {stage,idx} = inp.dataset;
-      const arr = S.results.knockout[stage];
-      if(!arr[idx]) arr[idx] = {home:null,away:null,homeScore:null,awayScore:null,penWinner:null,kickoff:null};
-      arr[idx].kickoff = inp.value ? new Date(inp.value).toISOString() : null;
-      await saveResults(S.results);
-      showToast("تم تحديد موعد الانطلاق");
-      render();
-    };
-  });
-  document.querySelectorAll(".forceBtn").forEach(btn=>{
-    btn.onclick = async ()=>{
-      const {stage,mode} = btn.dataset;
-      S.results.forceOpen = S.results.forceOpen||{}; S.results.forceClose = S.results.forceClose||{};
-      if(mode==="open"){ S.results.forceOpen[stage]=true; S.results.forceClose[stage]=false; }
-      else { S.results.forceClose[stage]=true; S.results.forceOpen[stage]=false; }
-      await saveResults(S.results);
-      render();
-    };
-  });
-  document.querySelectorAll(".delPredBtn").forEach(btn=>{
-    btn.onclick = async ()=>{
-      if(!confirm("حذف هذا المشارك نهائياً؟")) return;
-      const list = S.predictions.filter(p=>p.id!==btn.dataset.id);
-      await savePredictions(list);
-      render();
-    };
-  });
-  document.querySelectorAll(".editPredBtn").forEach(btn=>{
-    btn.onclick = ()=>{
-      const p = S.predictions.find(x=>x.id===btn.dataset.id);
-      if(!p) return;
-      S.user = {id:p.id, name:p.name}; S.guest=false; S.tab="predict";
-      loadDraftFromSaved();
-      showToast("تعدّل الآن نيابة عن: " + p.name);
-      render();
-    };
-  });
-
-  const shareBtn = document.getElementById("shareBtn");
-  if(shareBtn) shareBtn.onclick = generateShareCard;
-}
-
-/* =========================================================================
-   SECTION: LIGHTWEIGHT PATCHES (avoid full re-render while typing / live updates)
-   ========================================================================= */
-function patchTotalBar(){
-  const el = document.getElementById("totalVal");
-  if(!el || S.guest) return;
-  const mine = S.predictions.find(p=>p.id===S.user.id) || {knockout:{}};
-  const cur = totalPoints({...mine, knockout: mergeDraftIntoSaved(mine)});
-  el.textContent = cur + " نقطة";
-}
-function patchLeaderboardOnly(){
-  if(S.tab==="leaderboard"){ snapshotPrevTotalsIfNeeded(); render(); }
-  else { patchTotalBar(); }
-}
-function patchScoreboardOnly(){ render(); }
-let prevSnapshotDone=false;
-function snapshotPrevTotalsIfNeeded(){ if(!prevSnapshotDone){ snapshotPrevTotals(); prevSnapshotDone=true; } }
-
-/* =========================================================================
-   SECTION: UTIL
-   ========================================================================= */
-function pad(n){ return String(n).padStart(2,"0"); }
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
-function fmtDateLocal(iso){
-  try{
-    const d = new Date(iso);
-    return d.toLocaleString("ar", {dateStyle:"medium", timeStyle:"short"});
-  }catch(e){ return iso; }
-}
-
-/* =========================================================================
-   SECTION: TICKER (countdown + status refresh every second/minute)
-   ========================================================================= */
-let countdownTimer = null;
-function startTicker(){
-  if(countdownTimer) clearInterval(countdownTimer);
-  countdownTimer = setInterval(()=>{
-    S.now = Date.now();
-    const numsEl = document.getElementById("countdownNums");
-    const bar = document.getElementById("countdownBar");
-    if(numsEl && bar){
-      const target = Number(bar.dataset.target);
-      const f = fmtCountdown(target - S.now);
-      numsEl.innerHTML = `
-        <div><div class="n">${f.d}</div><div class="u">يوم</div></div>
-        <div><div class="n">${pad(f.h)}</div><div class="u">ساعة</div></div>
-        <div><div class="n">${pad(f.m)}</div><div class="u">دقيقة</div></div>
-        <div><div class="n">${pad(f.s)}</div><div class="u">ثانية</div></div>`;
     }
-  }, 1000);
-}
-document.addEventListener("visibilitychange", ()=>{
-  if(document.hidden && countdownTimer){ clearInterval(countdownTimer); countdownTimer=null; }
-  else if(!document.hidden && !countdownTimer){ startTicker(); }
-});
 
-/* =========================================================================
-   SECTION: INIT
-   ========================================================================= */
-(function init(){
-  S.guest = false;
-  subscribeLive();
-  if(S.user) loadDraftFromSaved();
-  render();
-  startTicker();
-})();
+    const stagePts = participantStagePoints(participant, stage.id);
+    card.innerHTML = `
+      <div class="stage-head">
+        <span class="stname">${stage.icon} ${stage.name}</span>
+        <span class="stage-status ${open?'open':'closed'}">${open?'مفتوح':'مغلق'} · نقاطك: ${stagePts}</span>
+      </div>
+      ${matchesHtml}
+      <button class="save-btn" data-savestage="${stage.id}">⚽ شوووت</button>
+      <div class="save-msg" id="savemsg-${stage.id}"></div>
+    `;
+    wrap.appendChild(card);
+  });
+
+  // show pen row only when teams are draw-equal? show always if both scores filled equal -- toggle dynamically
+  wrap.querySelectorAll('.match').forEach(matchEl=>{
+    const hIn = matchEl.querySelector('.sc-home');
+    const aIn = matchEl.querySelector('.sc-away');
+    const penZone = matchEl.querySelector('.pen-zone');
+    if(!hIn || hIn.disabled) return;
+    function check(){
+      if(hIn.value!=='' && aIn.value!=='' && Number(hIn.value)===Number(aIn.value)){
+        penZone.style.display='flex';
+      } else {
+        penZone.style.display='none';
+      }
+    }
+    hIn.addEventListener('input', check);
+    aIn.addEventListener('input', check);
+    check();
+  });
+
+  wrap.querySelectorAll('[data-savestage]').forEach(btn=>{
+    btn.onclick = ()=> saveStagePredictions(btn.dataset.savestage);
+  });
+}
+
+function saveStagePredictions(stageId){
+  const stage = WC_STAGES.find(s=>s.id===stageId);
+  const msgEl = document.getElementById('savemsg-'+stageId);
+  const card = document.getElementById('stage-'+stageId);
+  const matchEls = [...card.querySelectorAll('.match')];
+  const newPreds = [];
+  for(let i=0;i<matchEls.length;i++){
+    const el = matchEls[i];
+    const hIn = el.querySelector('.sc-home');
+    const aIn = el.querySelector('.sc-away');
+    const locked = hIn.disabled;
+    if(locked){
+      const participant = getOrCreateParticipant(currentUser);
+      newPreds.push((participant.knockout[stageId]||[])[i] || {homeScore:null,awayScore:null,penWinner:null});
+      continue;
+    }
+    const {home, away} = stageMatchTeams(stageId, i);
+    if(!home || !away){
+      newPreds.push({homeScore:null,awayScore:null,penWinner:null});
+      continue;
+    }
+    if(hIn.value==='' || aIn.value===''){
+      msgEl.textContent = 'حدث خطأ أثناء الحفظ. حاول مرة أخرى.';
+      msgEl.className='save-msg err';
+      msgEl.textContent = `يجب إدخال نتيجة كاملة لجميع المباريات المفتوحة قبل الحفظ.`;
+      return;
+    }
+    const hs = Number(hIn.value), as = Number(aIn.value);
+    let penWinner = null;
+    if(hs===as){
+      const sel = el.querySelector('.pen-select');
+      if(!sel || !sel.value){
+        msgEl.className='save-msg err';
+        msgEl.textContent = 'في حال التعادل يجب اختيار فائز بركلات الترجيح لجميع المباريات المتعادلة.';
+        return;
+      }
+      penWinner = sel.value;
+    }
+    newPreds.push({homeScore:hs, awayScore:as, penWinner});
+  }
+
+  msgEl.textContent = '⏳ جارٍ الحفظ…';
+  msgEl.className='save-msg';
+  setTimeout(()=>{
+    try{
+      const participant = getOrCreateParticipant(currentUser);
+      participant.knockout[stageId] = newPreds;
+      savePredictions(PREDICTIONS);
+      msgEl.textContent = '✓ تم الحفظ بنجاح';
+      msgEl.className='save-msg ok';
+      renderStages();
+      renderLeaders();
+    }catch(e){
+      msgEl.textContent = 'حدث خطأ أثناء الحفظ. حاول مرة أخرى.';
+      msgEl.className='save-msg err';
+    }
+  }, 250);
+}
+
+/* ============== RENDER: LEADERS TAB ============== */
+let lbView = 'overall';
+function renderLeaderTabs(){
+  const tabs = document.getElementById('lbTabs');
+  const items = [{id:'overall',label:'الترتيب العام'}].concat(WC_STAGES.map(s=>({id:s.id,label:s.icon+' '+s.name})));
+  tabs.innerHTML = items.map(it=>`<button data-lb="${it.id}" class="${lbView===it.id?'active':''}">${it.label}</button>`).join('');
+  tabs.querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ lbView=b.dataset.lb; renderLeaders(); };
+  });
+}
+function renderLeaders(){
+  renderLeaderTabs();
+  const champBox = document.getElementById('championBox');
+  const table = document.getElementById('lbTable');
+
+  const scored = PREDICTIONS.map(p=>({
+    p, pts: lbView==='overall' ? participantTotalPoints(p) : participantStagePoints(p, lbView)
+  })).sort((a,b)=> b.pts-a.pts || a.p.ts-b.p.ts );
+
+  if(scored.length && scored[0].pts>0){
+    const top = scored[0].pts;
+    const champs = scored.filter(s=>s.pts===top);
+    if(champs.length>1){
+      champBox.innerHTML = `<div class="champion-card"><h3>🤝 الأبطال المشتركون في الصدارة</h3><p>${champs.map(c=>c.p.name).join(' · ')} — ${top} نقطة</p></div>`;
+    } else {
+      champBox.innerHTML = `<div class="champion-card"><h3>🏆 البطل الحالي</h3><p>${champs[0].p.name} — ${top} نقطة</p></div>`;
+    }
+  } else {
+    champBox.innerHTML='';
+  }
+
+  table.innerHTML = `<tr><th>#</th><th>الاسم</th><th>النقاط</th><th></th></tr>` +
+    scored.map((s,i)=>`
+      <tr>
+        <td><span class="rank-badge">${i+1}</span></td>
+        <td>${s.p.name}</td>
+        <td>${s.pts}</td>
+        <td>
+          <button class="icon-btn" title="عرض التوقعات" onclick="viewParticipant('${s.p.id}')">👁</button>
+          ${isAdmin() ? `<button class="icon-btn" title="تعديل" onclick="adminEditParticipant('${s.p.id}')">✏️</button>
+          <button class="icon-btn" title="حذف" onclick="adminDeleteParticipant('${s.p.id}')">🗑</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+}
+window.viewParticipant = function(id){
+  const p = PREDICTIONS.find(x=>x.id===id);
+  if(!p) return;
+  let lines = [`توقعات ${p.name}:`];
+  WC_KO_ORDER.forEach(stid=>{
+    const st = WC_STAGES.find(s=>s.id===stid);
+    const preds = p.knockout[stid]||[];
+    if(preds.length){
+      lines.push(`\n${st.icon} ${st.name}:`);
+      preds.forEach((pr,i)=>{
+        if(pr && pr.homeScore!=null) lines.push(`مباراة ${i+1}: ${pr.homeScore} - ${pr.awayScore}${pr.penWinner?' (ترجيح: '+teamName(pr.penWinner)+')':''}`);
+      });
+    }
+  });
+  alert(lines.join('\n'));
+};
+window.adminDeleteParticipant = function(id){
+  if(!confirm('هل تريد حذف هذا المشارك نهائياً؟')) return;
+  PREDICTIONS = PREDICTIONS.filter(p=>p.id!==id);
+  savePredictions(PREDICTIONS);
+  renderLeaders();
+  renderAdminParticipants();
+};
+window.adminEditParticipant = function(id){
+  const p = PREDICTIONS.find(x=>x.id===id);
+  if(!p) return;
+  const prevUser = currentUser;
+  currentUser = p.name;
+  document.querySelector('.tabbar button[data-tab="predict"]').click();
+  renderLogin();
+  alert(`أنت الآن تعدّل توقعات "${p.name}". اضغط "تبديل المستخدم" للعودة.`);
+};
+
+/* ============== RENDER: BRACKET ============== */
+function renderBracketTree(){
+  const wrap = document.getElementById('bracketTreeWrap');
+  let html = '<div class="bracket">';
+  WC_STAGES.forEach(stage=>{
+    html += `<div class="bcol"><div class="blabel">${stage.icon} ${stage.name}</div>`;
+    for(let i=0;i<stage.matchCount;i++){
+      const {homeLabel, awayLabel} = stageMatchTeams(stage.id, i);
+      const r = RESULTS.knockout[stage.id][i];
+      const w = winnerOf(r);
+      html += `<div class="bmatch">
+        <div class="${w && w===r.home?'winner':''}">${homeLabel} ${r.homeScore!=null?`<b>${r.homeScore}</b>`:''}</div>
+        <div class="${w && w===r.away?'winner':''}">${awayLabel} ${r.awayScore!=null?`<b>${r.awayScore}</b>`:''}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+function renderBracketList(){
+  const wrap = document.getElementById('bracketListWrap');
+  let html='';
+  WC_STAGES.forEach(stage=>{
+    html += `<div class="stage-block"><div class="blabel" style="text-align:right;margin-bottom:6px;">${stage.icon} ${stage.name}</div>`;
+    for(let i=0;i<stage.matchCount;i++){
+      const {homeLabel, awayLabel} = stageMatchTeams(stage.id, i);
+      const r = RESULTS.knockout[stage.id][i];
+      html += `<div class="lv-match"><span>${homeLabel}</span><span>${r.homeScore!=null?`${r.homeScore} - ${r.awayScore}`:'vs'}</span><span>${awayLabel}</span></div>`;
+    }
+    html += `</div>`;
+  });
+  wrap.innerHTML = html;
+}
+document.getElementById('btnTreeView').onclick = ()=>{
+  document.getElementById('btnTreeView').classList.add('active');
+  document.getElementById('btnListView').classList.remove('active');
+  document.getElementById('bracketTreeWrap').classList.remove('hidden');
+  document.getElementById('bracketListWrap').classList.add('hidden');
+};
+document.getElementById('btnListView').onclick = ()=>{
+  document.getElementById('btnListView').classList.add('active');
+  document.getElementById('btnTreeView').classList.remove('active');
+  document.getElementById('bracketListWrap').classList.remove('hidden');
+  document.getElementById('bracketTreeWrap').classList.add('hidden');
+};
+
+/* ============== RENDER: ADMIN ============== */
+let adminLog = JSON.parse(localStorage.getItem('wc_admin_log')||'[]');
+function pushLog(text){
+  adminLog.unshift({text, ts:Date.now()});
+  adminLog = adminLog.slice(0,50);
+  localStorage.setItem('wc_admin_log', JSON.stringify(adminLog));
+  renderLog();
+}
+function renderLog(){
+  const el = document.getElementById('updateLog');
+  el.innerHTML = '<b>سجل تحديث النتائج</b>' + adminLog.map(l=>`<div>• ${l.text} — ${new Date(l.ts).toLocaleString('ar-EG')}</div>`).join('');
+}
+
+function renderAdminStages(){
+  const wrap = document.getElementById('adminStages');
+  wrap.innerHTML='';
+  WC_STAGES.forEach(stage=>{
+    const ov = stageOverride(stage.id) || 'auto';
+    const block = document.createElement('div');
+    block.className='card';
+    block.style.margin='0 0 16px';
+    block.innerHTML = `
+      <div class="stage-head">
+        <span class="stname">${stage.icon} ${stage.name} — ${stage.matchCount} ${stage.matchCount===1?'مباراة واحدة':(stage.matchCount===2?'مباراتان':'مباريات')}</span>
+      </div>
+      <div class="stage-ctrl">
+        <button data-mode="auto" class="${ov==='auto'?'active':''}">تلقائي</button>
+        <button data-mode="force-open" class="${ov==='force-open'?'active':''}">فتح إجباري</button>
+        <button data-mode="force-close" class="${ov==='force-close'?'active':''}">إغلاق إجباري</button>
+      </div>
+      <div class="admin-matches" id="admin-matches-${stage.id}"></div>
+    `;
+    wrap.appendChild(block);
+    block.querySelectorAll('.stage-ctrl button').forEach(btn=>{
+      btn.onclick = ()=>{
+        RESULTS.stageOverrides[stage.id] = btn.dataset.mode==='auto' ? null : btn.dataset.mode;
+        saveResults(RESULTS);
+        renderAdminStages();
+      };
+    });
+    const mWrap = block.querySelector(`#admin-matches-${stage.id}`);
+    for(let i=0;i<stage.matchCount;i++){
+      const r = RESULTS.knockout[stage.id][i];
+      const {homeLabel, awayLabel} = stageMatchTeams(stage.id, i);
+      const row = document.createElement('div');
+      row.className='admin-match';
+      const teamOptions = (selected)=> `<option value="">—</option>` + TEAM_CODES.map(c=>`<option value="${c}" ${selected===c?'selected':''}>${teamName(c)}</option>`).join('');
+      const isAuto = stage.id!=='r32';
+      row.innerHTML = `
+        <div class="admin-match-row">
+          ${isAuto ? `<span>${homeLabel}</span>` : `<select class="adm-home">${teamOptions(r.home)}</select>`}
+          <span>×</span>
+          ${isAuto ? `<span>${awayLabel}</span>` : `<select class="adm-away">${teamOptions(r.away)}</select>`}
+          <input type="number" min="0" class="adm-hs" placeholder="0" value="${r.homeScore??''}">
+          <input type="number" min="0" class="adm-as" placeholder="0" value="${r.awayScore??''}">
+        </div>
+        <div class="admin-match-row" style="margin-top:6px;">
+          <label class="muted">موعد الانطلاق:</label>
+          <input type="datetime-local" class="adm-kickoff" value="${r.kickoffAt ? toLocalInputValue(r.kickoffAt) : ''}">
+          <div class="adm-pen-wrap"></div>
+          <button class="small-btn adm-save">حفظ المباراة</button>
+        </div>
+      `;
+      mWrap.appendChild(row);
+
+      const hsIn = row.querySelector('.adm-hs');
+      const asIn = row.querySelector('.adm-as');
+      const penWrap = row.querySelector('.adm-pen-wrap');
+      function refreshPen(){
+        const hs = hsIn.value, as = asIn.value;
+        const homeCode = isAuto ? stageMatchTeams(stage.id,i).home : row.querySelector('.adm-home').value;
+        const awayCode = isAuto ? stageMatchTeams(stage.id,i).away : row.querySelector('.adm-away').value;
+        if(hs!=='' && as!=='' && Number(hs)===Number(as) && homeCode && awayCode){
+          penWrap.innerHTML = `<select class="adm-pen"><option value="">فائز بالترجيح</option><option value="${homeCode}" ${r.penWinner===homeCode?'selected':''}>${teamName(homeCode)}</option><option value="${awayCode}" ${r.penWinner===awayCode?'selected':''}>${teamName(awayCode)}</option></select>`;
+        } else {
+          penWrap.innerHTML='';
+        }
+      }
+      hsIn.addEventListener('input', refreshPen);
+      asIn.addEventListener('input', refreshPen);
+      refreshPen();
+
+      row.querySelector('.adm-save').onclick = ()=>{
+        const idx = i, stid = stage.id;
+        const target = RESULTS.knockout[stid][idx];
+        if(!isAuto){
+          target.home = row.querySelector('.adm-home').value || null;
+          target.away = row.querySelector('.adm-away').value || null;
+        } else {
+          const t = stageMatchTeams(stid, idx);
+          target.home = t.home; target.away = t.away;
+        }
+        const hs = hsIn.value, as = asIn.value;
+        target.homeScore = hs===''? null : Number(hs);
+        target.awayScore = as===''? null : Number(as);
+        const kc = row.querySelector('.adm-kickoff').value;
+        target.kickoffAt = kc ? new Date(kc).toISOString() : null;
+        const penSel = row.querySelector('.adm-pen');
+        target.penWinner = (penSel && penSel.value) ? penSel.value : null;
+        RESULTS.lastUpdate[stid+'_'+idx] = Date.now();
+        saveResults(RESULTS);
+        pushLog(`${stage.icon} ${stage.name} - مباراة ${idx+1}: ${target.homeScore ?? '-'} : ${target.awayScore ?? '-'}`);
+        renderAll();
+      };
+    }
+  });
+  renderLog();
+}
+function toLocalInputValue(iso){
+  const d = new Date(iso);
+  const pad = n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderAdminParticipants(){
+  const table = document.getElementById('participantsTable');
+  table.innerHTML = `<tr><th>الاسم</th>${WC_STAGES.map(s=>`<th>${s.icon} ${s.name}</th>`).join('')}<th></th></tr>` +
+    PREDICTIONS.map(p=>`
+      <tr>
+        <td>${p.name}</td>
+        ${WC_STAGES.map(s=>{
+          const done = (p.knockout[s.id]||[]).filter(x=>x && x.homeScore!=null).length;
+          return `<td>${done}/${s.matchCount}</td>`;
+        }).join('')}
+        <td>
+          <button class="small-btn" onclick="viewParticipant('${p.id}')">عرض</button>
+          <button class="small-btn" onclick="adminEditParticipant('${p.id}')">تعديل</button>
+          <button class="small-btn del" onclick="adminDeleteParticipant('${p.id}')">حذف</button>
+        </td>
+      </tr>
+    `).join('');
+}
+
+/* ============== TABS / DARK MODE ============== */
+document.querySelectorAll('.tabbar button[data-tab]').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.tabbar button[data-tab]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['predict','leaders','bracket','admin'].forEach(t=>{
+      document.getElementById('tab-'+t).classList.toggle('hidden', t!==btn.dataset.tab);
+    });
+    if(btn.dataset.tab==='leaders') renderLeaders();
+    if(btn.dataset.tab==='bracket'){ renderBracketTree(); renderBracketList(); }
+    if(btn.dataset.tab==='admin'){ renderAdminStages(); renderAdminParticipants(); }
+  };
+});
+document.getElementById('darkToggle').onclick = ()=>{
+  const html = document.documentElement;
+  const dark = html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme', dark?'light':'dark');
+  document.getElementById('darkToggle').textContent = dark? '🌙':'☀️';
+  localStorage.setItem('wc_theme', dark?'light':'dark');
+};
+if(localStorage.getItem('wc_theme')==='dark'){
+  document.documentElement.setAttribute('data-theme','dark');
+  document.getElementById('darkToggle').textContent='☀️';
+}
+
+/* ============== INIT ============== */
+function renderAll(){
+  RESULTS = loadResults();
+  PREDICTIONS = loadPredictions();
+  renderLogin();
+  renderLeaders();
+  renderBracketTree();
+  renderBracketList();
+  if(isAdmin()){ renderAdminStages(); renderAdminParticipants(); }
+}
+renderHero();
+renderAll();
 </script>
 </body>
 </html>
