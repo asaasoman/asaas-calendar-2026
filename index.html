@@ -344,8 +344,19 @@ function savePredictions(list){
 function loadResults(){
   try{
     const r = JSON.parse(localStorage.getItem(LS_RES)).value;
-    if(r) return r;
+    if(r && r.knockout && r.knockout.r32){
+      const allEmpty = r.knockout.r32.every(m=>!m.home && !m.away);
+      if(allEmpty){
+        // بيانات قديمة فارغة من نسخة سابقة من الموقع: استبدلها بمواجهات دور الـ32 الحقيقية
+        const seeded = buildSeededResults();
+        return seeded;
+      }
+      return r;
+    }
   }catch(e){}
+  return buildSeededResults();
+}
+function buildSeededResults(){
   const empty = { knockout:{r32:[],r16:[],qf:[],sf:[],final:[]}, stageOverrides:{}, lastUpdate:{} };
   WC_STAGES.forEach(s=>{
     empty.knockout[s.id] = Array.from({length:s.matchCount},()=>({home:null,away:null,homeScore:null,awayScore:null,penWinner:null,kickoffAt:null}));
