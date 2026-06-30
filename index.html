@@ -6176,6 +6176,7 @@ const I18N = {
     'wc.gs.pts':               'نقاط',
     'wc.gs.pending':           '— لم تُلعب مباريات بعد —',
     'wc.gs.loadSeed':          'تحميل النتائج الحالية (حتى 26 يونيو)',
+    'wc.ko.loadSeed':          'تحديث نتائج دور الـ32 (حتى 30 يونيو)',
     'wc.admin.ko':             '— مواجهات ونتائج',
     'wc.admin.matches':       'مباراة',
     'wc.admin.selectTeam':    '— اختر منتخب —',
@@ -6480,6 +6481,7 @@ const I18N = {
     'wc.gs.pts':               'Pts',
     'wc.gs.pending':           '— No matches played yet —',
     'wc.gs.loadSeed':          'Load current results (as of June 26)',
+    'wc.ko.loadSeed':          'Update Round-of-32 results (as of June 30)',
     'wc.admin.ko':            '— Matchups and results',
     'wc.admin.matches':       'matches',
     'wc.admin.selectTeam':    '— Select a team —',
@@ -11748,6 +11750,54 @@ async function wcLoadSeedGroupResults() {
 }
 window.wcLoadSeedGroupResults = wcLoadSeedGroupResults;
 
+// Snapshot of real Round-of-32 results, cross-checked against FIFA's
+// official match centre and live coverage as of June 30, 2026 (06:00 Muscat).
+// Loaded on-demand by the admin via the "Update Round-of-32 results" button
+// — same write path as manual entry, so it triggers the normal live
+// recalculation for every participant. Keyed by array index (NOT official
+// match number) per the real entry order documented above WC_KO_FEED.
+//
+// Only matches that have actually been played/completed are listed here;
+// matches not yet kicked off are intentionally left out so they aren't
+// overwritten with empty data.
+const WC_SEED_R32_RESULTS_20260630 = {
+  // idx 0 — Match 73: South Africa 0-1 Canada (Canada win, 90+2', Eustáquio) — Los Angeles, June 28
+  0: { home: 'RSA', away: 'CAN', homeScore: 0, awayScore: 1 },
+  // idx 1 — Match 76: Brazil 2-1 Japan (Sano 29', Casemiro 56', Martinelli 90+5') — Houston, June 29
+  1: { home: 'BRA', away: 'JPN', homeScore: 2, awayScore: 1 },
+  // idx 2 — Match 74: Germany 1-1 Paraguay, Paraguay win 4-3 on penalties (Havertz 54', Enciso 42') — Boston, June 29
+  2: { home: 'GER', away: 'PAR', homeScore: 1, awayScore: 1, penWinner: 'away' },
+};
+
+// Admin-only: one-click load of the verified Round-of-32 results above into
+// the live knockout bracket (overwrites only the indices listed; matches not
+// yet played are left untouched). Mirrors wcLoadSeedGroupResults's pattern.
+async function wcLoadSeedKnockoutResults() {
+  if (!(typeof state !== 'undefined' && state.isAdmin)) return;
+  const msg = (CURRENT_LANG === 'en')
+    ? 'Load the verified Round-of-32 results (as of June 30, 2026)? This will overwrite any matchups/scores already entered for these matches.'
+    : 'تحميل نتائج دور الـ32 الموثَّقة (حتى 30 يونيو 2026)؟ سيتم استبدال أي مواجهات أو نتائج مُدخَلة حالياً لهذه المباريات.';
+  if (!confirm(msg)) return;
+  if (!wcState.results.knockout) wcState.results.knockout = {};
+  if (!Array.isArray(wcState.results.knockout.r32)) wcState.results.knockout.r32 = [];
+  const arr = wcState.results.knockout.r32;
+  Object.keys(WC_SEED_R32_RESULTS_20260630).forEach(k => {
+    const idx = Number(k);
+    while (arr.length <= idx) arr.push({});
+    arr[idx] = { ...arr[idx], ...JSON.parse(JSON.stringify(WC_SEED_R32_RESULTS_20260630[idx])) };
+  });
+  wcLogResultUpdate(CURRENT_LANG === 'en' ? 'Loaded official Round-of-32 results' : 'تحديث نتائج دور الـ32 الرسمية');
+  try {
+    await wcSaveResults();
+  } catch (e) {
+    console.error('[WC] R32 seed load error:', e);
+    alert(CURRENT_LANG === 'en' ? 'Failed to save. Try again.' : 'تعذّر الحفظ. حاول مرة أخرى.');
+    return;
+  }
+  wcRender();
+}
+window.wcLoadSeedKnockoutResults = wcLoadSeedKnockoutResults;
+
 // Admin-only: manually open/close a stage, or revert to auto (time-based)
 async function wcSetStageOverride(stageId, mode) {
   if (!(typeof state !== 'undefined' && state.isAdmin)) return;
@@ -13336,6 +13386,7 @@ function wcRenderAdminStage(stage) {
   return `
     <div class="wc-admin-section">
       <div class="wc-admin-section-title">${stage.icon} ${t('wc.stage.'+stage.id)} ${t('wc.admin.ko')} (${stage.matchCount} ${t('wc.admin.matches')})</div>
+      ${stage.id === 'r32' ? `<button class="wc-gs-seed-btn" onclick="wcLoadSeedKnockoutResults()">📥 ${t('wc.ko.loadSeed')}</button>` : ''}
       ${Array.from({length: stage.matchCount}, (_, i) => {
         const m = arr[i] || {};
         const home = m.home ? WC_TEAM_MAP[m.home] : null;
